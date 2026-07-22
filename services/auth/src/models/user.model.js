@@ -1,0 +1,80 @@
+import pool from 
+'../config/postgre.js';
+
+// import createUpdatedAtTrigger 
+// from '#shared';
+
+
+const createUsersTable = async() => {
+    try{
+        
+        await pool.query(`
+            CREATE EXTENSION IF NOT EXISTS citext;
+        `);
+        
+        await pool.query(`
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;    
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users(
+                id UUID PRIMARY KEY
+                    DEFAULT gen_random_uuid(),
+
+                first_name VARCHAR(25) NOT NULL,
+                last_name VARCHAR(25) NOT NULL,
+
+                email VARCHAR(100) UNIQUE NOT NULL
+                    CHECK (
+                        email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+                    ),
+
+                -- E.164 Format
+                phone VARCHAR(15) UNIQUE NOT NULL
+                    CHECK (
+                        phone ~ '^\\+[1-9][0-9]{6,14}$'
+                    ),
+                
+                role VARCHAR(15) NOT NULL 
+                    CHECK(
+                        role IN(
+                            'user',
+                            'restaurant',
+                            'rider',
+                            'admin'
+                            )
+                        )
+                    DEFAULT 'user',
+
+                profile_picture_public_id TEXT,
+                profile_picture_url TEXT,
+
+                password TEXT NOT NULL,
+                password_changed_at TIMESTAMPTZ,
+
+                deleted_at TIMESTAMPTZ,
+                deactivated_at TIMESTAMPTZ,
+                
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );    
+        `);
+
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_users_role
+            ON users(role)
+        `);
+        
+        // await createUpdatedAtTrigger('users');
+        
+        console.log("User table and indexes created successfully");
+
+    }catch(err){
+
+        console.error(" Used Table creation failed", err);
+    
+    }
+};
+
+
+export default createUsersTable;

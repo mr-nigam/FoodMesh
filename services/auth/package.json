@@ -1,0 +1,31 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.18.1",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "googleapis": "^173.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "node": "^26.5.0",
+    "nodemon": "^3.1.14",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
