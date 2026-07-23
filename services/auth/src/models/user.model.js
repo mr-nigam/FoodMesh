@@ -1,13 +1,12 @@
 import pool from 
 '../config/postgre.js';
 
-// import createUpdatedAtTrigger 
-// from '#shared';
+import createUpdatedAtTrigger 
+from '../utils/dbTriggers.util.js';
 
 
 const createUsersTable = async() => {
     try{
-        
         await pool.query(`
             CREATE EXTENSION IF NOT EXISTS citext;
         `);
@@ -21,8 +20,7 @@ const createUsersTable = async() => {
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 
-                first_name VARCHAR(25) NOT NULL,
-                last_name VARCHAR(25) NOT NULL,
+                name VARCHAR(50) NOT NULL,
 
                 email VARCHAR(100) UNIQUE NOT NULL
                     CHECK (
@@ -30,7 +28,7 @@ const createUsersTable = async() => {
                     ),
 
                 -- E.164 Format
-                phone VARCHAR(15) UNIQUE NOT NULL
+                phone VARCHAR(15) UNIQUE
                     CHECK (
                         phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
@@ -46,11 +44,25 @@ const createUsersTable = async() => {
                         )
                     DEFAULT 'user',
 
-                profile_picture_public_id TEXT,
                 profile_picture_url TEXT,
+                
+                gender VARCHAR(20) DEFAULT 'not_shared'
+                    CHECK (gender IN (
+                        'male',
+                        'female',
+                        'other',
+                        'not_shared'
+                    )),
 
-                password TEXT NOT NULL,
+                date_of_birth DATE
+                CHECK (
+                    date_of_birth <= CURRENT_DATE
+                    AND date_of_birth >= CURRENT_DATE - INTERVAL '120 years'
+                ),
+
+                password TEXT,
                 password_changed_at TIMESTAMPTZ,
+                refresh_token TEXT,
 
                 deleted_at TIMESTAMPTZ,
                 deactivated_at TIMESTAMPTZ,
@@ -65,7 +77,7 @@ const createUsersTable = async() => {
             ON users(role)
         `);
         
-        // await createUpdatedAtTrigger('users');
+        await createUpdatedAtTrigger('users');
         
         console.log("User table and indexes created successfully");
 

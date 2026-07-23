@@ -1,10 +1,15 @@
 import pool, { conectDB }
 from '../config/postgre.js';
 
+import createUsersTable 
+from '../models/user.model.js';
+
 
 const bootstrapDB = async () => {
     try{
         await conectDB();
+        
+        await createUsersTable();
 
         console.log("✅ PostgreSQL Connected");
     }catch(error){
@@ -33,5 +38,6 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
+//await bootstrapDB();
 
 export default bootstrapDB;
