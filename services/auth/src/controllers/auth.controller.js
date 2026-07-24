@@ -15,6 +15,9 @@ import {
 } from '../utils/token.util.js';
 
 
+const allowedRoles = ["user","rider","seller"];
+
+
 const loginUser = asyncHandler(async (req,res) => {
     const {email, name, picture, role} = req.body;
 
@@ -22,8 +25,16 @@ const loginUser = asyncHandler(async (req,res) => {
         throw new ApiError(
             404,
             "Enter Email for login"
-        )
+        );
     }
+
+    if(!allowedRoles.includes(role)) {
+        throw new ApiError(
+            400,
+            "Invalid role"
+        );
+    }
+
     const query = `
         SELECT
             id,
@@ -86,7 +97,12 @@ const loginUser = asyncHandler(async (req,res) => {
         );
 });
 
+const updateRole = asyncHandler(async (req, res)=>{});
+
+const updateDetails = asyncHandler(async (req, res)=>{});
 
 export {
-    loginUser
+    loginUser,
+    updateRole,
+    updateDetails
 };
