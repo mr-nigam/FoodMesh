@@ -4,6 +4,8 @@ import pool from '../config/postgre.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import ApiError from '../utils/apiError.js';
 import ApiResponse from '../utils/apiResponse.js';
+import axios from 'axios';
+import { OAuth2Client } from 'google-auth-library';
 
 import {
     setAuthCookies,
@@ -14,12 +16,33 @@ import {
     generateAccessToken
 } from '../utils/token.util.js';
 
+const oauth2client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    "postmessage"
+    // process.env.GOOGLE_REDIRECT_URI
+);
 
 const allowedRoles = ["user","rider","seller"];
 
-
 const loginUser = asyncHandler(async (req,res) => {
-    const {email, name, picture, role} = req.body;
+    const code = req.body?.code || null;
+
+    if(!code){
+        throw new ApiError(
+            400,
+            "Authorization code is required"
+        );
+    }
+
+    const googleRes = await oauth2client.getToken(code);
+
+    oauth2client.setCredentials(googleRes.tokens);
+
+    const userRes = 
+        await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`);
+
+    const {email, name, picture} = userRes.data;
 
     if(!email){
         throw new ApiError(
@@ -28,12 +51,12 @@ const loginUser = asyncHandler(async (req,res) => {
         );
     }
 
-    if(!allowedRoles.includes(role)) {
-        throw new ApiError(
-            400,
-            "Invalid role"
-        );
-    }
+    // if(!allowedRoles.includes(role)) {
+    //     throw new ApiError(
+    //         400,
+    //         "Invalid role"
+    //     );
+    // }
 
     const query = `
         SELECT
@@ -55,10 +78,10 @@ const loginUser = asyncHandler(async (req,res) => {
     if(result.rowCount === 0){
         const query = `
             INSERT INTO users(
-                email, name, role, profile_picture_url
+                email, name, profile_picture_url
             )
             VALUES(
-                $1, $2, $3, $4
+                $1, $2, $3
             )
             RETURNING
                 id,
@@ -70,7 +93,7 @@ const loginUser = asyncHandler(async (req,res) => {
 
         const result = await pool.query(
             query,
-            [email,name,role,picture]
+            [email,name,picture]
         );
 
         user = result.rows[0];
@@ -78,11 +101,11 @@ const loginUser = asyncHandler(async (req,res) => {
         
     const accessToken = generateAccessToken(user);
         
-    setAuthCookies(
-        res,
-        user,
-        accessToken
-    );
+    // setAuthCookies(
+    //     res,
+    //     user,
+    //     accessToken
+    // );
 
     return res
         .status(200)
@@ -90,7 +113,8 @@ const loginUser = asyncHandler(async (req,res) => {
             new ApiResponse(
                 200,
                 {
-                    user: user
+                    user: user,
+                    token: accessToken
                 },
                 "User logged in successfully"
             )

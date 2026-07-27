@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
@@ -8,16 +9,21 @@ import ApiError  from './utils/apiError.js';
 
 const app = express();
 
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true
+}));
+
+// in app.js, add this header for all responses
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+    next();
+});
 
 // dev logger
 if(process.env.NODE_ENV === "development"){
     app.use(morgan("dev"));
 }
-
-app.use(cors({
-    origin: process.env.CORS_OROGIN,
-    credentials: true
-}));
 
 app.use(express.urlencoded({
     extended: true,
@@ -33,7 +39,6 @@ app.use((req, res, next) => {
     console.log("URL:", req.url);
     next();
 });
-
 
 app.use("/api/v1/auth",authRouter);
 
