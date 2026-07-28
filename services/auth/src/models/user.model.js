@@ -22,7 +22,7 @@ const createUsersTable = async() => {
 
                 name VARCHAR(50) NOT NULL,
 
-                email VARCHAR(100) UNIQUE NOT NULL
+                email CITEXT UNIQUE NOT NULL
                     CHECK (
                         email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
                     ),
@@ -33,7 +33,7 @@ const createUsersTable = async() => {
                         phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
                 
-                role VARCHAR(15) NOT NULL 
+                role VARCHAR(15) 
                     CHECK(
                         role IN(
                             'user',
@@ -41,8 +41,7 @@ const createUsersTable = async() => {
                             'rider',
                             'admin'
                             )
-                        )
-                    DEFAULT 'user',
+                        ),
 
                 profile_picture_url TEXT,
                 

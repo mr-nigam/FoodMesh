@@ -125,8 +125,14 @@ const updateRole = asyncHandler(async (req, res)=>{});
 
 const updateDetails = asyncHandler(async (req, res)=>{});
 
+
+const myProfile = asyncHandler(async (req, res)=>{});
+const Home = asyncHandler(async (req, res)=>{});
+
 export {
     loginUser,
     updateRole,
-    updateDetails
+    updateDetails,
+    myProfile,
+    Home
 };

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AppContext } from './AppContext';
+import { AppContext } from './context';
 
 export const useAppData = () => {
     const context = useContext(AppContext);
