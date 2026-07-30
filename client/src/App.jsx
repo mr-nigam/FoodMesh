@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/publicRoute';
-import SelectRole from './pages/SelectRole';
+import SetRole from './pages/SetRole';
 
 
 const App = () => {
@@ -24,7 +24,7 @@ const App = () => {
         
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<Login/>} />
-        <Route path="/select-role" element={<SelectRole/>} />
+        <Route path="/set-role" element={<SetRole/>} />
         
         
       </Routes>

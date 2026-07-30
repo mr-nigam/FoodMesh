@@ -23,7 +23,7 @@ const oauth2client = new OAuth2Client(
     // process.env.GOOGLE_REDIRECT_URI
 );
 
-const allowedRoles = ["user","rider","seller"];
+const allowedRoles = ["customer","rider","seller"];
 
 const loginUser = asyncHandler(async (req,res) => {
     const code = req.body?.code || null;
@@ -50,13 +50,6 @@ const loginUser = asyncHandler(async (req,res) => {
             "Enter Email for login"
         );
     }
-
-    // if(!allowedRoles.includes(role)) {
-    //     throw new ApiError(
-    //         400,
-    //         "Invalid role"
-    //     );
-    // }
 
     const query = `
         SELECT
@@ -121,18 +114,125 @@ const loginUser = asyncHandler(async (req,res) => {
         );
 });
 
-const updateRole = asyncHandler(async (req, res)=>{});
+const updateRole = asyncHandler(async (req, res)=>{
+    const user = req.user;
+    const role = req.body.role?.trim() || "";
 
-const updateDetails = asyncHandler(async (req, res)=>{});
+    if(!allowedRoles.includes(role)){
+        throw new ApiError(
+            400,
+            "Invalid role"
+        );
+    }
 
+    const query = `
+        UPDATE users
+        SET role = $1
+        WHERE id = $2
+            AND deleted_at IS NULL
+            AND deactivated_at IS NULL
+        RETURNING
+            id,
+            name,
+            email,
+            role,
+            profile_picture_url;;
+    `;
+    
+    const result = await pool.query(
+        query,
+        [role, user.id]
+    );
 
-const myProfile = asyncHandler(async (req, res)=>{});
+    if(result.rowCount === 0){
+        throw new ApiError(
+            404,
+            "User not found"
+        );
+    }
+
+    const accessToken = generateAccessToken(result.rows[0]);
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user: result.rows[0],
+                    token: accessToken
+                },
+                "Role updated successfully"
+            )
+        );
+
+});
+
+const myProfile = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    const query = `
+        SELECT *
+        FROM users
+        WHERE id = $1
+          AND deleted_at IS NULL
+          AND deactivated_at IS NULL;
+    `;
+
+    const result = await pool.query(query, [user.id]);
+
+    if (result.rowCount === 0) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                user: result.rows[0],
+            },
+            "Profile fetched successfully"
+        )
+    );
+});
+
+// const myProfile = asyncHandler(async (req, res)=>{
+//     const {user} = req.user;
+
+//     const query = `
+//         SELECT *
+//         FROM users
+//         WHERE id = $1
+//         AND deleted_at IS NULL
+//         AND deactivated_at IS NULL
+//     `;
+
+//     const result = await pool.query(query,[user.id]);
+
+//     if(result.rowCount === 0){
+//         throw new ApiError(
+//             404,
+//             "User not found/ wrong id - password"
+//         );
+//     }
+
+//     return res
+//         .status(200)
+//         .json(
+//             new ApiResponse(
+//                 200,
+//                 {
+//                     user: user
+//                 }
+//             )
+//         );
+// });
+
 const Home = asyncHandler(async (req, res)=>{});
 
 export {
     loginUser,
     updateRole,
-    updateDetails,
     myProfile,
     Home
 };

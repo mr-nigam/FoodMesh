@@ -14,22 +14,32 @@ export const AppProvider = ({ children }) => {
     const [city, setCity] = useState("Fetching location");
 
     useEffect(() => {
+        console.log("AppProvider mounted");
         let ignore = false;
 
-        async function fetchUser() {
-            try {
-                const token = localStorage.getItem("token");
+        async function fetchUser(){
+            const token = localStorage.getItem("token");
 
-                const { data } = await axios.get(`${authService}/auth/me`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+            if(!token){
+                if(!ignore){
+                    setLoading(false);
+                }
+                return;
+            }
+
+            try {
+                const { data } = await axios.get(`${authService}/auth/me`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
                 });
 
-                if (!ignore) {
-                    setUser(data.user);
+                if(!ignore){
+                    setUser(data.data.user);
                     setIsAuth(true);
                 }
+
             } catch (error) {
                 console.log(error);
             } finally {

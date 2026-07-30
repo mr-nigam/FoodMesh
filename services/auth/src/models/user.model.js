@@ -33,11 +33,11 @@ const createUsersTable = async() => {
                         phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
                 
-                role VARCHAR(15) 
+                role VARCHAR(15),
                     CHECK(
                         role IN(
-                            'user',
-                            'restaurant',
+                            'customer',
+                            'seller',
                             'rider',
                             'admin'
                             )

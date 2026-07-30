@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authenticateUser from '../middlewares/auth.middleware.js';
 
 import {
     loginUser,
@@ -11,10 +12,14 @@ import {
 const router = Router();
 
 
+router.post("/login", loginUser);
+
+
+router.use(authenticateUser);
+
 //router.post("/",Home);
-router.post("/login",loginUser);
-router.get("/me" ,myProfile);
-router.get("/select-role" ,updateRole);
+router.get("/me", myProfile);
+router.put("/set-role", updateRole);
 
 
 export default router;
