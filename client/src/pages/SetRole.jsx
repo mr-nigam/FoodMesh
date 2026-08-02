@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAppData } from "../context/useAppData"; // adjust path
+import useAppData from "../context/useAppData"; // adjust path
 import { authService } from "../config/constants"; // adjust path
 
 const allowedRoles = ["customer", "rider", "seller"];
@@ -28,13 +28,16 @@ const SetRole = () => {
       });
       
       console.log("Response:", data);
+      console.log(data.data.user);
+      console.log(data.data.token);
 
       localStorage.setItem("token", data.data.token);
       setUser(data.data.user);
       // setIsAuth(true);
       
+      console.log("before");
       navigate("/", { replace: true });
-
+      console.log("after");
     }catch(error){
 
       alert("something went wrong");

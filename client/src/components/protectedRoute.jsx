@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation} from 'react-router-dom';
-import { useAppData } from '../context/useAppData';
+import useAppData from '../context/useAppData.js';
 
 
 const ProtectedRoute = ()=> {
@@ -10,18 +10,29 @@ const ProtectedRoute = ()=> {
     if(loading) return null;
 
     if(!isAuth){
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    if(!isAuth){
         return <Navigate to={"/login"} state={{ from: location }} replace />
     }
 
-    if(user?.role && location.pathname !== "/set-role"){
-        return <Navigate to={"/set-role"} replace />
-    }
+    // // Force role selection only if they don't have one
+    // if (!user?.role && location.pathname !== "/set-role") {
+    //     return <Navigate to="/set-role" replace />;
+    // }
 
-    if(user?.role && location.pathname === "/set-role"){
-        return <Navigate to={"/"} replace />
+    if(!user?.role){
+        if(location.pathname !== "/set-role"){
+            return <Navigate to="/set-role" replace />;
+        }
+    }else{
+        if(location.pathname === "/set-role"){
+            return <Navigate to="/" replace />;
+        }
     }
     
-    return <Outlet/>
+    return <Outlet />
 };
 
 

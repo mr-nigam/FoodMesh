@@ -165,7 +165,7 @@ const updateRole = asyncHandler(async (req, res)=>{
                 "Role updated successfully"
             )
         );
-
+        
 });
 
 const myProfile = asyncHandler(async (req, res) => {

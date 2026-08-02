@@ -27,7 +27,7 @@ export const AppProvider = ({ children }) => {
                 return;
             }
 
-            try {
+            try{
                 const { data } = await axios.get(`${authService}/auth/me`,
                     {
                         headers: {
@@ -40,20 +40,21 @@ export const AppProvider = ({ children }) => {
                     setIsAuth(true);
                 }
 
-            } catch (error) {
+            }catch(error){
                 console.log(error);
-            } finally {
-                if (!ignore) setLoading(false);
+            }finally{
+                if(!ignore) setLoading(false);
             }
         }
 
         function fetchLocation() {
             setLoadingLocation(true);
-            if (!navigator.geolocation) {
-                if (!ignore) {
+            if(!navigator.geolocation){
+                if(!ignore){
                     setCity("Location not supported");
                     setLoadingLocation(false);
                 }
+
                 return;
             }
 
@@ -69,12 +70,33 @@ export const AppProvider = ({ children }) => {
                             `https://nominatim.openstreetmap.org/reverse`,
                             { params: { lat: latitude, lon: longitude, format: 'json' } }
                         );
-                        if (!ignore) {
-                            setCity(data?.address?.city || data?.address?.town || "Unknown location");
+                        
+                        setLocation({
+                            latitude,
+                            longitude,
+                            formattedAddress: data.display.name || "Current Location"
+                        });
+
+                        if(!ignore){
+                            setCity(
+                                data?.address?.city || 
+                                data?.address?.town || 
+                                data?.address?.village || 
+                                "Unknown location"
+                            );
                         }
-                    } catch (error) {
+
+                    }catch (error){
+
+                        setLocation({
+                            latitude,
+                            longitude,
+                            formattedAddress:  "Current Location"
+                        });
+
                         console.log(error);
-                        if (!ignore) setCity("Unable to fetch city");
+                        if(!ignore) setCity("Unable to load");
+                    
                     } finally {
                         if (!ignore) setLoadingLocation(false);
                     }
@@ -105,10 +127,10 @@ export const AppProvider = ({ children }) => {
                 isAuth,
                 setIsAuth,
                 loading,
+                setLoading,
                 location,
                 loadingLocation,
-                city,
-                setLoading
+                city
             }}
         >
             {children}

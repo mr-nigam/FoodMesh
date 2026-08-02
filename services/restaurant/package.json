@@ -1,31 +1,31 @@
 {
-  "name": "auth",
+  "name": "restaurant",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon src/server.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "axios": "^1.18.1",
-    "bcrypt": "^6.0.0",
+    "axios": "^1.19.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "datauri": "^4.1.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "googleapis": "^173.0.0",
+    "exprss": "^0.0.1-security",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.11.0",
-    "node": "^26.5.0",
+    "multer": "^2.2.0",
+    "node": "^26.5.1",
     "pg": "^8.22.0"
   },
   "devDependencies": {
-    "concurrently": "^9.2.4",
-    "nodmeon": "^0.0.1-security"
+    "concurrently": "^10.0.4",
+    "nodemon": "^3.1.14"
   }
 }
