@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import pool from '../config/postgre.js';
-import ApiError from '../utils/apiError.js';
+import ApiError from '../utilsss/apiError.js'
 import asyncHandler from './asyncHandler.js';
 
 

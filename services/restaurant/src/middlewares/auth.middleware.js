@@ -91,5 +91,21 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
     next();
 });
 
+const isSeller = asyncHandler(async(req,_,next)=>{
+    const user = req.user;
 
-export default authenticateUser;
+    if(user && user.role !== "seller"){
+        throw new ApiError(
+            401,
+            "You are not authorized seller"
+        );
+    }
+
+    next();
+});
+
+
+export {
+    authenticateUser,
+    isSeller
+};
