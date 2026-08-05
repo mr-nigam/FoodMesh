@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import ApiError from './utils/apiError.js';
+import restaurantRouter from './routes/restaurant.routes.js';
 
 
 const app = express();
@@ -37,6 +38,9 @@ app.use((req, res, next) => {
     console.log("URL:", req.url);
     next();
 });
+
+app.use("/api/v1/restaurant", restaurantRouter);
+
 
 app.use((req,res,next)=>{
     next(new ApiError(404, "Route not Found"));

@@ -74,14 +74,17 @@ export const AppProvider = ({ children }) => {
                         setLocation({
                             latitude,
                             longitude,
-                            formattedAddress: data.display.name || "Current Location"
+                            formattedAddress: data.display_name || "Current Location"
                         });
+                        
+                        const address = data?.address ?? {};
 
                         if(!ignore){
                             setCity(
-                                data?.address?.city || 
-                                data?.address?.town || 
-                                data?.address?.village || 
+                                address.city || 
+                                address.town || 
+                                address.village ||
+                                address.state_district ||
                                 "Unknown location"
                             );
                         }

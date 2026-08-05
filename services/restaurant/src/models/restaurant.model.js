@@ -9,7 +9,8 @@ const createRestaurantstable = async () => {
     try{
         await pool.query(`
             CREATE EXTENSION IF NOT EXISTS citext;
-            CREATE EXTENSION IF NOT EXISTS pgcrypto; 
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
+            CREATE EXTENSION IF NOT EXISTS postgis;
         `);
         
         await pool.query(`
@@ -31,7 +32,7 @@ const createRestaurantstable = async () => {
                 
                 name VARCHAR(100) NOT NULL,
 
-                desciption TEXT,
+                description TEXT,
 
                 email CITEXT UNIQUE NOT NULL
                     CHECK (
@@ -47,8 +48,7 @@ const createRestaurantstable = async () => {
                 pictures_urls TEXT[] DEFAULT '{}',
 
                  -- Geolocation & Address
-                latitude NUMERIC(10, 8) CHECK (latitude BETWEEN -90 AND 90),
-                longitude NUMERIC(11, 8) CHECK (longitude BETWEEN -180 AND 180),
+                location GEOGRAPHY(POINT, 4326) NOT NULL,
                 address TEXT NOT NULL,
             
                 isVerified BOOLEAN DEFAULT false,
