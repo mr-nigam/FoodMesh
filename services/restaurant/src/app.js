@@ -1,3 +1,6 @@
+// throw new Error("APP.JS LOADED");
+// console.log("APP FILE:", import.meta.url);
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -9,6 +12,19 @@ import restaurantRouter from './routes/restaurant.routes.js';
 
 const app = express();
 
+// app.get("/test", (req, res) => {
+//     console.log("TEST ROUTE HIT");
+//     res.send("Restaurant Service");
+// });
+
+
+// app.use(cors());
+
+app.use((req, res, next) => {
+    console.log("METHOD:", req.method);
+    console.log("URL:", req.url);
+    next();
+});
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
@@ -26,10 +42,10 @@ if(process.env.NODE_ENV === "development"){
 
 app.use(express.urlencoded({
     extended: true,
-    limit: "16kb"
+    limit: "50mb"
 }));
 
-app.use(express.json({limit: "16kb"}));
+app.use(express.json({limit: "50mb"}));
 app.use(express.static("public"));
 app.use(cookieParser());
 
@@ -38,6 +54,7 @@ app.use((req, res, next) => {
     console.log("URL:", req.url);
     next();
 });
+
 
 app.use("/api/v1/restaurant", restaurantRouter);
 

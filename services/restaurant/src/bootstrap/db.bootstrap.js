@@ -1,11 +1,14 @@
 import pool, { conectDB }
 from '../config/postgre.js';
 
+import createRestaurantstable 
+from '../models/restaurant.model.js';
+
 
 const bootstrapDB = async () => {
     try{
         await conectDB();
-        
+
         console.log("✅ PostgreSQL Connected");
     }catch(error){
 

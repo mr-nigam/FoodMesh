@@ -4,6 +4,7 @@ import ApiResponse from '../utils/apiResponse.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import getBuffer from '../config/datauri.js';
 import axios from 'axios';
+import jwt from 'jsonwebtoken';
 
 
 const addRestaurant = asyncHandler(async (req, res)=>{
@@ -23,7 +24,8 @@ const addRestaurant = asyncHandler(async (req, res)=>{
             email,
             description,
             phone,
-            address
+            address,
+            pictures_urls
         FROM restaurants
             WHERE owner_id = $1
             AND deleted_at IS NULL
@@ -41,7 +43,7 @@ const addRestaurant = asyncHandler(async (req, res)=>{
             .json(
                 new ApiResponse(
                     400,
-                    {restruant: existingRestruant.rows[0]},
+                    {restaurant: existingRestruant.rows[0]},
                     "You already have a restaurant"
                 )
             );
@@ -155,7 +157,97 @@ const addRestaurant = asyncHandler(async (req, res)=>{
 
 });
 
+const fetchMyRestaurant = asyncHandler( async(req, res)=>{
+    const user = req.user;
+
+    if(!user){
+        throw new ApiError(
+            401,
+            "Unauthorized"
+        );
+    }
+
+    const searchQuery = `
+        SELECT
+            id,
+            name,
+            email,
+            description,
+            phone,
+            address,
+            pictures_urls
+        FROM restaurants
+            WHERE owner_id = $1
+                AND deleted_at IS NULL
+                AND deactivated_at IS NULL;
+    `;
+
+    const result = await pool.query(
+        searchQuery,
+        [user.id]
+    );
+
+    if(result.rowCount === 0){
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        restaurant: null
+                    },
+                    "No restaurant found"
+                )
+            );
+    }
+
+    if(!user.restaurantId){
+        const token = jwt.sign(
+            {
+                id: user.id,
+                role: user.role,
+                restaurantId: result.rows[0].id,
+            },
+            process.env.ACCESS_TOKEN_SECRET,{
+                expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            }
+        );
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        restaurant: result.rows[0],
+                        token : token
+                    },
+                "Resturant data fecthed successfully"
+                )
+            )
+    }
+    
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    restaurant: result.rows[0]
+                },
+                "Resturant data fecthed successfully"
+            )
+        );
+
+});
+
+const updateRestaurant = asyncHandler( async(req, res)=>{});
+const fetchSingleRestaurant = asyncHandler( async(req, res)=>{});
+const fetchMultipleRestaurant = asyncHandler( async(req, res)=>{});
+
 
 export {
-    addRestaurant
+    addRestaurant,
+    fetchMyRestaurant,
+    updateRestaurant
 };

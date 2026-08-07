@@ -17,15 +17,15 @@ const Login = () => {
     const responseGoogle = async (authResult)=>{
         setLoading(true);
         try{
-            const result = await axios.post(`${authService}/auth/login`,{
+            const {data} = await axios.post(`${authService}/auth/login`,{
                 code : authResult["code"]
             });
 
-            localStorage.setItem("token",result.data.data.token);
-            toast.success(result.data.message);
+            localStorage.setItem("token",data.data.token);
+            toast.success(data.message);
             setLoading(false);
             
-            setUser(result.data.data.user);
+            setUser(data.data.user);
             setIsAuth(true);
 
             navigate("/");

@@ -6,17 +6,26 @@ import {
 } from '../middlewares/auth.middleware.js';
 
 import {
-    addRestaurant
+    addRestaurant,
+    fetchMyRestaurant
 } from '../controllers/restaurant.controller.js';
 
 
 const router = Router();
 
+router.use((req, res, next) => {
+    console.log("Restaurant Router:");
+    console.log(req.method);
+    console.log(req.originalUrl);
+    next();
+});
+
 
 router.use(authenticateUser);
 router.use(isSeller);
 
-router.post("/create",addRestaurant);
+router.post("/add",addRestaurant);
+router.get("/my",fetchMyRestaurant);
 
 
 export default router;

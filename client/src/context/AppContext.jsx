@@ -87,8 +87,8 @@ export const AppProvider = ({ children }) => {
                                 address.state_district ||
                                 "Unknown location"
                             );
-                        }
-
+                        }  
+                        setLoadingLocation(false);
                     }catch (error){
 
                         setLocation({
@@ -99,7 +99,8 @@ export const AppProvider = ({ children }) => {
 
                         console.log(error);
                         if(!ignore) setCity("Unable to load");
-                    
+                        setLoadingLocation(false);
+                        
                     } finally {
                         if (!ignore) setLoadingLocation(false);
                     }
