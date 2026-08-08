@@ -7,6 +7,7 @@ import {
 
 import uploadFile from 
 '../middlewares/multer.middleware.js';
+
 import {
     addRestaurant,
     fetchMyRestaurant
@@ -14,13 +15,6 @@ import {
 
 
 const router = Router();
-
-router.use((req, res, next) => {
-    console.log("Restaurant Router:");
-    console.log(req.method);
-    console.log(req.originalUrl);
-    next();
-});
 
 
 router.use(authenticateUser);

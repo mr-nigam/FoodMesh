@@ -12,9 +12,6 @@ const Restaurant = () => {
     const fetchMyRestaurant = async () => {
       try{
         const token = localStorage.getItem("token");
-        // console.log(token);
-        
-        console.log("before call");
 
         const { data } = await axios.get(
           `${restaurantService}/restaurant/my`,
@@ -25,9 +22,6 @@ const Restaurant = () => {
           }
         );
 
-        console.log("after call");
-        console.log(data);
-
         setRestaurant(data?.data?.restaurant ?? null);
 
         if(data?.data?.token){
@@ -35,15 +29,18 @@ const Restaurant = () => {
         }
 
       }catch(error){
-        console.error("Restaurant fetch error:", error);
+        // console.error("Restaurant fetch error:", error);
 
         if(error.response?.status === 404){
+          
           setRestaurant(null);
         
         }else if (error.response?.status === 401) {
+          
           localStorage.removeItem("token");
           window.location.href = "/login";
           return;
+
         }else {
           setRestaurant(null);
         }

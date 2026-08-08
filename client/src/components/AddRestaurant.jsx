@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BiUpload, BiMapPin } from "react-icons/bi";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { BiUpload, BiMapPin } from "react-icons/bi";
-
 import useAppData from "../context/useAppData";
 import { restaurantService } from "../config/constants";
+
 
 const AddRestaurant = () => {
     const navigate = useNavigate();
@@ -20,14 +20,14 @@ const AddRestaurant = () => {
     const { loadingLocation, location } = useAppData();
 
     const handleSubmit = async () => {
-        if (
+        if(
             !name ||
             !email ||
             !phone ||
             !description ||
             !image ||
             !location
-        ) {
+        ){
             toast.error("All fields are required.");
             return;
         }
@@ -46,7 +46,7 @@ const AddRestaurant = () => {
         );
         formData.append("file", image);
 
-        try {
+        try{
             setSubmitting(true);
 
             await axios.post(
@@ -63,17 +63,17 @@ const AddRestaurant = () => {
 
             navigate("/restaurant", { replace: true });
 
-        } catch (error) {
-            console.log("STATUS:", error.response?.status);
-            console.log("DATA:", error.response?.data);
-            console.log("ERROR:", error);
+        }catch(error){
+            // console.log("STATUS:", error.response?.status);
+            // console.log("DATA:", error.response?.data);
+            // console.log("ERROR:", error);
 
             toast.error(
                 error?.response?.data?.message ||
                 "Something went wrong."
             );
 
-        } finally {
+        }finally{
             setSubmitting(false);
         }
     };
@@ -174,5 +174,6 @@ const AddRestaurant = () => {
         </div>
     );
 };
+
 
 export default AddRestaurant;

@@ -158,15 +158,15 @@ const addRestaurant = asyncHandler(async (req, res)=>{
 
     }catch(error){
         
-        console.log("========== POSTGRES ERROR ==========");
-        console.log("message:", error.message);
-        console.log("code:", error.code);
-        console.log("detail:", error.detail);
-        console.log("constraint:", error.constraint);
-        console.log("table:", error.table);
-        console.log("column:", error.column);
-        console.log("schema:", error.schema);
-        console.log("====================================");
+        // console.log("========== POSTGRES ERROR ==========");
+        // console.log("message:", error.message);
+        // console.log("code:", error.code);
+        // console.log("detail:", error.detail);
+        // console.log("constraint:", error.constraint);
+        // console.log("table:", error.table);
+        // console.log("column:", error.column);
+        // console.log("schema:", error.schema);
+        // console.log("====================================");
 
         throw error;
     }
