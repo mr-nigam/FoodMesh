@@ -140,20 +140,36 @@ const addRestaurant = asyncHandler(async (req, res)=>{
         formattedAddress
     ];
 
-    const restaurant = await pool.query(
-        insertQuery,
-        values
-    );
-
-    return res
-        .status(201)
-        .json(
-            new ApiResponse(
-                201,
-                {restaurant :restaurant.rows[0]},
-                "Restaurant created successfully"
-            )
+    try {
+        const restaurant = await pool.query(
+            insertQuery,
+            values
         );
+
+        return res
+            .status(201)
+            .json(
+                new ApiResponse(
+                    201,
+                    { restaurant: restaurant.rows[0] },
+                    "Restaurant created successfully"
+                )
+            );
+
+    }catch(error){
+        
+        console.log("========== POSTGRES ERROR ==========");
+        console.log("message:", error.message);
+        console.log("code:", error.code);
+        console.log("detail:", error.detail);
+        console.log("constraint:", error.constraint);
+        console.log("table:", error.table);
+        console.log("column:", error.column);
+        console.log("schema:", error.schema);
+        console.log("====================================");
+
+        throw error;
+    }
 
 });
 

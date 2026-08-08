@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route,Navigate} from 'react-router-dom';
-import Home from './pages/Home';
+// import Home from './pages/Home';
 import Login from './pages/Login';
 // import {Toaster} from 'react-auth-toast';
 import { Toaster } from "react-hot-toast";
@@ -25,14 +25,14 @@ const App = () => {
                 </Route>
 
                 <Route element={<ProtectedRoute />}>
-                    <Route
+                    {/* <Route
                         path="/"
                         element={
                             user?.role === "seller"
                                 ? <Navigate to="/restaurant" replace />
                                 : <Home />
                         }
-                    />
+                    /> */}
 
                     <Route path="/set-role" element={<SetRole />} />
                     

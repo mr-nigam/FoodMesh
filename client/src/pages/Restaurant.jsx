@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { restaurantService } from "../config/constants";
+import { restaurantService } from '../config/constants.js';
 import AddRestaurant from "../components/AddRestaurant";
 
 
@@ -8,57 +8,58 @@ const Restaurant = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchMyRestaurant = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const { data } = await axios.get(`${restaurantService}/my`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log(data);
-
-      setRestaurant(data?.data?.restaurant ?? null);
-
-      // Update token if backend sends a new one
-      if(data?.data?.token) {
-        localStorage.setItem("token", data.data.token);
-      }
-
-    }catch(error){
-      console.error(error);
-
-      // If restaurant doesn't exist
-      if (error.response?.status === 404) {
-        setRestaurant(null);
-      }
-
-      // If token is invalid/expired
-      else if (error.response?.status === 401) {
-        localStorage.removeItem("token");
-        window.location.href = "/login";
-        return;
-      }
-
-      // Any other error
-      else {
-        setRestaurant(null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchMyRestaurant = async () => {
+      try{
+        const token = localStorage.getItem("token");
+        // console.log(token);
+        
+        console.log("before call");
+
+        const { data } = await axios.get(
+          `${restaurantService}/restaurant/my`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("after call");
+        console.log(data);
+
+        setRestaurant(data?.data?.restaurant ?? null);
+
+        if(data?.data?.token){
+          localStorage.setItem("token", data.data.token);
+        }
+
+      }catch(error){
+        console.error("Restaurant fetch error:", error);
+
+        if(error.response?.status === 404){
+          setRestaurant(null);
+        
+        }else if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+          return;
+        }else {
+          setRestaurant(null);
+        }
+
+      }finally{
+        setLoading(false);
+      }
+    };
+
     fetchMyRestaurant();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500 text-lg">
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-lg font-medium">
           Loading your restaurant...
         </p>
       </div>
@@ -66,29 +67,37 @@ const Restaurant = () => {
   }
 
   if (!restaurant) {
-    return <AddRestaurant onSuccess={fetchMyRestaurant} />;
+    return <AddRestaurant />;
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-3xl font-bold mb-6">Restaurant Dashboard</h1>
+    <div className="mx-auto max-w-4xl p-6">
+      <h1 className="mb-6 text-3xl font-bold">
+        Restaurant Dashboard
+      </h1>
 
       <div className="rounded-lg border bg-white p-6 shadow">
-        <h2 className="text-2xl font-semibold">{restaurant.name}</h2>
+        <h2 className="text-2xl font-semibold">
+          {restaurant.name}
+        </h2>
 
         {restaurant.description && (
-          <p className="mt-3 text-gray-600">{restaurant.description}</p>
+          <p className="mt-3 text-gray-600">
+            {restaurant.description}
+          </p>
         )}
 
         {restaurant.phone && (
           <p className="mt-2">
-            <span className="font-medium">Phone:</span> {restaurant.phone}
+            <span className="font-medium">Phone:</span>{" "}
+            {restaurant.phone}
           </p>
         )}
 
         {restaurant.address && (
           <p className="mt-2">
-            <span className="font-medium">Address:</span> {restaurant.address}
+            <span className="font-medium">Address:</span>{" "}
+            {restaurant.address}
           </p>
         )}
 

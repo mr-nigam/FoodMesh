@@ -10,6 +10,7 @@ const startServer = async()=>{
     await bootstrapDB();
 
     const PORT = process.env.PORT || 4001;
+    console.log(PORT);
     console.log("Restaurant routes loaded");
 
     // console.log(
