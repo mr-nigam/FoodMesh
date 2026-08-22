@@ -17,7 +17,7 @@ const Login = () => {
     const responseGoogle = async (authResult)=>{
         setLoading(true);
         try{
-            const {data} = await axios.post(`${authService}/auth/login`,{
+            const {data} = await axios.post(`${authService}/login`,{
                 code : authResult["code"]
             });
 

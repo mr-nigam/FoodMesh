@@ -229,6 +229,8 @@ const fetchMyRestaurant = asyncHandler( async(req, res)=>{
             }
         );
 
+        console.log(result.rows[0]);
+
         return res
             .status(200)
             .json(
@@ -243,6 +245,7 @@ const fetchMyRestaurant = asyncHandler( async(req, res)=>{
             )
     }
     
+    console.log(result.rows[0]);
     return res
         .status(200)
         .json(

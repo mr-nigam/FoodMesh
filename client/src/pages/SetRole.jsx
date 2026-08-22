@@ -21,7 +21,7 @@ const SetRole = () => {
     try{
       console.log("Sending request...");
 
-      const { data } = await axios.put(`${authService}/auth/set-role`,{role},{
+      const { data } = await axios.put(`${authService}/set-role`,{role},{
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

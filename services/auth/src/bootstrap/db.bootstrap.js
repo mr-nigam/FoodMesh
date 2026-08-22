@@ -9,7 +9,7 @@ const bootstrapDB = async () => {
     try{
         await conectDB();
         
-        // await createUsersTable();
+        await createUsersTable();
 
         console.log("✅ PostgreSQL Connected");
     }catch(error){
@@ -38,6 +38,6 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-// await bootstrapDB();
+await bootstrapDB();
 
 export default bootstrapDB;

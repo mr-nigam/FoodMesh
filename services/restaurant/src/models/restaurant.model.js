@@ -59,7 +59,7 @@ const createRestaurantTable = async () => {
 
                 is_verified BOOLEAN DEFAULT FALSE,
 
-                -- is_open BOOLEAN DEFAULT FALSE,
+                is_open BOOLEAN DEFAULT FALSE,
 
                 opening_time TIME NOT NULL DEFAULT '09:00:00',
 

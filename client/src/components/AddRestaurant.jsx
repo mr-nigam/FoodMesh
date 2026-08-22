@@ -50,7 +50,7 @@ const AddRestaurant = () => {
             setSubmitting(true);
 
             await axios.post(
-                `${restaurantService}/restaurant/add`,
+                `${restaurantService}/add`,
                 formData,
                 {
                     headers: {

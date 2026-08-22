@@ -28,7 +28,7 @@ export const AppProvider = ({ children }) => {
             }
 
             try{
-                const { data } = await axios.get(`${authService}/auth/me`,
+                const { data } = await axios.get(`${authService}/me`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
