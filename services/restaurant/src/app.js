@@ -46,7 +46,7 @@ app.use("/api/v1/restaurant", restaurantRouter);
 
 
 app.use((req,res,next)=>{
-    next(new ApiError(404, "Route nhi mila"));
+    next(new ApiError(404, "Route to nhi mila"));
 });
 
 app.use(errorHandler);

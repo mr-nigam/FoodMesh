@@ -43,7 +43,9 @@ const addRestaurant = asyncHandler(async (req, res)=>{
             .json(
                 new ApiResponse(
                     400,
-                    {restaurant: existingRestruant.rows[0]},
+                    { 
+                        restaurant: existingRestruant.rows[0]
+                    },
                     "You already have a restaurant"
                 )
             );
@@ -151,7 +153,9 @@ const addRestaurant = asyncHandler(async (req, res)=>{
             .json(
                 new ApiResponse(
                     201,
-                    { restaurant: restaurant.rows[0] },
+                    { 
+                        restaurant: restaurant.rows[0] 
+                    },
                     "Restaurant created successfully"
                 )
             );
@@ -173,7 +177,186 @@ const addRestaurant = asyncHandler(async (req, res)=>{
 
 });
 
-const fetchMyRestaurant = asyncHandler( async(req, res)=>{
+const fetchMyRestaurant = asyncHandler(async (req, res) => {
+    const user = req.user;
+
+    if(!user){
+        throw new ApiError(
+            401, 
+            "Unauthorized"
+        );
+    }
+
+    const query = `
+        SELECT
+            id,
+            name,
+            email,
+            description,
+            phone,
+            address,
+            pictures_urls,
+            is_open,
+            created_at
+        FROM restaurants
+        WHERE owner_id = $1
+            AND deleted_at IS NULL
+            AND deactivated_at IS NULL
+        LIMIT 1;
+    `;
+
+    const { rows } = await pool.query(
+        query,
+        [user.id]
+    );
+
+    const restaurant = rows[0] || null;
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    restaurant,
+                },
+                restaurant
+                    ? "Restaurant data fetched successfully"
+                    : "No restaurant found"
+            )
+        );
+});
+
+const updateRestaurantStatus = asyncHandler( async(req, res)=>{
+    const user = req.user;
+    
+    if(!user){
+        throw new ApiError(
+            403, 
+            "Please Login"
+        );
+    }
+    
+    const {status} = req.body;
+
+    // if(typeof status !== Boolean){
+    //     throw new ApiError(
+    //         400, 
+    //         "Status must be Boolean"
+    //     );
+    // }
+
+    const updateQuery = `
+        UPDATE restaurants
+        SET 
+            is_open = $1
+        WHERE owner_id = $2
+            AND deleted_at IS NULL
+            AND deactivated_at IS NULL
+        RETURNING
+            id,
+            name,
+            email,
+            description,
+            phone,
+            address,
+            pictures_urls,
+            is_open,
+            created_at;
+    `;
+    
+    const {rows} = await pool.query(
+        updateQuery,
+        [status, user.id]
+    );
+
+    const restaurant = rows[0] || null;
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    restaurant,
+                },
+                restaurant
+                    ? "Restaurant status updated successfully"
+                    : "No restaurant found"
+            )
+        );
+        
+
+});
+
+const updateRestaurantDetails = asyncHandler(async (req,res)=>{
+    const user = req.user;
+    
+    if(!user){
+        throw new ApiError(
+            403, 
+            "Please Login"
+        );
+    }
+
+    const restaurantName = req.body?.name?.trim() || "";
+    const description = req.body?.description?.trim() || "";
+
+    if( !restaurantName && !description){
+        throw new ApiError(
+            400, 
+            "Please enter name or description"
+        );
+    }
+
+    const updateQuery = `
+        UPDATE restaurants
+        SET 
+            name = $1,
+            description = $2
+        WHERE owner_id = $3
+            AND deleted_at IS NULL
+            AND deactivated_at IS NULL
+        RETURNING
+            id,
+            name,
+            email,
+            description,
+            phone,
+            address,
+            pictures_urls,
+            is_open,
+            created_at;
+    `;
+
+    const {rows} = await pool.query(
+        updateQuery,
+        [restaurantName, description, user.id]
+    );
+
+    if(rows.count === 0){
+        throw new ApiError(
+            404,
+            "Restaurnt not found"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    restauran: rows[0]
+                },
+                "Restaurant data updated successfully"
+            )
+        );
+});
+
+const fetchSingleRestaurant = asyncHandler( async(req, res)=>{});
+const fetchMultipleRestaurant = asyncHandler( async(req, res)=>{});
+const fetchMyRestaurant2 = asyncHandler( async(req, res)=>{
     const user = req.user;
 
     if(!user){
@@ -191,7 +374,8 @@ const fetchMyRestaurant = asyncHandler( async(req, res)=>{
             description,
             phone,
             address,
-            pictures_urls
+            pictures_urls,
+            created_at
         FROM restaurants
             WHERE owner_id = $1
                 AND deleted_at IS NULL
@@ -229,7 +413,7 @@ const fetchMyRestaurant = asyncHandler( async(req, res)=>{
             }
         );
 
-        console.log(result.rows[0]);
+        //console.log(result.rows[0]);
 
         return res
             .status(200)
@@ -260,13 +444,10 @@ const fetchMyRestaurant = asyncHandler( async(req, res)=>{
 
 });
 
-const updateRestaurant = asyncHandler( async(req, res)=>{});
-const fetchSingleRestaurant = asyncHandler( async(req, res)=>{});
-const fetchMultipleRestaurant = asyncHandler( async(req, res)=>{});
-
 
 export {
     addRestaurant,
     fetchMyRestaurant,
-    updateRestaurant
+    updateRestaurantStatus,
+    updateRestaurantDetails
 };

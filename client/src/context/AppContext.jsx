@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { authService } from '../config/constants';
 import axios from 'axios';
 import { AppContext } from './context';
-
+import { Toaster } from "react-hot-toast";
 
 export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -138,6 +138,7 @@ export const AppProvider = ({ children }) => {
             }}
         >
             {children}
+            <Toaster />
         </AppContext.Provider>
     );
 };

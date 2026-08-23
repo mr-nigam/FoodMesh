@@ -96,7 +96,7 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
         try {
             setLoading(true);
 
-            const { data } = await axios.put(
+            const { data } = await axios.patch(
                 `${restaurantService}/edit`,
                 {
                     name: trimmedName,
@@ -279,13 +279,17 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                             <BiMapPin className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
 
                             <span>
+                                {restaurant?.address || "Location is not available"}
+                            </span>
+
+                            {/* <span>
                                 {restaurant?.autoLocation?.formattedAddress ||
                                     restaurant?.auto_location?.formatted_address ||
                                     restaurant?.formattedAddress ||
                                     restaurant?.formatted_address ||
                                     restaurant?.address ||
                                     "Location is not available"}
-                            </span>
+                            </span> */}
                         </div>
                     </div>
 
