@@ -14,7 +14,7 @@ import {
     fetchAllItems,
     updateMenuItem,
     deleteMenuItem,
-    toggleItemAvailbility
+    toggleItemAvailability
 } from '../controllers/menuItems.controller.js';
 
 
@@ -47,7 +47,7 @@ router.put(
 
 router.patch(
     "/:itemId/availability",
-    toggleItemAvailbility
+    toggleItemAvailability
 );
 
 router.delete(

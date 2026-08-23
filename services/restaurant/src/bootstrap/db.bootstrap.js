@@ -8,7 +8,6 @@ from '../models/menuItems.model.js';
 const bootstrapDB = async () => {
     try{
         await conectDB();
-        //await createMenuItemsTable();
         
         console.log("✅ PostgreSQL Connected");
     }catch(error){
@@ -38,5 +37,4 @@ process.on('SIGINT', async () => {
 });
 
 
-// await bootstrapDB();
 export default bootstrapDB;

@@ -112,7 +112,6 @@ const requireRestaurant = asyncHandler(async (req, _, next) => {
             name,
             description,
             pictures_urls,
-            status,
             is_open,
             address
         FROM restaurants

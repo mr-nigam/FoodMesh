@@ -324,7 +324,7 @@ const deleteMenuItem = asyncHandler(async (req,res) => {
 
 });
 
-const toggleItemAvailbility = asyncHandler(async(req,res)=>{
+const toggleItemAvailability = asyncHandler(async(req,res)=>{
     const restaurant = req.restaurant;
     const { itemId } = req.params;
 
@@ -387,5 +387,5 @@ export {
     fetchAllItems,
     updateMenuItem,
     deleteMenuItem,
-    toggleItemAvailbility
+    toggleItemAvailability
 };

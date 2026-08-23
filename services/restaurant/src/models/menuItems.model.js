@@ -12,7 +12,7 @@ const createMenuItemsTable = async()=>{
                     DEFAULT gen_random_uuid(),
                 
                 restaurant_id UUID NOT NULL
-                    REFERENCES restaurant(id) ON DELETE CASCADE,
+                    REFERENCES restaurants(id) ON DELETE CASCADE,
                 
                 name VARCHAR(250) NOT NULL,
 
@@ -22,7 +22,6 @@ const createMenuItemsTable = async()=>{
                 
                 pictures_urls TEXT[] DEFAULT '{}',
 
-                // price in paise
                 price INTEGER NOT NULL CHECK (price >= 0),
 
                 is_available BOOLEAN DEFAULT FALSE,
