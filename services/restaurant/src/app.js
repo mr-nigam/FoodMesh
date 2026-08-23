@@ -4,8 +4,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import ApiError from './utils/apiError.js';
-import restaurantRouter from './routes/restaurant.routes.js';
 import errorHandler from "./middlewares/errorHandler.js";
+import restaurantRouter from './routes/restaurant.routes.js';
+import menuItemsRouter from './routes/menuItem.routes.js';
 
 
 const app = express();
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
 
 
 app.use("/api/v1/restaurant", restaurantRouter);
+app.use("/api/v1/restaurant/menu", menuItemsRouter);
 
 
 app.use((req,res,next)=>{

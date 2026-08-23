@@ -52,19 +52,19 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
         LIMIT 1;
     `;
 
-    const result = await pool.query(
+    const {rows} = await pool.query(
         query,
         [decodedToken?.id]
     );
     
-    if(result.rowCount === 0){
+    if(rows.length === 0){
         throw new ApiError(
             401,
             "User not found or token invalid"
         );
     }
 
-    const user =  result.rows[0];
+    const user =  rows[0];
 
     // Invalidate old tokens after password change
     if(user.password_changed_at){
@@ -104,8 +104,44 @@ const isSeller = asyncHandler(async(req,_,next)=>{
     next();
 });
 
+const requireRestaurant = asyncHandler(async (req, _, next) => {
+    const query = `
+        SELECT
+            id,
+            owner_id,
+            name,
+            description,
+            pictures_urls,
+            status,
+            is_open,
+            address
+        FROM restaurants
+        WHERE owner_id = $1
+            AND deleted_at IS NULL
+            AND deactivated_at IS NULL
+        LIMIT 1;
+    `;
+
+    const { rows } = await pool.query(
+        query,
+        [req.user.id]
+    );
+
+    if (rows.length === 0) {
+        throw new ApiError(
+            404,
+            "Restaurant not found"
+        );
+    }
+
+    req.restaurant = rows[0];
+
+    next();
+});
+
 
 export {
     authenticateUser,
-    isSeller
+    isSeller,
+    requireRestaurant
 };

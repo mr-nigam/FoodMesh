@@ -97,7 +97,9 @@ const createRestaurantTable = async () => {
         await createUpdatedAtTrigger("restaurants");
 
         console.log("✅ Restaurants table created successfully.");
-    } catch (err) {
+    
+    }catch(err){
+        
         console.error("❌ Restaurant table creation failed");
         console.error(err);
     }

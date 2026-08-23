@@ -2,7 +2,8 @@ import { Router } from 'express';
 
 import {
     authenticateUser,
-    isSeller
+    isSeller,
+    requireRestaurant
 } from '../middlewares/auth.middleware.js';
 
 import uploadFile from 

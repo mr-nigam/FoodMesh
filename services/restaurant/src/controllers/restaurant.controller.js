@@ -87,14 +87,13 @@ const addRestaurant = asyncHandler(async (req, res)=>{
     }
 
     const uploadResponse = await axios.post(
-        `${process.env.UTILS_SERVICE}/api/v1/utils/upload`,
+        `${process.env.UTILS_SERVICE}/upload`,
         { buffer: fileBuffer.content}
     );
 
     const pictureUrl = uploadResponse.data?.url || uploadResponse.data?.data?.url;
-
-    
-    if (!pictureUrl) {
+ 
+    if(!pictureUrl){
         throw new ApiError(500, "Failed to upload image");
     }
     
