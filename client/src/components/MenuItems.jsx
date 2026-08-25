@@ -3,7 +3,7 @@ import axios from "axios";
 import { restaurantService } from "../config/constants.js";
 import toast, { LoaderIcon } from "react-hot-toast";
 import { BiTrash } from "react-icons/bi";
-import { BsCart, BsEye } from "react-icons/bs";
+import { BsCartPlus, BsEye } from "react-icons/bs";
 import { FiEyeOff } from "react-icons/fi";
 
 
@@ -266,7 +266,7 @@ const MenuItems = ({
                   {isLoading ? (
                     <LoaderIcon size={18} className="animate-spin" />
                   ) : (
-                    <BsCart size={18} />
+                    <BsCartPlus size={18} />
                   )}
                 </button>
               )}

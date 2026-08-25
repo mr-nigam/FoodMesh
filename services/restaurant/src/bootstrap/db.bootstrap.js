@@ -1,14 +1,11 @@
 import pool, { conectDB }
 from '../config/postgre.js';
 
-import createMenuItemsTable 
-from '../models/menuItems.model.js';
-
 
 const bootstrapDB = async () => {
     try{
         await conectDB();
-        
+
         console.log("✅ PostgreSQL Connected");
     }catch(error){
 
@@ -19,13 +16,11 @@ const bootstrapDB = async () => {
     }
 };
 
-
 pool.on('error', (error) => {
 
     console.error('❌ PostgreSQL Pool Error');
     console.error(error);
 });
-
 
 process.on('SIGINT', async () => {
 

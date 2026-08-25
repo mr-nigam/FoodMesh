@@ -2,11 +2,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import morgan from 'morgan';
 import ApiError from './utils/apiError.js';
 import errorHandler from "./middlewares/errorHandler.js";
 import restaurantRouter from './routes/restaurant.routes.js';
 import menuItemsRouter from './routes/menuItem.routes.js';
+import cartRouter from './routes/cart.routes.js';
+// import morgan from 'morgan';
 
 
 const app = express();
@@ -37,8 +38,8 @@ app.use(cookieParser());
 
 
 app.use("/api/v1/restaurant/menu", menuItemsRouter);
+app.use("/api/v1/restaurant/cart", cartRouter);
 app.use("/api/v1/restaurant", restaurantRouter);
-
 
 
 app.use((req,res,next)=>{

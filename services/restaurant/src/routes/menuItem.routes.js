@@ -14,13 +14,14 @@ import {
     updateMenuItem,
     deleteMenuItem,
     toggleItemAvailability
-} from "../controllers/menuItems.controller.js";
+} from "../controllers/menuItem.controller.js";
 
 const router = Router();
 
 /*
  * Public route
  */
+
 router.get(
     "/all/:restaurantId",
     fetchAllItems
