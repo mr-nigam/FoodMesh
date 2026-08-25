@@ -4,18 +4,10 @@ import ApiResponse from '../utils/apiResponse.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import getBuffer from '../config/datauri.js';
 import axios from 'axios';
-import jwt from 'jsonwebtoken';
 
 
 const addRestaurant = asyncHandler(async (req, res)=>{
     const user = req.user;
-    
-    if(!user){
-        throw new ApiError(
-            401,
-            "Unauthorized"
-        );
-    }
 
     const checkQuery  = `
         SELECT
@@ -179,12 +171,6 @@ const addRestaurant = asyncHandler(async (req, res)=>{
 const fetchMyRestaurant = asyncHandler(async (req, res) => {
     const user = req.user;
 
-    if(!user){
-        throw new ApiError(
-            401, 
-            "Unauthorized"
-        );
-    }
 
     const query = `
         SELECT
@@ -229,21 +215,7 @@ const fetchMyRestaurant = asyncHandler(async (req, res) => {
 const updateRestaurantStatus = asyncHandler( async(req, res)=>{
     const user = req.user;
     
-    if(!user){
-        throw new ApiError(
-            403, 
-            "Please Login"
-        );
-    }
-    
     const {status} = req.body;
-
-    // if(typeof status !== Boolean){
-    //     throw new ApiError(
-    //         400, 
-    //         "Status must be Boolean"
-    //     );
-    // }
 
     const updateQuery = `
         UPDATE restaurants
@@ -290,13 +262,6 @@ const updateRestaurantStatus = asyncHandler( async(req, res)=>{
 
 const updateRestaurantDetails = asyncHandler(async (req,res)=>{
     const user = req.user;
-    
-    if(!user){
-        throw new ApiError(
-            403, 
-            "Please Login"
-        );
-    }
 
     const restaurantName = req.body?.name?.trim() || "";
     const description = req.body?.description?.trim() || "";
@@ -353,15 +318,54 @@ const updateRestaurantDetails = asyncHandler(async (req,res)=>{
         );
 });
 
-const fetchSingleRestaurant = asyncHandler( async(req, res)=>{});
-const fetchMultipleRestaurant = asyncHandler( async(req, res)=>{});
-const fetchMyRestaurant2 = asyncHandler( async(req, res)=>{
-    const user = req.user;
+const getNearbyRestaurants = asyncHandler(async (req, res) => {
+    const {
+        latitude,
+        longitude,
+        radius = 5000,
+        search = ""
+    } = req.query;
 
-    if(!user){
+    if(latitude === undefined || longitude === undefined){
         throw new ApiError(
-            401,
-            "Unauthorized"
+            400,
+            "latitude and longitude are required for searching nearby restaurants"
+        );
+    }
+
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    const searchRadius = Number(radius);
+
+    if(
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        !Number.isFinite(searchRadius)
+    ){
+        throw new ApiError(
+            400,
+            "latitude, longitude and radius must be valid numbers"
+        );
+    }
+
+    if(lat < -90 || lat > 90){
+        throw new ApiError(
+            400,
+            "Invalid latitude"
+        );
+    }
+
+    if(lon < -180 || lon > 180){
+        throw new ApiError(
+            400,
+            "Invalid longitude"
+        );
+    }
+
+    if(searchRadius <= 0){
+        throw new ApiError(
+            400,
+            "radius must be greater than 0"
         );
     }
 
@@ -369,78 +373,104 @@ const fetchMyRestaurant2 = asyncHandler( async(req, res)=>{
         SELECT
             id,
             name,
-            email,
             description,
-            phone,
-            address,
             pictures_urls,
-            created_at
+            address,
+            is_open,
+            type,
+            phone,
+            ST_Distance(
+                location,
+                ST_SetSRID(
+                    ST_MakePoint($1, $2),
+                    4326
+                )::geography
+            ) AS distance
+
         FROM restaurants
-            WHERE owner_id = $1
-                AND deleted_at IS NULL
-                AND deactivated_at IS NULL;
+
+        WHERE
+
+            ST_DWithin(
+                location,
+                ST_SetSRID(
+                    ST_MakePoint($1, $2),
+                    4326
+                )::geography,
+                $3
+            )
+
+            AND (
+                $4 = ''
+                OR name ILIKE '%' || $4 || '%'
+            )
+
+        ORDER BY distance ASC;
     `;
 
-    const result = await pool.query(
-        searchQuery,
-        [user.id]
-    );
+    const { rows } = await pool.query(searchQuery, [
+        lon,
+        lat,
+        searchRadius,
+        search.trim()
+    ]);
 
-    if(result.rowCount === 0){
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(
-                    200,
-                    {
-                        restaurant: null
-                    },
-                    "No restaurant found"
-                )
-            );
-    }
-
-    if(!user.restaurantId){
-        const token = jwt.sign(
-            {
-                id: user.id,
-                role: user.role,
-                restaurantId: result.rows[0].id,
-            },
-            process.env.ACCESS_TOKEN_SECRET,{
-                expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-            }
-        );
-
-        //console.log(result.rows[0]);
-
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(
-                    200,
-                    {
-                        restaurant: result.rows[0],
-                        token : token
-                    },
-                "Resturant data fecthed successfully"
-                )
-            )
-    }
-    
-    console.log(result.rows[0]);
     return res
         .status(200)
         .json(
             new ApiResponse(
                 200,
-                {
-                    restaurant: result.rows[0]
-                },
-                "Resturant data fecthed successfully"
+                {restaurants: rows},
+                "Nearby restaurants fetched successfully"
             )
         );
+});
 
+const fetchSingleRestaurant = asyncHandler(async (req, res) => {
+    const { restaurantId } = req.params;
+
+    if(!restaurantId){
+        throw new ApiError(
+            400,
+            "Restaurant id is required"
+        );
+    }
+
+    const searchQuery = `
+        SELECT
+            id,
+            name,
+            description,
+            pictures_urls,
+            address,
+            location,
+            is_open,
+            created_at
+        FROM restaurants
+        WHERE id = $1;
+    `;
+
+    const { rows } = await pool.query(
+        searchQuery,
+        [restaurantId]
+    );
+
+    if(rows.length === 0){
+        throw new ApiError(
+            404,
+            "Restaurant not found"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {restaurant: rows[0]},
+                "Restaurant fetched successfully"
+            )
+        );
 });
 
 
@@ -448,5 +478,7 @@ export {
     addRestaurant,
     fetchMyRestaurant,
     updateRestaurantStatus,
-    updateRestaurantDetails
+    updateRestaurantDetails,
+    getNearbyRestaurants,
+    fetchSingleRestaurant
 };

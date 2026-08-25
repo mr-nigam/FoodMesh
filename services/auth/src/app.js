@@ -21,9 +21,9 @@ app.use((req, res, next) => {
 });
 
 // dev logger
-if(process.env.NODE_ENV === "development"){
-    app.use(morgan("dev"));
-}
+// if(process.env.NODE_ENV === "development"){
+//     app.use(morgan("dev"));
+// }
 
 app.use(express.urlencoded({
     extended: true,
@@ -34,11 +34,6 @@ app.use(express.json({limit: "50mb"}));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-app.use((req, res, next) => {
-    console.log("METHOD:", req.method);
-    console.log("URL:", req.url);
-    next();
-});
 
 app.use("/api/v1/auth",authRouter);
 

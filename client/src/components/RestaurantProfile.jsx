@@ -2,8 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { BiEdit, BiMapPin, BiSave } from "react-icons/bi";
-
 import { restaurantService } from "../config/constants";
+
 
 const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
     const [editMode, setEditMode] = useState(false);
@@ -183,7 +183,7 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                         restaurant.name ||
                         "Restaurant"
                     }
-                    className="h-48 w-full object-cover"
+                    className="h-60 w-full object-cover"
                 />
             )}
 
@@ -364,5 +364,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
         </div>
     );
 };
+
 
 export default RestaurantProfile;

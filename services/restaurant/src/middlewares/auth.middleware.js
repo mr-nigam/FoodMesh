@@ -108,12 +108,15 @@ const requireRestaurant = asyncHandler(async (req, _, next) => {
     const query = `
         SELECT
             id,
-            owner_id,
             name,
+            email,
             description,
+            phone,
+            address,
             pictures_urls,
             is_open,
-            address
+            location,
+            created_at
         FROM restaurants
         WHERE owner_id = $1
             AND deleted_at IS NULL

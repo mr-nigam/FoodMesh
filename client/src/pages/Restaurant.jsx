@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { restaurantService } from "../config/constants.js";
+import useAppData from "../context/useAppData";
 import AddRestaurant from "../components/AddRestaurant";
-import RestaurantProfile from "../components/restaurantProfile";
+import RestaurantProfile from "../components/RestaurantProfile.jsx";
 import MenuItems from "../components/MenuItems";
 import AddMenuItem from "../components/AddMenuItem.jsx";
 import toast from "react-hot-toast";
@@ -10,6 +12,8 @@ import { BsCart } from "react-icons/bs";
 
 
 const Restaurant = () => {
+  const navigate = useNavigate();
+  const { setIsAuth, setUser } = useAppData();
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("menu");
@@ -46,7 +50,9 @@ const Restaurant = () => {
           setRestaurant(null);
         } else if (error.response?.status === 401) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          setIsAuth(false);
+          setUser(null);
+          navigate("/login", { replace: true });
           return;
         } else {
           toast.error(

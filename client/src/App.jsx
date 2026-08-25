@@ -8,6 +8,7 @@ import SetRole from './pages/SetRole';
 import NavBar from './components/navBar';
 import Account from './pages/Account';
 import useAppData from './context/useAppData';
+import RestaurantPages from './pages/RestaurantPages';
 import Restaurant from './pages/Restaurant';
 
 
@@ -19,8 +20,11 @@ const App = () => {
             <Toaster />
             <NavBar />
             <Routes>
+               
+                {/* <Route path="/restaurant/:id" element={<RestaurantPages />}/> */}
+
                 <Route element={<PublicRoute />}>
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/login" element={<Login />} />    
                 </Route>
 
                 <Route element={<ProtectedRoute />}>
@@ -36,6 +40,8 @@ const App = () => {
                     <Route path="/set-role" element={<SetRole />} />
                     
                     <Route path="/account" element={<Account />} />
+                    
+                    <Route path="/restaurant/:restaurantId" element={<RestaurantPages />}/>
 
                     <Route
                         path="/restaurant"

@@ -1,13 +1,12 @@
 import { Router } from "express";
 
-import uploadFile from 
-'../middlewares/multer.middleware.js';
+import uploadFile from "../middlewares/multer.middleware.js";
 
 import {
     authenticateUser,
     isSeller,
     requireRestaurant
-} from '../middlewares/auth.middleware.js';
+} from "../middlewares/auth.middleware.js";
 
 import {
     addMenuItem,
@@ -15,24 +14,25 @@ import {
     updateMenuItem,
     deleteMenuItem,
     toggleItemAvailability
-} from '../controllers/menuItems.controller.js';
-
+} from "../controllers/menuItems.controller.js";
 
 const router = Router();
 
-
-// public
+/*
+ * Public route
+ */
 router.get(
     "/all/:restaurantId",
     fetchAllItems
 );
 
+/*
+ * Seller protected routes
+ */
 
-// Seller protected routes
 router.use(authenticateUser);
 router.use(isSeller);
 router.use(requireRestaurant);
-
 
 router.post(
     "/add-item",

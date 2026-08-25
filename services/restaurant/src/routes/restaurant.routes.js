@@ -13,18 +13,35 @@ import {
     addRestaurant,
     fetchMyRestaurant,
     updateRestaurantStatus,
-    updateRestaurantDetails
+    updateRestaurantDetails,
+    getNearbyRestaurants,
+    fetchSingleRestaurant
 } from '../controllers/restaurant.controller.js';
 
 
 const router = Router();
 
+// Public routes
+router.get("/all-nearby", getNearbyRestaurants);
 
+
+// Authentication boundary
 router.use(authenticateUser);
+
+
+router.get("/my", isSeller, requireRestaurant, fetchMyRestaurant);
+router.get("/:restaurantId", fetchSingleRestaurant);
+
+
 router.use(isSeller);
 
+
 router.post("/add", uploadFile, addRestaurant);
-router.get("/my", fetchMyRestaurant);
+
+
+router.use(requireRestaurant);
+
+
 router.patch("/status", updateRestaurantStatus);
 router.patch("/edit", updateRestaurantDetails);
 
