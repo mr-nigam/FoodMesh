@@ -5,10 +5,12 @@ import toast, { LoaderIcon } from "react-hot-toast";
 import { BiTrash } from "react-icons/bi";
 import { BsCartPlus, BsEye } from "react-icons/bs";
 import { FiEyeOff } from "react-icons/fi";
+import useAppData from "../context/useAppData.js";
 
 
 const MenuItems = ({
   items = [],
+  restaurantId,
   onItemDeleted,
   onAvailabilityChanged,
   onAddToCart,
@@ -18,54 +20,11 @@ const MenuItems = ({
   const [loadingItemId, setLoadingItemId] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
 
+  const { refreshCart, fetchCart } = useAppData();
+
   const getAuthHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
-
-  const handleDelete = async (itemId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this item?"
-    );
-
-    if(!confirmed) return;
-
-    try {
-      setLoadingItemId(itemId);
-      setLoadingAction("delete");
-
-      const { data } = await axios.delete(
-        `${restaurantService}/menu/${itemId}`,
-        {
-          headers: getAuthHeaders(),
-        }
-      );
-
-      toast.success(
-        data?.message ||
-          data?.data?.message ||
-          "Item deleted successfully"
-      );
-
-      if(onItemDeleted){
-        onItemDeleted();
-      }
-
-    } catch (error) {
-      console.error("Failed to delete menu item:", error);
-
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to delete item";
-
-      toast.error(message);
-
-    }finally{
-
-      setLoadingItemId(null);
-      setLoadingAction(null);
-    }
-  };
 
   const toggleItemAvailability = async (itemId) => {
     try{
@@ -109,18 +68,111 @@ const MenuItems = ({
     }
   };
 
-  const handleAddToCart = (item) => {
+  const handleAddToCart = async (item) => {
     if(!item.is_available){
       toast.error("This item is currently unavailable");
       return;
     }
 
-    if(onAddToCart){
-      onAddToCart(item);
-      return;
+    const itemId = item.id;
+    const targetRestaurantId = item.restaurant_id || item.restaurantId || restaurantId;
+    const price = item.price;
+    
+    setLoadingItemId(item.id);
+
+    try{
+
+      const {data} = await axios.post(
+        `${restaurantService}/cart/add`,
+        {
+          restaurantId: targetRestaurantId, itemId, price
+        },
+        {
+          headers: {
+            Authorization:`Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+      
+      toast.success(
+        data?.message ??
+        data?.data?.message ??
+        `${item.name} added to cart`
+      );
+
+      const cartRefresher = refreshCart || fetchCart;
+      if (cartRefresher) {
+        await cartRefresher();
+      }
+
+      if (onAddToCart) {
+        onAddToCart(item);
+      }
+      
+    }catch(error){
+      
+      console.error(
+        "Error while doing add to cart",
+        error
+      );
+
+      toast.error(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add item to cart"
+      );
+
+    }finally{
+
+      setLoadingItemId(null);
+    }
+  };
+
+  const handleDelete = async (itemId) => {
+    const confirmed = window.confirm(
+        "Are you sure you want to delete this item?"
+    );
+
+    if(!confirmed){
+        return;
     }
 
-    toast.success(`${item.name} added to cart`);
+    try {
+        setLoadingItemId(itemId);
+        setLoadingAction("delete");
+
+        const { data } = await axios.delete(
+            `${restaurantService}/menu/${itemId}`,
+            {
+                headers: getAuthHeaders(),
+            }
+        );
+
+        toast.success(
+            data?.message ||
+            data?.data?.message ||
+            "Item deleted successfully"
+        );
+
+        onItemDeleted?.();
+
+    }catch(error){
+        console.error(
+            "Failed to delete menu item:",
+            error
+        );
+
+        const message =
+            error?.response?.data?.message ||
+            error?.message ||
+            "Failed to delete item";
+
+        toast.error(message);
+
+    }finally{
+        setLoadingItemId(null);
+        setLoadingAction(null);
+    }
   };
 
   const formatPrice = (price) => {
@@ -133,7 +185,7 @@ const MenuItems = ({
     }).format(amount);
   };
 
-  if (!items.length) {
+  if(!items.length){
     return (
       <div className="flex min-h-40 items-center justify-center rounded-lg bg-white p-6 text-gray-500 shadow-sm">
         No menu items found.
@@ -277,5 +329,6 @@ const MenuItems = ({
     </div>
   );
 };
+
 
 export default MenuItems;

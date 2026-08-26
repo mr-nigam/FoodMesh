@@ -190,9 +190,7 @@ const RestaurantPages = () => {
                 <MenuItems 
                     isSeller={false} 
                     items={menuItems} 
-                    onItemDeleted={()=>{}} 
-                    onAvailabilityChanged={()=>{}} 
-                    onAddToCart={()=>{}}
+                    restaurantId={restaurantId}
                 />
             </div>
         </>

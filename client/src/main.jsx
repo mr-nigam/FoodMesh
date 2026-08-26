@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { AppProvider } from './context/AppContext.jsx';
+import AppProvider from './context/AppContext.jsx';
   
 
 createRoot(document.getElementById("root")).render(
@@ -13,6 +13,7 @@ createRoot(document.getElementById("root")).render(
         </AppProvider>
     </GoogleOAuthProvider>
 );
+
 
 // createRoot(document.getElementById('root')).render(
 //   <StrictMode>

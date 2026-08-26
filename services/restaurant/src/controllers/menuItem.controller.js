@@ -101,6 +101,7 @@ const fetchAllItems = asyncHandler(async (req,res) => {
     const searchQuery = `
         SELECT
             id,
+            restaurant_id,
             name,
             description,
             pictures_urls,

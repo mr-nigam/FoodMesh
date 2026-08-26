@@ -5,17 +5,19 @@ import asyncHandler from '../middlewares/asyncHandler.js';
 
 
 const addToCart = asyncHandler(async (req, res) => {
+
+    const restaurantId = req.body?.restaurantId?.trim() || "";
+    const itemId = req.body?.itemId?.trim() || "";
+
     const {
-        restaurantId,
-        itemId,
         price
     } = req.body;
 
-    const trimmedRestaurantId = restaurantId?.trim() || "";
-    const trimmedItemId = itemId?.trim() || "";
-
-    if (!trimmedRestaurantId || !trimmedItemId) {
-        throw new ApiError(400, "Invalid restaurant and item id");
+     if (!restaurantId || !itemId) {
+        throw new ApiError(
+            400,
+            "Invalid restaurant and item id"
+        );
     }
 
     const parsedPrice = Number(price);
@@ -38,22 +40,22 @@ const addToCart = asyncHandler(async (req, res) => {
         ),
         upsert AS (
             INSERT INTO carts (user_id, restaurant_id, item_id, price, quantity)
-            SELECT $1, $2, $3, %4, 1
+            SELECT $1, $2, $3, $4, 1
             WHERE NOT EXISTS (
                 SELECT 1 FROM cart_check WHERE restaurant_id != $2
             )
             ON CONFLICT (user_id, item_id) 
             DO UPDATE SET quantity = carts.quantity + 1
-            RETURNING *, (SELECT restaurant_id FROM cart_check) AS existing_restaurant_id
+            RETURNING id, user_id, restaurant_id, item_id, quantity, price, created_at, updated_at, (SELECT restaurant_id FROM cart_check) AS existing_restaurant_id
         )
-        SELECT * FROM upsert
+        SELECT id, user_id, restaurant_id, item_id, quantity, price, created_at, updated_at, existing_restaurant_id FROM upsert
         UNION ALL
-        SELECT NULL AS id, $1 AS user_id, $2 AS restaurant_id, $3 AS item_id, $4 AS price, NULL AS quantity, restaurant_id AS existing_restaurant_id
+        SELECT NULL::uuid AS id, $1::uuid AS user_id, $2::uuid AS restaurant_id, $3::uuid AS item_id, NULL::integer AS quantity, $4::integer AS price, NULL::timestamptz AS created_at, NULL::timestamptz AS updated_at, restaurant_id AS existing_restaurant_id
         FROM cart_check
         WHERE restaurant_id != $2 AND NOT EXISTS (SELECT 1 FROM upsert);
     `;
 
-    const { rows } = await pool.query(query, [userId, trimmedRestaurantId, trimmedItemId, parsedPrice]);
+    const { rows } = await pool.query(query, [userId, restaurantId, itemId, parsedPrice]);
 
     if(rows.length === 0){
         // Fallback for edge cases
@@ -94,7 +96,7 @@ const addToCart = asyncHandler(async (req, res) => {
         );
 });
 
-const fecthMyCart = asyncHandler(async (req,rq) => {
+const fetchMyCart = asyncHandler(async (req,res) => {
     const userId = req.user.id;
 
     const searchQuery = `
@@ -153,18 +155,32 @@ const fecthMyCart = asyncHandler(async (req,rq) => {
         [userId]
     );
 
+    const allTotalQty = rows.reduce(
+        (sum, restaurant) => sum + Number(restaurant.total_qty || 0),
+        0
+    );
+
+    const allTotalValue = rows.reduce(
+        (sum, restaurant) => sum + Number(restaurant.total_value || 0),
+        0
+    );
+
+    const restaurants = rows.map((row) => ({
+        restaurant: row.restaurant,
+        items: row.items,
+        totalQty: row.total_qty,
+        totalValue: Number(row.total_value),
+    }));
+
     return res
         .status(200)
         .json(
             new ApiResponse(
                 200,
                 {
-                    restaurants: rows.map((row) => ({
-                        restaurant: row.restaurant,
-                        items: row.items,
-                        totalQty: Number(row.total_qty),
-                        totalValue: Number(row.total_value)
-                    }))
+                    restaurants,
+                    allTotalQty,
+                    allTotalValue
                 },
                 "All cart items fetched successfully"
             )
@@ -177,6 +193,6 @@ const removeFromCart = asyncHandler(async()=>{});
 
 export {
     addToCart,
-    fecthMyCart,
+    fetchMyCart,
     removeFromCart
 }

@@ -6,7 +6,7 @@ import {
 
 import {
     addToCart,
-    fecthMyCart
+    fetchMyCart
 } from '../controllers/cart.controller.js'
 
 
@@ -17,7 +17,7 @@ router.use(authenticateUser);
 
 
 router.post("/add",addToCart);
-router.get("/my",fecthMyCart);
+router.get("/my", fetchMyCart);
 
 
 export default router;

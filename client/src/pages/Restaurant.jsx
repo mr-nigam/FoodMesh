@@ -8,7 +8,6 @@ import RestaurantProfile from "../components/RestaurantProfile.jsx";
 import MenuItems from "../components/MenuItems";
 import AddMenuItem from "../components/AddMenuItem.jsx";
 import toast from "react-hot-toast";
-import { BsCart } from "react-icons/bs";
 
 
 const Restaurant = () => {
@@ -17,7 +16,6 @@ const Restaurant = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("menu");
-  const [cart, setCart] = useState([]);
 
   // null = menu not loaded yet
   // [] = menu loaded but empty
@@ -129,59 +127,6 @@ const Restaurant = () => {
   }, [restaurant?.id]);
 
   /*
-   * Add item to cart
-   */
-  const addToCart = (item) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find(
-        (cartItem) => cartItem.id === item.id
-      );
-
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id
-            ? {
-                ...cartItem,
-                quantity: cartItem.quantity + 1,
-              }
-            : cartItem
-        );
-      }
-
-      return [
-        ...prevCart,
-        {
-          id: item.id,
-          restaurant_id: item.restaurant_id,
-          name: item.name,
-          price: item.price,
-          picture_url: item.pictures_urls?.[0] || null,
-          quantity: 1,
-        },
-      ];
-    });
-
-    toast.success(`${item.name} added to cart`);
-  };
-
-  /*
-   * Cart item count
-   */
-  const cartItemCount = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
-
-  /*
-   * Cart total
-   * Price is stored in paise.
-   */
-  const cartTotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
-
-  /*
    * Initial restaurant loading
    */
   if (loading) {
@@ -248,42 +193,12 @@ const Restaurant = () => {
                 </p>
               </div>
             ) : (
-              <>
-                <MenuItems
-                  items={menuItems}
-                  isSeller={true}
-                  onItemDeleted={refreshMenuItems}
-                  onAvailabilityChanged={refreshMenuItems}
-                  onAddToCart={addToCart}
-                />
-
-                {/* Cart summary */}
-                {cart.length > 0 && (
-                  <div className="mt-6 flex items-center justify-between rounded-lg bg-red-50 p-4">
-                    <div className="flex items-center gap-3">
-                      <BsCart
-                        size={22}
-                        className="text-red-500"
-                      />
-
-                      <div>
-                        <p className="font-semibold text-gray-800">
-                          Cart
-                        </p>
-
-                        <p className="text-sm text-gray-500">
-                          {cartItemCount}{" "}
-                          {cartItemCount === 1 ? "item" : "items"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="font-semibold text-gray-800">
-                      ₹{(cartTotal / 100).toFixed(2)}
-                    </p>
-                  </div>
-                )}
-              </>
+              <MenuItems
+                items={menuItems}
+                isSeller={true}
+                onItemDeleted={refreshMenuItems}
+                onAvailabilityChanged={refreshMenuItems}
+              />
             )
           )}
 

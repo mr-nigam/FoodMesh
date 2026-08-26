@@ -10,6 +10,7 @@ import Account from './pages/Account';
 import useAppData from './context/useAppData';
 import RestaurantPages from './pages/RestaurantPages';
 import Restaurant from './pages/Restaurant';
+import CartPage from './pages/CartPage';
 
 
 const App = () => {
@@ -40,6 +41,17 @@ const App = () => {
                     <Route path="/set-role" element={<SetRole />} />
                     
                     <Route path="/account" element={<Account />} />
+                    
+                    <Route path="/cart" element={<CartPage/>}/>
+
+                    {/* <Route 
+                        path="/cart"
+                        element={
+                            user?.role === "user"
+                                ? <Cart />
+                                : <Navigate to="/" replace />
+                        } 
+                    /> */}
                     
                     <Route path="/restaurant/:restaurantId" element={<RestaurantPages />}/>
 
