@@ -32,6 +32,7 @@ const AppProvider = ({ children }) => {
      * - localStorage
      * - axios
      */
+    
     useEffect(() => {
         let ignore = false;
 
@@ -277,7 +278,8 @@ const AppProvider = ({ children }) => {
 
     /*
      * Update item quantity in cart (action: "inc" | "dec")
-     */
+    */
+
     const updateQuantity = async (itemId, action) => {
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -295,7 +297,9 @@ const AppProvider = ({ children }) => {
 
             await fetchCart();
             return data;
-        } catch (error) {
+
+        }catch(error){
+
             console.error("Error updating cart quantity:", error);
             throw error;
         }

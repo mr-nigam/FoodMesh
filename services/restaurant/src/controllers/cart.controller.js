@@ -152,7 +152,8 @@ const fetchMyCart = asyncHandler(async (req,res) => {
                 'id', r.id,
                 'name', r.name,
                 'pictures', r.pictures_urls,
-                'address', r.address
+                'address', r.address,
+                'is_open', r.is_open
             ) AS restaurant,
 
             jsonb_agg(
@@ -191,7 +192,8 @@ const fetchMyCart = asyncHandler(async (req,res) => {
             r.id,
             r.name,
             r.pictures_urls,
-            r.address
+            r.address,
+            r.is_open
 
         ORDER BY MIN(c.created_at) ASC;
     `;
@@ -331,7 +333,6 @@ const clearCart = asyncHandler(async(req, res)=>{
         [req.user?.id]
     );
 
-
     return res
         .status(200)
         .json(
@@ -343,10 +344,92 @@ const clearCart = asyncHandler(async(req, res)=>{
         );
 });
 
+const removeCartItem = asyncHandler(async(req, res)=>{
+    const itemId = req.params?.itemId?.trim() || "";
+    
+    if(!itemId){
+        throw new ApiError(
+            400,
+            "Please give a valid item id"
+        );
+    }
+
+    const deleteQuery = `
+        DELETE FROM carts
+        WHERE item_id = $1
+            AND user_id = $2
+        RETURNING id;
+    `;
+
+    const {rows} = await pool.query(
+        deleteQuery,
+        [itemId, req?.user?.id]
+    );
+
+    if(rows.length === 0){
+        throw new ApiError(
+            404,
+            "Cart item not found or already removed"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Cart item removed successfully"
+            )
+        );
+});
+
+const removeRestaurantItems = asyncHandler(async(req, res)=>{
+    const restaurantId = req.params?.restaurantId?.trim() || "";
+    
+    if(!restaurantId){
+        throw new ApiError(
+            400,
+            "Please give a valid restaurant id"
+        );
+    }
+
+    const deleteQuery = `
+        DELETE FROM carts
+        WHERE restaurant_id = $1
+            AND user_id = $2
+        RETURNING id;
+    `;
+
+    const {rows} = await pool.query(
+        deleteQuery,
+        [restaurantId, req?.user?.id]
+    );
+
+    if(rows.length === 0){
+        throw new ApiError(
+            404,
+            "No items found for this restaurant in your cart"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "All items for the restaurant removed successfully"
+            )
+        );
+});
+
 
 export {
     addToCart,
     fetchMyCart,
     updateCartItemQuantity,
-    clearCart
+    clearCart,
+    removeCartItem,
+    removeRestaurantItems
 }

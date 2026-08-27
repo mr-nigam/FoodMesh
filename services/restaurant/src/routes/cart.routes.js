@@ -8,7 +8,9 @@ import {
     addToCart,
     fetchMyCart,
     updateCartItemQuantity,
-    clearCart
+    clearCart,
+    removeCartItem,
+    removeRestaurantItems
 } from '../controllers/cart.controller.js'
 
 
@@ -22,6 +24,8 @@ router.post("/add", addToCart);
 router.get("/my", fetchMyCart);
 router.put("/update", updateCartItemQuantity);
 router.delete("/clear", clearCart);
+router.delete("/remove/r/:restaurantId", removeRestaurantItems);
+router.delete("/remove/:itemId", removeCartItem);
 
 
 export default router;
