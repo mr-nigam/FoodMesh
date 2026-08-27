@@ -9,4 +9,5 @@ const PublicRoute = ()=>{
     return isAuth ?<Navigate to={"/"} replace/>:<Outlet/>
 };
 
+
 export default PublicRoute;

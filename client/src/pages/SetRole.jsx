@@ -6,6 +6,7 @@ import { authService } from "../config/constants"; // adjust path
 
 const allowedRoles = ["customer", "rider", "seller"];
 
+
 const SetRole = () => {
   const [role, setRole] = useState(null);
   const { setUser } = useAppData();

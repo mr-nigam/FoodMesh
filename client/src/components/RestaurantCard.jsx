@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
+
 const RestaurantCard = ({ restaurant }) => {
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const formatDistance = (distance) => {
     const meters = Number(distance);

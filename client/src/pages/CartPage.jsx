@@ -1,7 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import useAppData from '../context/useAppData';
-import { useState } from "react";
-import toast from "react-hot-toast";
 
 
 const CartPage = () => {
@@ -9,47 +7,14 @@ const CartPage = () => {
         cart,
         allTotalQty,
         allTotalValue,
-        loadingCart,
-        updateQuantity
+        loadingCart
     } = useAppData();
-    
-    const [loadingItemId, setLoadingItemId] = useState(null);
+
+    // const navigate = useNavigate();
+    // const [clearingCart, setClearingCart] = useState(false);
 
     const formatPrice = (paise) => {
         return `₹${(Number(paise) / 100).toFixed(2)}`;
-    };
-
-    const handleUpdateQuantity = async (itemId, action) => {
-        setLoadingItemId(itemId);
-        try {
-            await updateQuantity(itemId, action);
-        } catch (error) {
-            toast.error(error?.message || "Failed to update item quantity");
-        } finally {
-            setLoadingItemId(null);
-        }
-    };
-
-    const handleCheckoutSingle = (restaurantCart) => {
-        const hasUnavailable = restaurantCart.items.some((i) => !i.is_available);
-        if (hasUnavailable) {
-            toast.error("Some items from this restaurant are currently unavailable");
-            return;
-        }
-
-        toast.success(`Proceeding to checkout for ${restaurantCart.restaurant.name}!`);
-    };
-
-    const handleCheckoutAll = () => {
-        const hasUnavailable = cart.some((rc) =>
-            rc.items.some((i) => !i.is_available)
-        );
-        if (hasUnavailable) {
-            toast.error("Please remove unavailable items before proceeding to checkout");
-            return;
-        }
-
-        toast.success("Proceeding to checkout for all restaurants!");
     };
     
     if(loadingCart){
@@ -74,8 +39,8 @@ const CartPage = () => {
                 </p>
 
                 <Link
-                    to="/"
-                    className="rounded-lg bg-red-500 px-5 py-2.5 text-white transition hover:bg-red-600"
+                    to="/restaurants"
+                    className="rounded-lg bg-black px-5 py-2.5 text-white"
                 >
                     Browse Restaurants
                 </Link>
@@ -93,8 +58,7 @@ const CartPage = () => {
 
                 <p className="mt-1 text-gray-500">
                     {allTotalQty} item
-                    {allTotalQty !== 1 ? "s" : ""} from {cart.length} restaurant
-                    {cart.length !== 1 ? "s" : ""}
+                    {allTotalQty !== 1 ? "s" : ""} in your cart
                 </p>
             </div>
 
@@ -116,15 +80,15 @@ const CartPage = () => {
                         return (
                             <div
                                 key={restaurant.id}
-                                className="overflow-hidden rounded-xl border bg-white shadow-sm"
+                                className="overflow-hidden rounded-xl border bg-white"
                             >
 
                                 {/* RESTAURANT HEADER */}
-                                <div className="border-b bg-gray-50/50 p-5">
+                                <div className="border-b p-5">
 
                                     <Link
                                         to={`/restaurant/${restaurant.id}`}
-                                        className="text-xl font-semibold text-gray-900 hover:text-red-500 hover:underline"
+                                        className="text-xl font-semibold hover:underline"
                                     >
                                         {restaurant.name}
                                     </Link>
@@ -146,10 +110,10 @@ const CartPage = () => {
                                 {/* ITEMS */}
                                 <div className="divide-y">
 
-                                    {items.filter((item) => Number(item.quantity) > 0).map((item) => (
+                                    {items.map((item) => (
 
                                         <div
-                                            key={item.cart_id || item.item_id}
+                                            key={item.cart_id}
                                             className="flex gap-4 p-5"
                                         >
 
@@ -172,54 +136,26 @@ const CartPage = () => {
 
 
                                             {/* DETAILS */}
-                                            <div className="flex min-w-0 flex-1 flex-col justify-between">
-                                                <div>
-                                                    <h3 className="font-semibold text-gray-800">
-                                                        {item.name}
-                                                    </h3>
+                                            <div className="flex min-w-0 flex-1 flex-col">
 
-                                                    {item.category && (
-                                                        <p className="text-xs text-gray-500">
-                                                            {item.category}
-                                                        </p>
-                                                    )}
-                                                </div>
+                                                <h3 className="font-semibold">
+                                                    {item.name}
+                                                </h3>
 
-                                                <div className="mt-2 flex flex-wrap items-center gap-3">
-                                                    {/* Quantity Controls */}
-                                                    <div className="flex items-center gap-1.5 rounded-lg border bg-gray-50 p-1">
-                                                        <button
-                                                            type="button"
-                                                            disabled={loadingItemId === item.item_id}
-                                                            onClick={() => handleUpdateQuantity(item.item_id, "dec")}
-                                                            title="Decrease quantity"
-                                                            className="flex h-6 w-6 items-center justify-center rounded bg-white text-xs font-bold text-gray-700 shadow-sm transition hover:bg-gray-100 disabled:opacity-50"
-                                                        >
-                                                            -
-                                                        </button>
+                                                {item.category && (
+                                                    <p className="text-sm text-gray-500">
+                                                        {item.category}
+                                                    </p>
+                                                )}
 
-                                                        <span className="min-w-[1.25rem] text-center text-xs font-bold text-gray-800">
-                                                            {loadingItemId === item.item_id ? "..." : item.quantity}
-                                                        </span>
-
-                                                        <button
-                                                            type="button"
-                                                            disabled={!item.is_available || loadingItemId === item.item_id}
-                                                            onClick={() => handleUpdateQuantity(item.item_id, "inc")}
-                                                            title="Increase quantity"
-                                                            className="flex h-6 w-6 items-center justify-center rounded bg-white text-xs font-bold text-gray-700 shadow-sm transition hover:bg-gray-100 disabled:opacity-50"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-
-                                                    <span className="text-xs text-gray-500">
-                                                        {formatPrice(item.price)} each
-                                                    </span>
-                                                </div>
+                                                <p className="mt-2 text-sm">
+                                                    {formatPrice(item.price)}
+                                                    {" × "}
+                                                    {item.quantity}
+                                                </p>
 
                                                 {!item.is_available && (
-                                                    <p className="mt-1 text-xs font-medium text-red-500">
+                                                    <p className="mt-1 text-sm font-medium text-red-500">
                                                         Currently unavailable
                                                     </p>
                                                 )}
@@ -228,23 +164,14 @@ const CartPage = () => {
 
 
                                             {/* ITEM TOTAL */}
-                                            <div className="flex flex-col items-end justify-between text-right">
+                                            <div className="text-right">
 
-                                                <p className="font-semibold text-gray-900">
+                                                <p className="font-semibold">
                                                     {formatPrice(
                                                         Number(item.price) *
                                                         Number(item.quantity)
                                                     )}
                                                 </p>
-
-                                                <button
-                                                    type="button"
-                                                    disabled={loadingItemId === item.item_id}
-                                                    onClick={() => handleUpdateQuantity(item.item_id, "dec")}
-                                                    className="text-xs font-medium text-red-500 transition hover:underline disabled:opacity-50"
-                                                >
-                                                    Remove
-                                                </button>
 
                                             </div>
 
@@ -255,27 +182,16 @@ const CartPage = () => {
                                 </div>
 
 
-                                {/* RESTAURANT TOTAL & PER-RESTAURANT CHECKOUT */}
-                                <div className="flex flex-col gap-3 border-t bg-gray-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                {/* RESTAURANT TOTAL */}
+                                <div className="flex justify-between border-t bg-gray-50 px-5 py-4">
 
-                                    <div>
-                                        <span className="text-sm font-medium text-gray-600">
-                                            Subtotal for {restaurant.name}:{" "}
-                                        </span>
+                                    <span className="font-medium">
+                                        Restaurant total
+                                    </span>
 
-                                        <span className="font-bold text-gray-900">
-                                            {formatPrice(totalValue)}
-                                        </span>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleCheckoutSingle(restaurantCart)}
-                                        disabled={items.some((i) => !i.is_available)}
-                                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-                                    >
-                                        Order from {restaurant.name}
-                                    </button>
+                                    <span className="font-semibold">
+                                        {formatPrice(totalValue)}
+                                    </span>
 
                                 </div>
 
@@ -297,21 +213,11 @@ const CartPage = () => {
 
                         <div className="flex justify-between text-gray-600">
                             <span>
-                                Total Items
+                                Items
                             </span>
 
                             <span>
                                 {allTotalQty}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between text-gray-600">
-                            <span>
-                                Restaurants
-                            </span>
-
-                            <span>
-                                {cart.length}
                             </span>
                         </div>
 
@@ -332,10 +238,10 @@ const CartPage = () => {
                     <div className="flex justify-between text-lg font-bold">
 
                         <span>
-                            Total Amount
+                            Total
                         </span>
 
-                        <span className="text-red-600">
+                        <span>
                             {formatPrice(allTotalValue)}
                         </span>
 
@@ -343,8 +249,6 @@ const CartPage = () => {
 
 
                     <button
-                        type="button"
-                        onClick={handleCheckoutAll}
                         disabled={
                             cart.length === 0 ||
                             cart.some((restaurantCart) =>
@@ -353,9 +257,9 @@ const CartPage = () => {
                                 )
                             )
                         }
-                        className="mt-6 w-full rounded-lg bg-black px-5 py-3 font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+                        className="mt-6 w-full rounded-lg bg-black px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
-                        Checkout All ({cart.length} Restaurant{cart.length !== 1 ? "s" : ""})
+                        Proceed to Checkout
                     </button>
 
                 </div>

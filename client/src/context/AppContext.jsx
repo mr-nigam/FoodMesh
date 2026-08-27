@@ -4,6 +4,7 @@ import axios from "axios";
 import AppContext from "./context";
 import { Toaster } from "react-hot-toast";
 
+
 const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuth, setIsAuth] = useState(false);
