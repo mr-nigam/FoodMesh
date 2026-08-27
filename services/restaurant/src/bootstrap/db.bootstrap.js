@@ -5,7 +5,7 @@ from '../config/postgre.js';
 const bootstrapDB = async () => {
     try{
         await conectDB();
-
+        
         console.log("✅ PostgreSQL Connected");
     }catch(error){
 

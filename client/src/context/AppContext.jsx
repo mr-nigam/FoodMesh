@@ -75,7 +75,7 @@ const AppProvider = ({ children }) => {
                 }
 
             } catch (error) {
-                if (ignore) {
+                if(ignore) {
                     return;
                 }
 
@@ -87,8 +87,8 @@ const AppProvider = ({ children }) => {
                 setUser(null);
                 setIsAuth(false);
 
-            } finally {
-                if (!ignore) {
+            }finally{
+                if(!ignore){
                     setLoading(false);
                 }
             }
@@ -216,28 +216,19 @@ const AppProvider = ({ children }) => {
 
 
     /*
-     * Fetch cart for authenticated customer user.
+     * Fetch cart for authenticated customer user and update state.
      */
     const fetchCart = async () => {
-        if (!user || user.role !== "customer") {
-            setCart([]);
-            setAllTotalQty(0);
-            setAllTotalValue(0);
-            setLoadingCart(false);
-            return;
-        }
-
         const token = localStorage.getItem("token");
 
-        if (!token) {
+        if (!user || user.role !== "customer" || !token) {
+            await Promise.resolve();
             setCart([]);
             setAllTotalQty(0);
             setAllTotalValue(0);
             setLoadingCart(false);
-            return;
+            return [];
         }
-
-        setLoadingCart(true);
 
         try {
             const { data: response } = await axios.get(
@@ -250,7 +241,16 @@ const AppProvider = ({ children }) => {
             );
 
             const responseData = response?.data ?? response;
-            const restaurantWiseCart = responseData?.restaurants ?? [];
+            const rawCart = responseData?.restaurants ?? [];
+            
+            // Clean up items with quantity <= 0 and empty restaurants
+            const restaurantWiseCart = rawCart
+                .map((r) => ({
+                    ...r,
+                    items: (r.items || []).filter((i) => Number(i.quantity) > 0),
+                }))
+                .filter((r) => r.items.length > 0);
+
             const totalQuantity = Number(responseData?.allTotalQty ?? 0);
             const totalValue = Number(responseData?.allTotalValue ?? 0);
 
@@ -258,14 +258,45 @@ const AppProvider = ({ children }) => {
             setAllTotalQty(totalQuantity);
             setAllTotalValue(totalValue);
 
+            return restaurantWiseCart;
+
         } catch (error) {
             console.error("Error while fetching cart:", error);
             setCart([]);
             setAllTotalQty(0);
             setAllTotalValue(0);
+            return [];
 
         } finally {
             setLoadingCart(false);
+        }
+    };
+
+    const refreshCart = fetchCart;
+
+    /*
+     * Update item quantity in cart (action: "inc" | "dec")
+     */
+    const updateQuantity = async (itemId, action) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const { data } = await axios.put(
+                `${restaurantService}/cart/update`,
+                { itemId, action },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            await fetchCart();
+            return data;
+        } catch (error) {
+            console.error("Error updating cart quantity:", error);
+            throw error;
         }
     };
 
@@ -273,16 +304,19 @@ const AppProvider = ({ children }) => {
      * Fetch cart whenever authenticated user changes.
      */
     useEffect(() => {
-        let ignore = false;
+        let isMounted = true;
 
-        if (!ignore) {
-            fetchCart();
-        }
-
-        return () => {
-            ignore = true;
+        const loadCartData = async () => {
+            if (isMounted) {
+                await fetchCart();
+            }
         };
 
+        loadCartData();
+
+        return () => {
+            isMounted = false;
+        };
     }, [user]);
 
 
@@ -307,8 +341,8 @@ const AppProvider = ({ children }) => {
                 allTotalValue,
                 loadingCart,
 
-                fetchCart,
-                refreshCart: fetchCart,
+                refreshCart,
+                updateQuantity,
             }}
         >
             {children}

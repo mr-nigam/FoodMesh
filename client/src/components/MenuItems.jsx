@@ -20,11 +20,35 @@ const MenuItems = ({
   const [loadingItemId, setLoadingItemId] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
 
-  const { refreshCart, fetchCart } = useAppData();
+  const { cart, refreshCart, updateQuantity } = useAppData();
 
   const getAuthHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
+
+  const getCartQuantity = (itemId) => {
+    if (!cart || !Array.isArray(cart)) return 0;
+    for (const restaurantCart of cart) {
+      if (restaurantCart?.items) {
+        const found = restaurantCart.items.find(
+          (i) => i.item_id === itemId || i.id === itemId
+        );
+        if (found) return found.quantity || 0;
+      }
+    }
+    return 0;
+  };
+
+  const handleUpdateQuantity = async (itemId, action) => {
+    setLoadingItemId(itemId);
+    try {
+      await updateQuantity(itemId, action);
+    } catch (error) {
+      toast.error(error?.message || "Failed to update quantity");
+    } finally {
+      setLoadingItemId(null);
+    }
+  };
 
   const toggleItemAvailability = async (itemId) => {
     try{
@@ -100,7 +124,7 @@ const MenuItems = ({
         `${item.name} added to cart`
       );
 
-      const cartRefresher = refreshCart || fetchCart;
+      const cartRefresher = refreshCart;
       if (cartRefresher) {
         await cartRefresher();
       }
@@ -298,30 +322,66 @@ const MenuItems = ({
                     )}
                   </button>
                 </>
-              ) : (
-                /* Add to cart */
-                <button
-                  type="button"
-                  disabled={!item.is_available || isLoading}
-                  onClick={() => handleAddToCart(item)}
-                  title={
-                    item.is_available
-                      ? "Add to cart"
-                      : "Item unavailable"
-                  }
-                  className={`flex items-center justify-center rounded-lg p-2 transition ${
-                    !item.is_available || isLoading
-                      ? "cursor-not-allowed text-gray-400"
-                      : "text-red-500 hover:bg-red-50"
-                  }`}
-                >
-                  {isLoading ? (
-                    <LoaderIcon size={18} className="animate-spin" />
-                  ) : (
-                    <BsCartPlus size={18} />
-                  )}
-                </button>
-              )}
+              ) : (() => {
+                const cartQty = getCartQuantity(item.id);
+                if (cartQty > 0) {
+                  return (
+                    <div className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-1">
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => handleUpdateQuantity(item.id, "dec")}
+                        title="Decrease quantity"
+                        className="flex h-7 w-7 items-center justify-center rounded bg-white text-sm font-bold text-red-500 shadow-sm transition hover:bg-red-100 disabled:opacity-50"
+                      >
+                        -
+                      </button>
+
+                      <span className="min-w-[1.25rem] text-center text-sm font-bold text-gray-800">
+                        {isLoading ? (
+                          <LoaderIcon size={14} className="animate-spin inline" />
+                        ) : (
+                          cartQty
+                        )}
+                      </span>
+
+                      <button
+                        type="button"
+                        disabled={!item.is_available || isLoading}
+                        onClick={() => handleUpdateQuantity(item.id, "inc")}
+                        title="Increase quantity"
+                        className="flex h-7 w-7 items-center justify-center rounded bg-red-500 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:opacity-50"
+                      >
+                        +
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    type="button"
+                    disabled={!item.is_available || isLoading}
+                    onClick={() => handleAddToCart(item)}
+                    title={
+                      item.is_available
+                        ? "Add to cart"
+                        : "Item unavailable"
+                    }
+                    className={`flex items-center justify-center rounded-lg p-2 transition ${
+                      !item.is_available || isLoading
+                        ? "cursor-not-allowed text-gray-400"
+                        : "text-red-500 hover:bg-red-50"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <LoaderIcon size={18} className="animate-spin" />
+                    ) : (
+                      <BsCartPlus size={18} />
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         );

@@ -23,8 +23,8 @@ const createCartTable = async()=>{
                     REFERENCES menu_items(id) 
                     ON DELETE CASCADE,
                 
-                quantity INTEGER DEFAULT 1
-                    CHECK (quantity > 0),            
+                quantity INTEGER DEFAULT 0
+                    CHECK (quantity >= 0),            
 
                 price INTEGER NOT NULL 
                     CHECK (price >= 0),
@@ -35,8 +35,8 @@ const createCartTable = async()=>{
                 updated_at TIMESTAMPTZ 
                     DEFAULT CURRENT_TIMESTAMP,
 
-                CONSTRAINT uq_carts_user_item
-                    UNIQUE (user_id, item_id)
+                CONSTRAINT uq_carts_user_restaurant_item
+                    UNIQUE(user_id, restaurant_id, item_id)
             );
         `);
 

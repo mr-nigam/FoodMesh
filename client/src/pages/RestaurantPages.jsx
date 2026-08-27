@@ -40,20 +40,10 @@ const RestaurantPages = () => {
                     }
                 );
 
-                console.log(
-                    "Restaurant response:",
-                    data
-                );
-
                 const restaurantData =
                     data?.restaurant ||
                     data?.data?.restaurant ||
                     [];
-
-                console.log(
-                    "Restaurant data:",
-                    restaurantData
-                );
 
                 if (!restaurantData) {
                     toast.error("Restaurant not found");
@@ -78,11 +68,6 @@ const RestaurantPages = () => {
                                 Authorization: `Bearer ${token}`,
                             },
                         }
-                    );
-
-                    console.log(
-                        "Menu response:",
-                        data
                     );
 
                     const items =

@@ -16,58 +16,70 @@ const Home = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchRestaurants = async () => {
-    if (
-      location?.latitude === undefined ||
-      location?.longitude === undefined
-    ) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const { data } = await axios.get(
-        `${restaurantService}/all-nearby`,
-        {
-          params: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-            search,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      const restaurantsData =
-        data?.data?.restaurants ||
-        data?.restaurants ||
-        [];
-
-      setRestaurants(restaurantsData);
-    } catch (error) {
-      console.error(
-        "Failed to fetch nearby restaurants:",
-        error
-      );
-
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to fetch nearby restaurants";
-
-      toast.error(message);
-
-      setRestaurants([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchRestaurants = async () => {
+      if (
+        location?.latitude === undefined ||
+        location?.longitude === undefined
+      ) {
+        return;
+      }
+
+      try {
+        if (isMounted) setLoading(true);
+
+        const { data } = await axios.get(
+          `${restaurantService}/all-nearby`,
+          {
+            params: {
+              latitude: location.latitude,
+              longitude: location.longitude,
+              search,
+            },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (!isMounted) return;
+
+        const restaurantsData =
+          data?.data?.restaurants ||
+          data?.restaurants ||
+          [];
+
+        setRestaurants(restaurantsData);
+      } catch (error) {
+        if (!isMounted) return;
+
+        console.error(
+          "Failed to fetch nearby restaurants:",
+          error
+        );
+
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch nearby restaurants";
+
+        toast.error(message);
+
+        setRestaurants([]);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchRestaurants();
+
+    return () => {
+      isMounted = false;
+    };
   }, [
     location?.latitude,
     location?.longitude,

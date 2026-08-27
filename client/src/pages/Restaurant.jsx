@@ -40,18 +40,21 @@ const Restaurant = () => {
 
         setRestaurant(data?.data?.restaurant ?? null);
 
-        if (data?.data?.token) {
+        if(data?.data?.token){
           localStorage.setItem("token", data.data.token);
         }
+
       } catch (error) {
-        if (error.response?.status === 404) {
+        if(error.response?.status === 404){
           setRestaurant(null);
-        } else if (error.response?.status === 401) {
+
+        }else if (error.response?.status === 401){
           localStorage.removeItem("token");
           setIsAuth(false);
           setUser(null);
           navigate("/login", { replace: true });
           return;
+
         } else {
           toast.error(
             error.response?.data?.message ||
@@ -95,7 +98,8 @@ const Restaurant = () => {
     try {
       const items = await fetchMenuItems(restaurant.id);
       setMenuItems(items);
-    } catch (error) {
+
+    }catch(error){
       toast.error(
         error.response?.data?.message ||
           "Failed to fetch menu items"
