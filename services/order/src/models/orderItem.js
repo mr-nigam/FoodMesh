@@ -1,0 +1,65 @@
+import pool from "../config/postgre.js";
+
+import createUpdatedAtTrigger 
+from "../utils/dbTriggers.js";
+
+
+const createOrderItemsTable = async() => {
+    try{
+        
+        await pool.query(`
+            CREATE TABLE order_items (
+                id UUID PRIMARY KEY
+                    DEFAULT gen_random_uuid(),
+
+                order_restaurant_id UUID NOT NULL
+                    REFERENCES order_restaurants(id)
+                    ON DELETE CASCADE,
+
+                item_id UUID,
+
+                item_name VARCHAR(255) NOT NULL,
+
+                unit_price NUMERIC(12,2) NOT NULL,
+
+                quantity INTEGER NOT NULL
+                    CHECK (quantity > 0),
+
+                subtotal NUMERIC(12,2) NOT NULL
+                    CHECK (subtotal >= 0),,
+
+                created_at TIMESTAMPTZ NOT NULL
+                    DEFAULT CURRENT_TIMESTAMP,
+
+                updated_at TIMESTAMPTZ NOT NULL
+                    DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+            
+        await pool.query(`
+            CREATE INDEX idx_order_items_order_restaurant_id
+                ON order_items(order_restaurant_id);
+
+            CREATE INDEX idx_order_items_item_id
+                ON order_items(item_id);
+        `);
+
+        await createUpdatedAtTrigger("order_items");
+
+        console.log(
+            "✅ Order Items table created successfully."
+        );
+
+    }catch(error){
+
+        console.error(
+            "❌ Orders Items table creation failed",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+export default createOrderItemsTable;

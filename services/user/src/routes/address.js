@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { 
     authenticateUser 
-} from '../middlewares/auth.middleware.js';
+} from '../middlewares/auth.js';
 
 import {
     addAddress,
@@ -11,7 +11,7 @@ import {
     deleteAddress,
     editAddress,
     fetchDefaultAddress
-} from '../controllers/address.controller.js';
+} from '../controllers/address.js';
 
 
 const router = Router();

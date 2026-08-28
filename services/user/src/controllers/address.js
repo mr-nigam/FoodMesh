@@ -2,7 +2,7 @@ import pool from '../config/postgre.js';
 import ApiError from '../utils/apiError.js';
 import ApiResponse from '../utils/apiResponse.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
-import validateAddress from '../utils/validateAddress.util.js';
+import validateAddress from '../utils/validateAddress.js';
 
 
 const addAddress = asyncHandler( async (req,res) => {
