@@ -1,5 +1,3 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import pool from '../config/postgre.js';
 import asyncHandler from '../middlewares/asyncHandler.js';
 import ApiError from '../utils/apiError.js';
@@ -8,13 +6,9 @@ import axios from 'axios';
 import { OAuth2Client } from 'google-auth-library';
 
 import {
-    setAuthCookies,
-    clearAuthCookies,
-} from '../utils/cookie.util.js';
-
-import {
     generateAccessToken
-} from '../utils/token.util.js';
+} from '../utils/token.js';
+
 
 const oauth2client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
@@ -196,39 +190,8 @@ const myProfile = asyncHandler(async (req, res) => {
     );
 });
 
-// const myProfile = asyncHandler(async (req, res)=>{
-//     const {user} = req.user;
-
-//     const query = `
-//         SELECT *
-//         FROM users
-//         WHERE id = $1
-//         AND deleted_at IS NULL
-//         AND deactivated_at IS NULL
-//     `;
-
-//     const result = await pool.query(query,[user.id]);
-
-//     if(result.rowCount === 0){
-//         throw new ApiError(
-//             404,
-//             "User not found/ wrong id - password"
-//         );
-//     }
-
-//     return res
-//         .status(200)
-//         .json(
-//             new ApiResponse(
-//                 200,
-//                 {
-//                     user: user
-//                 }
-//             )
-//         );
-// });
-
 const Home = asyncHandler(async (req, res)=>{});
+
 
 export {
     loginUser,

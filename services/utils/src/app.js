@@ -2,9 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import morgan from 'morgan';
 import ApiError from './utilsss/apiError.js';
-import uploadRouter from './routes/utils.routes.js';
+import uploadRouter from './routes/utils.js';
+import morgan from 'morgan';
 
 
 const app = express();
@@ -17,9 +17,9 @@ app.use((req,res,next)=>{
     next();
 });
 
-if(process.env.NODE_ENV === "development"){
-    app.use(morgan('dev'));
-};
+// if(process.env.NODE_ENV === "development"){
+//     app.use(morgan('dev'));
+// };
 
 app.use(express.urlencoded({
     extended: true,
@@ -36,7 +36,9 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use("/api/v1/utils", uploadRouter);
+
 
 app.use((req,res,next)=>{
     next(new ApiError(404, "Route not Found"));

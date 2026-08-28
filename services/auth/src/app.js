@@ -2,12 +2,13 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
-import morgan from 'morgan';
-import authRouter from './routes/auth.routes.js';
+import authRouter from './routes/auth.js';
 import ApiError  from './utils/apiError.js';
+import morgan from 'morgan';
 
 
 const app = express();
+
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",

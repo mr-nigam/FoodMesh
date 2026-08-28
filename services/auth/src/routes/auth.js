@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import authenticateUser from '../middlewares/auth.middleware.js';
+import authenticateUser from '../middlewares/auth.js';
 
 import {
     loginUser,
     myProfile,
     Home,
     updateRole
-} from '../controllers/auth.controller.js'
+} from '../controllers/auth.js'
 
 
 const router = Router();
