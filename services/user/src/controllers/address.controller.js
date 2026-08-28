@@ -110,61 +110,6 @@ const addAddress = asyncHandler( async (req,res) => {
         );
 });
 
-const fecthAddresses = asyncHandler( async (req,res) => {
-    const addressId = req?.params?.addressId?.trim() || "";
-
-    if(!addressId){
-        throw new ApiError(
-            400,
-            "Please share a valid address id"
-        );
-    }
-
-    const searchQuery = `
-        SELECT
-            id,
-            label,
-            recipient_name,
-            phone,
-            address_line_1,
-            address_line_2,
-            landmark,
-            city,
-            state,
-            postal_code,
-            country_code,
-            ST_Y(location::geometry) AS latitude,
-            ST_X(location::geometry) AS longitude,
-            formatted_address,
-            is_default
-        FROM addresses
-        WHERE id = $1
-            AND deleted_at IS NULL;
-    `;
-
-    const {rows} = await pool.query(
-        searchQuery,
-        [addressId]
-    );
-
-    if(rows.length === 0){
-        throw new ApiError(
-            404,
-            "Address not found"
-        );
-    }
-
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {address: rows[0]},
-                "Address fetched successfully"
-            )
-        );
-});
-
 const fecthAllAddresses = asyncHandler( async (req,res) => {
 
     const searchQuery = `
@@ -187,7 +132,6 @@ const fecthAllAddresses = asyncHandler( async (req,res) => {
         FROM addresses
         WHERE user_id = $1
             AND deleted_at IS NULL
-        GROUP BY label
         ORDER BY 
             is_default DESC, 
             created_at DESC;
@@ -195,7 +139,7 @@ const fecthAllAddresses = asyncHandler( async (req,res) => {
 
     const {rows} = await pool.query(
         searchQuery,
-        [userId]
+        [req.user.id]
     );
 
     const addresses = rows;
@@ -224,6 +168,7 @@ const deleteAddress = asyncHandler( async (req,res) => {
         );
     }
 
+    // delete it now or push it queue for background jobs
     const deleteQuery = `
         UPDATE addresses
         SET deleted_at = CURRENT_TIMESTAMP,
@@ -253,6 +198,131 @@ const deleteAddress = asyncHandler( async (req,res) => {
                 200,
                 {addressId: rows[0].id},
                 "Address deleted successfully"                
+            )
+        );
+});
+
+const fetchDefaultAddress = asyncHandler( async (req, res) => {
+
+    const searchQuery = `
+        SELECT
+            id,
+            label,
+            recipient_name,
+            phone,
+            address_line_1,
+            address_line_2,
+            landmark,
+            city,
+            state,
+            postal_code,
+            country_code,
+            ST_Y(location::geometry) AS latitude,
+            ST_X(location::geometry) AS longitude,
+            formatted_address,
+            is_default
+        FROM addresses
+        WHERE user_id = $1
+            AND is_default = true
+            AND deleted_at IS NULL;
+    `;
+
+    let {rows} = await pool.query(
+        searchQuery,
+        [req.user.id]
+    );
+
+    if (rows.length === 0) {
+        const fallbackQuery = `
+            SELECT
+                id,
+                label,
+                recipient_name,
+                phone,
+                address_line_1,
+                address_line_2,
+                landmark,
+                city,
+                state,
+                postal_code,
+                country_code,
+                ST_Y(location::geometry) AS latitude,
+                ST_X(location::geometry) AS longitude,
+                formatted_address,
+                is_default
+            FROM addresses
+            WHERE user_id = $1
+                AND deleted_at IS NULL
+            ORDER BY created_at DESC
+            LIMIT 1;
+        `;
+        const fallbackResult = await pool.query(fallbackQuery, [req.user.id]);
+        rows = fallbackResult.rows;
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { address: rows[0] || null },
+                rows.length ? "Default address fetched successfully" : "No saved address"
+            )
+        );
+});
+
+const fecthAddress = asyncHandler( async (req,res) => {
+    const addressId = req?.params?.addressId?.trim() || "";
+
+    if(!addressId){
+        throw new ApiError(
+            400,
+            "Please share a valid address id"
+        );
+    }
+
+    const searchQuery = `
+        SELECT
+            id,
+            label,
+            recipient_name,
+            phone,
+            address_line_1,
+            address_line_2,
+            landmark,
+            city,
+            state,
+            postal_code,
+            country_code,
+            ST_Y(location::geometry) AS latitude,
+            ST_X(location::geometry) AS longitude,
+            formatted_address,
+            is_default
+        FROM addresses
+        WHERE id = $1
+            AND user_id = $2
+            AND deleted_at IS NULL;
+    `;
+
+    const {rows} = await pool.query(
+        searchQuery,
+        [addressId, req.user.id]
+    );
+
+    if(rows.length === 0){
+        throw new ApiError(
+            404,
+            "Address not found"
+        );
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {address: rows[0]},
+                "Address fetched successfully"
             )
         );
 });
@@ -369,8 +439,9 @@ const editAddress = asyncHandler( async (req, res) => {
 
 export {
     addAddress,
-    fecthAddresses,
+    fecthAddress,
     fecthAllAddresses,
     deleteAddress,
-    editAddress
+    editAddress,
+    fetchDefaultAddress
 }

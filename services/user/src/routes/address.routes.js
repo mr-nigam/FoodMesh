@@ -6,10 +6,11 @@ import {
 
 import {
     addAddress,
-    fecthAddresses,
+    fecthAddress,
     fecthAllAddresses,
     deleteAddress,
-    editAddress
+    editAddress,
+    fetchDefaultAddress
 } from '../controllers/address.controller.js';
 
 
@@ -21,7 +22,8 @@ router.use(authenticateUser);
 
 router.post('/add', addAddress);
 router.get('/all', fecthAllAddresses);
-router.get('/:addressId', fecthAddresses);
+router.get('/default', fetchDefaultAddress);
+router.get('/:addressId', fecthAddress);
 router.put('/:addressId', editAddress);
 router.delete('/:addressId', deleteAddress);
 

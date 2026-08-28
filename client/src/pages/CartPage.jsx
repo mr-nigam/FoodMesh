@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { calculateCartFees, calculateRestaurantFees } from "../utils/feeCalculator";
 import axios from "axios";
-import { restaurantService, addressService } from "../config/constants";
+import { restaurantService , addressService} from "../config/constants";
 import AddressSelectorModal from "../components/AddressSelectorModal";
 import { BiMapPin, BiChevronRight, BiHomeAlt, BiBriefcase } from "react-icons/bi";
 
@@ -30,19 +30,32 @@ const CartPage = () => {
     // Load default address on mount
     useEffect(() => {
         const fetchDefaultAddress = async () => {
-            try {
-                const { data } = await axios.get(addressService, {
-                    headers: getAuthHeader(),
-                    withCredentials: true
-                });
-                if (data?.data?.addresses && data.data.addresses.length > 0) {
-                    const defaultAddr = data.data.addresses.find(a => a.is_default) || data.data.addresses[0];
-                    setSelectedAddress(defaultAddr);
-                }
-            } catch (e) {
-                console.error("Failed to load default address for checkout:", e);
+            try{
+
+                const { data } = await axios.get(
+                    `${addressService}/default`,
+                    {
+                        headers: getAuthHeader(),
+                    }
+                );
+                
+                const address = 
+                    data?.data?.address ||
+                    data?.data?.addresses?.[0] ||
+                    data?.address ||
+                    data?.addresses?.[0] ||
+                    null;
+
+                setSelectedAddress(address);
+
+            }catch(error){
+                console.error(
+                    "Failed to load default address for checkout:",
+                    error
+                );
             }
         };
+
         fetchDefaultAddress();
     }, []);
 
@@ -68,17 +81,24 @@ const CartPage = () => {
 
     const handleUpdateQuantity = async (itemId, action) => {
         setLoadingItemId(itemId);
-        try {
+
+        try{
             await updateQuantity(itemId, action);
-        } catch (error) {
-            toast.error(error?.message || "Failed to update item quantity");
-        } finally {
+            
+        }catch(error){
+            
+            toast.error(
+                error?.message ||
+                "Failed to update item quantity"
+            );
+
+        }finally{
             setLoadingItemId(null);
         }
     };
 
     const handleCheckoutSingle = (restaurantCart) => {
-        if (!selectedAddress) {
+        if (!selectedAddress){
             toast.error("Please select a delivery address to proceed to checkout!");
             setIsAddressModalOpen(true);
             return;
@@ -90,7 +110,8 @@ const CartPage = () => {
             return;
         }
         const hasUnavailable = restaurantCart.items.some((i) => !i.is_available);
-        if (hasUnavailable) {
+
+        if(hasUnavailable){
             toast.error("Some items from this restaurant are currently unavailable");
             return;
         }
@@ -103,22 +124,23 @@ const CartPage = () => {
     };
 
     const handleCheckoutAll = () => {
-        if (!selectedAddress) {
+        if(!selectedAddress){
             toast.error("Please select a delivery address to proceed to checkout!");
             setIsAddressModalOpen(true);
             return;
         }
 
-        if (validRestaurants.length === 0) {
+        if(validRestaurants.length === 0){
             toast.error("No open or available restaurants to checkout right now.");
             return;
         }
 
-        if (hasBlockedRestaurantsInCart) {
+        if(hasBlockedRestaurantsInCart){
             toast.success(
                 `Proceeding to checkout for ${validRestaurants.length} open/available restaurant${validRestaurants.length !== 1 ? 's' : ''} (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
             );
-        } else {
+
+        }else{
             toast.success(
                 `Proceeding to checkout for all restaurants (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
             );
@@ -295,7 +317,7 @@ const CartPage = () => {
                         </div>
                         {selectedAddress ? (
                             <p className="text-sm font-bold text-gray-900 mt-0.5">
-                                {selectedAddress.recipient_name} • {selectedAddress.address_line_1}, {selectedAddress.city} ({selectedAddress.postal_code})
+                                {selectedAddress.recipient_name || selectedAddress.recipientName || "Recipient"} • {selectedAddress.formatted_address || selectedAddress.formattedAddress || `${selectedAddress.address_line_1 || selectedAddress.addressLine1 || ''}, ${selectedAddress.city || ''}`} ({selectedAddress.postal_code || selectedAddress.postalCode || ''})
                             </p>
                         ) : (
                             <p className="text-sm font-semibold text-red-600 mt-0.5">

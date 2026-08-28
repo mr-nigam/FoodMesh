@@ -1,6 +1,5 @@
 import pool, { conectDB }
 from '../config/postgre.js';
-import createAddressTable from '../models/addresse.model.js';
 
 
 const bootstrapDB = async () => {
@@ -8,8 +7,6 @@ const bootstrapDB = async () => {
         await conectDB();
         
         console.log("✅ PostgreSQL Connected");
-
-        await createAddressTable();
     }catch(error){
 
         console.error('❌ PostgreSQL Connection Failed');

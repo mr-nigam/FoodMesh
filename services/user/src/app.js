@@ -36,7 +36,10 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/user/address", addressRouter);
+app.use("/api/v1/user/addresses", addressRouter);
 app.use("/api/v1/addresses", addressRouter);
+app.use("/api/v1/address", addressRouter);
 
 
 app.use((req,res,next)=>{

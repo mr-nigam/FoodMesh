@@ -20,7 +20,8 @@ const errorHandler = (err, req, res, next) => {
             case "23505": {
                 statusCode = 409;
 
-                const field = err.detail?.match(/\((.*?)\)/)?.[1];
+                const match = err.detail && /\((.*?)\)/.exec(err.detail);
+                const field = match ? match[1] : null;
 
                 message = field
                     ? `${field} already exists`
@@ -49,7 +50,7 @@ const errorHandler = (err, req, res, next) => {
              // Check constraint violation
             case "23514":
                 statusCode = 400;
-                message = "Constraint validation failed";
+                message = "Constraint validation failed. Please ensure phone number format is valid (e.g. +919876543210).";
                 break;
 
             default:

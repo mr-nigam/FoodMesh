@@ -282,7 +282,7 @@ const AppProvider = ({ children }) => {
 
     const updateQuantity = async (itemId, action) => {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if(!token) return;
 
         try {
             const { data } = await axios.put(

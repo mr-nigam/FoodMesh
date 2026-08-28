@@ -59,14 +59,15 @@ const validateAddress = (addressData = {}) => {
 
     const { lat, lon } = checkCoordinates({ latitude, longitude });
 
+    const country = countryCode?.trim() || "IN";
+
     const requiredFields = {
         recipientName,
         phone,
         addressLine1,
         city,
         state,
-        postalCode,
-        countryCode
+        postalCode
     };
 
     const sanitizedData = {};
@@ -83,6 +84,27 @@ const validateAddress = (addressData = {}) => {
 
         sanitizedData[key] = trimmed;
     }
+
+    sanitizedData.countryCode = country;
+
+    // Phone E.164 formatting & validation for PostgreSQL check constraint (^\+[1-9][0-9]{6,14}$)
+    let formattedPhone = sanitizedData.phone.replace(/\s+/g, '');
+    if (!formattedPhone.startsWith('+')) {
+        if (/^[1-9][0-9]{9}$/.test(formattedPhone)) {
+            formattedPhone = `+91${formattedPhone}`;
+        } else if (/^[1-9][0-9]{6,14}$/.test(formattedPhone)) {
+            formattedPhone = `+${formattedPhone}`;
+        }
+    }
+
+    const phoneRegex = /^\+[1-9][0-9]{6,14}$/;
+    if (!phoneRegex.test(formattedPhone)) {
+        throw new ApiError(
+            400,
+            "Invalid phone number format. Please provide a valid phone number with country code (e.g. +919876543210 or 10-digit mobile number)."
+        );
+    }
+    sanitizedData.phone = formattedPhone;
 
     const trimmedLabel = label?.trim() || "Home";
 

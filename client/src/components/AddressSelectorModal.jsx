@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { addressService } from '../config/constants';
+import { userService } from '../config/constants';
 import LocationPickerModal from './LocationPickerModal';
-import { BiMapPin, BiHomeAlt, BiBriefcase, BiPlus, BiMap, BiX, BiCheck } from 'react-icons/bi';
+import { BiMapPin, BiHomeAlt, BiBriefcase, BiMap, BiX, BiCheck } from 'react-icons/bi';
+
 
 const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddress }) => {
     const [addresses, setAddresses] = useState([]);
@@ -18,23 +19,38 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
     const fetchAddresses = async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get(addressService, {
-                headers: getAuthHeader(),
-                withCredentials: true
-            });
-            if (data?.data?.addresses) {
-                setAddresses(data.data.addresses);
-            }
-        } catch (error) {
-            console.error('Failed to fetch addresses:', error);
+            
+            const { data } = await axios.get(
+                `${userService}/address/all`, 
+                { 
+                    headers: getAuthHeader(),
+                    withCredentials: true
+                }
+            );
+            
+            const addresses = 
+                data?.data?.addresses ??
+                data?.addresses ??
+                [];
+            
+            setAddresses(addresses);
+
+        }catch(error){
+
+            console.error(
+                'Failed to fetch addresses:',
+                error
+            );
+
             toast.error('Failed to load saved addresses');
-        } finally {
+        
+        }finally{
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        if (isOpen) {
+        if(isOpen){
             fetchAddresses();
         }
     }, [isOpen]);
@@ -102,12 +118,13 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
                             No saved addresses found. Please add a new address or pick on map below.
                         </div>
                     ) : (
-                        addresses.map((address) => {
-                            const isSelected = selectedAddressId === address.id;
+                        addresses.map((address, index) => {
+                            const addrId = address.id || address._id;
+                            const isSelected = selectedAddressId === addrId;
 
                             return (
                                 <div
-                                    key={address.id}
+                                    key={addrId || index}
                                     onClick={() => {
                                         onSelectAddress(address);
                                         onClose();
@@ -131,7 +148,7 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             {getLabelIcon(address.label)}
-                                            <span className="font-bold text-gray-900 text-sm">{address.label}</span>
+                                            <span className="font-bold text-gray-900 text-sm">{address.label || "Address"}</span>
                                             {address.is_default && (
                                                 <span className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
                                                     Default
@@ -139,13 +156,16 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
                                             )}
                                         </div>
 
-                                        <p className="text-xs font-bold text-gray-800">{address.recipient_name} • {address.phone}</p>
+                                        <p className="text-xs font-bold text-gray-800">
+                                            {address.recipient_name || address.recipientName || "Recipient"} 
+                                            {(address.phone || address.mobile) && ` • ${address.phone || address.mobile}`}
+                                        </p>
                                         <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                            {address.address_line_1}
-                                            {address.address_line_2 && `, ${address.address_line_2}`}
+                                            {address.address_line_1 || address.addressLine1 || address.formatted_address || address.formattedAddress}
+                                            {(address.address_line_2 || address.addressLine2) && `, ${address.address_line_2 || address.addressLine2}`}
                                         </p>
                                         <p className="text-[11px] text-gray-500 mt-0.5">
-                                            {address.city}, {address.state} - {address.postal_code}
+                                            {address.city}, {address.state} {(address.postal_code || address.postalCode) ? `- ${address.postal_code || address.postalCode}` : ''}
                                         </p>
                                     </div>
 
