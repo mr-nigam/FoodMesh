@@ -1,12 +1,15 @@
 import pool, { conectDB }
 from '../config/postgre.js';
+import createAddressTable from '../models/addresse.model.js';
 
 
 const bootstrapDB = async () => {
     try{
         await conectDB();
-
+        
         console.log("✅ PostgreSQL Connected");
+
+        await createAddressTable();
     }catch(error){
 
         console.error('❌ PostgreSQL Connection Failed');
@@ -16,13 +19,11 @@ const bootstrapDB = async () => {
     }
 };
 
-
 pool.on('error', (error) => {
 
     console.error('❌ PostgreSQL Pool Error');
     console.error(error);
 });
-
 
 process.on('SIGINT', async () => {
 
