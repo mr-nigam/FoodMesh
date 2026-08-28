@@ -11,6 +11,8 @@ import useAppData from './context/useAppData';
 import RestaurantPages from './pages/RestaurantPages';
 import Restaurant from './pages/Restaurant';
 import CartPage from './pages/CartPage';
+import AddressPage from './pages/AddressPage';
+import Checkout from './pages/Checkout';
 
 
 const App = () => {
@@ -22,36 +24,29 @@ const App = () => {
             <NavBar />
             <Routes>
                
-                {/* <Route path="/restaurant/:id" element={<RestaurantPages />}/> */}
-
                 <Route element={<PublicRoute />}>
                     <Route path="/login" element={<Login />} />    
                 </Route>
 
                 <Route element={<ProtectedRoute />}>
-                    { <Route
+                    <Route
                         path="/"
                         element={
                             user?.role === "seller"
                                 ? <Navigate to="/restaurant" replace />
                                 : <Home />
                         }
-                    /> }
+                    />
 
                     <Route path="/set-role" element={<SetRole />} />
                     
                     <Route path="/account" element={<Account />} />
-                    
-                    <Route path="/cart" element={<CartPage/>}/>
 
-                    {/* <Route 
-                        path="/cart"
-                        element={
-                            user?.role === "user"
-                                ? <Cart />
-                                : <Navigate to="/" replace />
-                        } 
-                    /> */}
+                    <Route path="/checkout" element={<Checkout />} />
+                    
+                    <Route path="/address" element={<AddressPage />} />
+
+                    <Route path="/cart" element={<CartPage/>}/>
                     
                     <Route path="/restaurant/:restaurantId" element={<RestaurantPages />}/>
 

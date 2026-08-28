@@ -19,11 +19,10 @@ const router = Router();
 router.use(authenticateUser);
 
 
-router.post('/', addAddress);
-router.get('/', fecthAllAddresses);
+router.post('/add', addAddress);
+router.get('/all', fecthAllAddresses);
 router.get('/:addressId', fecthAddresses);
 router.put('/:addressId', editAddress);
-router.put('/', editAddress);
 router.delete('/:addressId', deleteAddress);
 
 

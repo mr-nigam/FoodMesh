@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import useAppData from '../context/useAppData';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { calculateCartFees, calculateRestaurantFees } from "../utils/feeCalculator";
 import axios from "axios";
-import { restaurantService } from "../config/constants";
+import { restaurantService, addressService } from "../config/constants";
+import AddressSelectorModal from "../components/AddressSelectorModal";
+import { BiMapPin, BiChevronRight, BiHomeAlt, BiBriefcase } from "react-icons/bi";
 
 
 const CartPage = () => {
@@ -17,6 +19,32 @@ const CartPage = () => {
     } = useAppData();
     
     const [loadingItemId, setLoadingItemId] = useState(null);
+    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+
+    const getAuthHeader = () => {
+        const token = localStorage.getItem("token");
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    };
+
+    // Load default address on mount
+    useEffect(() => {
+        const fetchDefaultAddress = async () => {
+            try {
+                const { data } = await axios.get(addressService, {
+                    headers: getAuthHeader(),
+                    withCredentials: true
+                });
+                if (data?.data?.addresses && data.data.addresses.length > 0) {
+                    const defaultAddr = data.data.addresses.find(a => a.is_default) || data.data.addresses[0];
+                    setSelectedAddress(defaultAddr);
+                }
+            } catch (e) {
+                console.error("Failed to load default address for checkout:", e);
+            }
+        };
+        fetchDefaultAddress();
+    }, []);
 
     const formatPrice = (paise) => {
         return `₹${(Number(paise) / 100).toFixed(2)}`;
@@ -50,6 +78,12 @@ const CartPage = () => {
     };
 
     const handleCheckoutSingle = (restaurantCart) => {
+        if (!selectedAddress) {
+            toast.error("Please select a delivery address to proceed to checkout!");
+            setIsAddressModalOpen(true);
+            return;
+        }
+
         const rFees = calculateRestaurantFees(restaurantCart);
         if (restaurantCart.restaurant?.is_open === false) {
             toast.error(`${restaurantCart.restaurant.name} is currently closed`);
@@ -62,11 +96,19 @@ const CartPage = () => {
         }
 
         toast.success(
-            `Proceeding to checkout for ${restaurantCart.restaurant.name} (${formatPrice(rFees.total)})!`
+            `Proceeding to checkout for 
+                ${restaurantCart.restaurant.name} 
+                (${formatPrice(rFees.total)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
         );
     };
 
     const handleCheckoutAll = () => {
+        if (!selectedAddress) {
+            toast.error("Please select a delivery address to proceed to checkout!");
+            setIsAddressModalOpen(true);
+            return;
+        }
+
         if (validRestaurants.length === 0) {
             toast.error("No open or available restaurants to checkout right now.");
             return;
@@ -74,11 +116,11 @@ const CartPage = () => {
 
         if (hasBlockedRestaurantsInCart) {
             toast.success(
-                `Proceeding to checkout for ${validRestaurants.length} open/available restaurant${validRestaurants.length !== 1 ? 's' : ''} (${formatPrice(globalFees.grandTotal)})!`
+                `Proceeding to checkout for ${validRestaurants.length} open/available restaurant${validRestaurants.length !== 1 ? 's' : ''} (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
             );
         } else {
             toast.success(
-                `Proceeding to checkout for all restaurants (${formatPrice(globalFees.grandTotal)})!`
+                `Proceeding to checkout for all restaurants (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
             );
         }
     };
@@ -88,9 +130,7 @@ const CartPage = () => {
             const { data } = await axios.delete(
                 `${restaurantService}/cart/remove/${itemId}`,
                 {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }   
+                    headers: getAuthHeader()
                 }
             );
 
@@ -123,9 +163,7 @@ const CartPage = () => {
             const { data } = await axios.delete(
                 `${restaurantService}/cart/remove/r/${restaurantId}`,
                 {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }   
+                    headers: getAuthHeader()
                 }
             );
 
@@ -160,9 +198,7 @@ const CartPage = () => {
             const { data } = await axios.delete(
                 `${restaurantService}/cart/clear`,
                 {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }   
+                    headers: getAuthHeader()
                 }
             );
 
@@ -185,6 +221,13 @@ const CartPage = () => {
         } finally {
             setClearingCart(false);
         }
+    };
+
+    const getLabelIcon = (label) => {
+        const lower = (label || '').toLowerCase();
+        if (lower.includes('home')) return <BiHomeAlt className="h-5 w-5 text-blue-500" />;
+        if (lower.includes('work') || lower.includes('office')) return <BiBriefcase className="h-5 w-5 text-purple-500" />;
+        return <BiMapPin className="h-5 w-5 text-emerald-500" />;
     };
 
     if(loadingCart){
@@ -233,10 +276,49 @@ const CartPage = () => {
                 </p>
             </div>
 
+            {/* Delivery Address Banner */}
+            <div className="mb-8 rounded-2xl border border-red-100 bg-white p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                        {selectedAddress ? getLabelIcon(selectedAddress.label) : <BiMapPin className="h-6 w-6" />}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                Delivering To
+                            </span>
+                            {selectedAddress && (
+                                <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-bold text-red-600 border border-red-100">
+                                    {selectedAddress.label}
+                                </span>
+                            )}
+                        </div>
+                        {selectedAddress ? (
+                            <p className="text-sm font-bold text-gray-900 mt-0.5">
+                                {selectedAddress.recipient_name} • {selectedAddress.address_line_1}, {selectedAddress.city} ({selectedAddress.postal_code})
+                            </p>
+                        ) : (
+                            <p className="text-sm font-semibold text-red-600 mt-0.5">
+                                ⚠️ No delivery address selected. Please pick an address.
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="flex items-center gap-1 text-sm font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition"
+                >
+                    {selectedAddress ? "Change Address" : "Select Address"}
+                    <BiChevronRight className="h-5 w-5" />
+                </button>
+            </div>
+
 
             <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
 
-                {/* CART */}
+                {/* CART RESTAURANT ITEMS */}
                 <div className="space-y-6">
 
                     {cart.map((restaurantCart) => {
@@ -285,7 +367,7 @@ const CartPage = () => {
                                         </p>
                                     </div>
 
-                                    {/* OPTION A: Remove All items for this Restaurant */}
+                                    {/* Remove All items for this Restaurant */}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveRestaurantItems(restaurant.id, restaurant.name)}
@@ -573,7 +655,6 @@ const CartPage = () => {
                         </p>
                     )}
 
-                    {/* OPTION B: Clear Entire Cart Button */}
                     <button
                         type="button"
                         onClick={clearCart}
@@ -586,6 +667,14 @@ const CartPage = () => {
                 </div>
 
             </div>
+
+            {/* Address Selector Modal */}
+            <AddressSelectorModal
+                isOpen={isAddressModalOpen}
+                onClose={() => setIsAddressModalOpen(false)}
+                selectedAddressId={selectedAddress?.id}
+                onSelectAddress={(addr) => setSelectedAddress(addr)}
+            />
 
         </div>
     );
