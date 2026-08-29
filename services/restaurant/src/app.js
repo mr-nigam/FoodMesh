@@ -7,6 +7,7 @@ import errorHandler from "./middlewares/errorHandler.js";
 import restaurantRouter from './routes/restaurant.routes.js';
 import menuItemsRouter from './routes/menuItem.routes.js';
 import cartRouter from './routes/cart.routes.js';
+import internalRouter from './routes/internal.js';
 // import morgan from 'morgan';
 
 
@@ -40,6 +41,7 @@ app.use(cookieParser());
 app.use("/api/v1/restaurant/menu", menuItemsRouter);
 app.use("/api/v1/restaurant/cart", cartRouter);
 app.use("/api/v1/restaurant", restaurantRouter);
+app.use("/api/v1/restaurant/internal", internalRouter);
 
 
 app.use((req,res,next)=>{

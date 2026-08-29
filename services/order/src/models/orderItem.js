@@ -1,14 +1,13 @@
 import pool from "../config/postgre.js";
 
 import createUpdatedAtTrigger 
-from "../utils/dbTriggers.js";
+from "../utils/dbTrigger.js";
 
 
 const createOrderItemsTable = async() => {
     try{
-        
         await pool.query(`
-            CREATE TABLE order_items (
+            CREATE TABLE IF NOT EXISTS order_items (
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 
@@ -26,7 +25,7 @@ const createOrderItemsTable = async() => {
                     CHECK (quantity > 0),
 
                 subtotal NUMERIC(12,2) NOT NULL
-                    CHECK (subtotal >= 0),,
+                    CHECK (subtotal >= 0),
 
                 created_at TIMESTAMPTZ NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
@@ -37,10 +36,10 @@ const createOrderItemsTable = async() => {
         `);
             
         await pool.query(`
-            CREATE INDEX idx_order_items_order_restaurant_id
+            CREATE INDEX IF NOT EXISTS idx_order_items_order_restaurant_id
                 ON order_items(order_restaurant_id);
 
-            CREATE INDEX idx_order_items_item_id
+            CREATE INDEX IF NOT EXISTS idx_order_items_item_id
                 ON order_items(item_id);
         `);
 

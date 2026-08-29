@@ -1,7 +1,7 @@
 import pool from "../config/postgre.js";
 
 import createUpdatedAtTrigger
-from "../utils/dbTriggers.js";
+from "../utils/dbTrigger.js";
 
 
 const createOrdersTable = async () => {

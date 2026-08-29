@@ -1,5 +1,4 @@
-import pool, { conectDB }
-from '../config/postgre.js';
+import pool, { conectDB } from '../config/postgre.js';
 
 
 const bootstrapDB = async () => {
@@ -7,6 +6,7 @@ const bootstrapDB = async () => {
         await conectDB();
         
         console.log("✅ PostgreSQL Connected");
+        
     }catch(error){
 
         console.error('❌ PostgreSQL Connection Failed');

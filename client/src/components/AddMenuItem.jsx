@@ -86,7 +86,7 @@ const AddMenuItem = ({ onItemAdded }) => {
         formData.append("name", trimmedName);
         formData.append("description", trimmedDescription);
         formData.append("price", String(priceInPaise));
-        formData.append("image", image);
+        formData.append("file", image);
         formData.append("category", trimmedCategory);
 
         try {

@@ -34,7 +34,12 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
+import userOrderRouter from './routes/order.user.js';
+
 // API Routes
+app.use("/api/v1/order", userOrderRouter);
+app.use("/api/v1/orders", userOrderRouter);
+app.use("/api/v1/user/order", userOrderRouter);
 
 
 app.use((req,res,next)=>{

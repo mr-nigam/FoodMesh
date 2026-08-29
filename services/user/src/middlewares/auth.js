@@ -4,6 +4,13 @@ import ApiError from '../utils/apiError.js';
 import asyncHandler from './asyncHandler.js';
 
 
+const serviceKeys = {
+    "order-service": process.env.ORDER_SERVICE_KEY,
+    "restaurant-service": process.env.RESTAURANT_SERVICE_KEY,
+    "cart-service": process.env.CART_SERVICE_KEY,
+    "rider-service": process.env.RIDER_SERVICE_KEY
+};
+
 const authenticateUser = asyncHandler(async (req, _, next) => {
     // 1. Extract token safely
     const authHeader = req.header("Authorization");
@@ -91,7 +98,29 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
     next();
 });
 
+const authenticateService = (req, res, next) => {
+    const serviceName = req.headers["x-service-name"];
+    const serviceKey = req.headers["x-service-key"];
+
+    if(
+        !serviceName ||
+        !serviceKey ||
+        serviceKeys[serviceName] !== serviceKey
+    ){
+        return res
+            .status(401)
+            .json({
+                message: "Unauthorized service"
+            });
+    }
+
+    req.service = serviceName;
+
+    next();
+};
+
 
 export {
-    authenticateUser
+    authenticateUser,
+    authenticateService
 };

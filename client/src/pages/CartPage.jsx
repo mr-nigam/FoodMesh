@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { calculateCartFees, calculateRestaurantFees } from "../utils/feeCalculator";
 import axios from "axios";
-import { restaurantService , addressService} from "../config/constants";
+import { restaurantService, addressService, orderService } from "../config/constants";
 import AddressSelectorModal from "../components/AddressSelectorModal";
-import { BiMapPin, BiChevronRight, BiHomeAlt, BiBriefcase } from "react-icons/bi";
+import { BiMapPin, BiChevronRight, BiHomeAlt, BiBriefcase, BiLoader } from "react-icons/bi";
 
 
 const CartPage = () => {
@@ -19,6 +19,7 @@ const CartPage = () => {
     } = useAppData();
     
     const [loadingItemId, setLoadingItemId] = useState(null);
+    const [placingOrder, setPlacingOrder] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
@@ -97,33 +98,83 @@ const CartPage = () => {
         }
     };
 
-    const handleCheckoutSingle = (restaurantCart) => {
-        if (!selectedAddress){
-            toast.error("Please select a delivery address to proceed to checkout!");
+    const handleCheckoutSingle = async (restaurantCart) => {
+        if(!selectedAddress){
+            
+            toast.error(
+                "Please select a delivery address to proceed to checkout!"
+            );
+            
             setIsAddressModalOpen(true);
             return;
         }
 
-        const rFees = calculateRestaurantFees(restaurantCart);
-        if (restaurantCart.restaurant?.is_open === false) {
-            toast.error(`${restaurantCart.restaurant.name} is currently closed`);
+        if(restaurantCart.restaurant?.is_open === false){
+            toast.error(
+                `${restaurantCart.restaurant.name} is currently closed`
+            );
             return;
         }
+
         const hasUnavailable = restaurantCart.items.some((i) => !i.is_available);
-
+        
         if(hasUnavailable){
-            toast.error("Some items from this restaurant are currently unavailable");
+            toast.error(
+                "Some items from this restaurant are currently unavailable"
+            );
             return;
         }
 
-        toast.success(
-            `Proceeding to checkout for 
-                ${restaurantCart.restaurant.name} 
-                (${formatPrice(rFees.total)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
-        );
+        try {
+            setPlacingOrder(true);
+            const token = localStorage.getItem("token");
+
+            // Thin payload: Saved address (addressId) vs Custom Map Location (address)
+            const payload = {
+                restaurantId: restaurantCart.restaurant.id,
+                paymentMethod: "cash",
+                orderType: "checkoutSingle",
+                ...(selectedAddress.id || selectedAddress._id
+                    ? { addressId: selectedAddress.id || selectedAddress._id }
+                    : {
+                        address: {
+                            formattedAddress: selectedAddress.formatted_address || selectedAddress.formattedAddress || `${selectedAddress.address_line_1 || selectedAddress.addressLine1 || ''}, ${selectedAddress.city || ''}`,
+                            latitude: selectedAddress.latitude,
+                            longitude: selectedAddress.longitude,
+                            recipientName: selectedAddress.recipient_name || selectedAddress.recipientName || "Recipient",
+                            phone: selectedAddress.phone || selectedAddress.mobile || "+919876543210",
+                            city: selectedAddress.city || "",
+                            state: selectedAddress.state || "",
+                            postalCode: selectedAddress.postal_code || selectedAddress.postalCode || ""
+                        }
+                    })
+            };
+
+            const { data } = await axios.post(
+                `${orderService}/create`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            toast.success(
+                `Order created successfully for ${restaurantCart.restaurant.name}!`
+            );
+
+            if(refreshCart) await refreshCart();
+
+        } catch (error) {
+            console.error("Order creation failed:", error);
+            toast.error(error?.response?.data?.message || "Failed to place order");
+        } finally {
+            setPlacingOrder(false);
+        }
     };
 
-    const handleCheckoutAll = () => {
+    const handleCheckoutAll = async () => {
         if(!selectedAddress){
             toast.error("Please select a delivery address to proceed to checkout!");
             setIsAddressModalOpen(true);
@@ -135,15 +186,58 @@ const CartPage = () => {
             return;
         }
 
-        if(hasBlockedRestaurantsInCart){
-            toast.success(
-                `Proceeding to checkout for ${validRestaurants.length} open/available restaurant${validRestaurants.length !== 1 ? 's' : ''} (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
+        try{
+            setPlacingOrder(true);
+            const token = localStorage.getItem("token");
+            
+            const addressPayload = selectedAddress.id || selectedAddress._id
+                ? { addressId: selectedAddress.id || selectedAddress._id }
+                : {
+                    address: {
+                        formattedAddress: selectedAddress.formatted_address || selectedAddress.formattedAddress || `${selectedAddress.address_line_1 || selectedAddress.addressLine1 || ''}, ${selectedAddress.city || ''}`,
+                        latitude: selectedAddress.latitude,
+                        longitude: selectedAddress.longitude,
+                        recipientName: selectedAddress.recipient_name || selectedAddress.recipientName || "Recipient",
+                        phone: selectedAddress.phone || selectedAddress.mobile || "+919876543210",
+                        city: selectedAddress.city || "",
+                        state: selectedAddress.state || "",
+                        postalCode: selectedAddress.postal_code || selectedAddress.postalCode || ""
+                    }
+                };
+            
+            await axios.post(
+                `${orderService}/create`,
+                {
+                    paymentMethod: "cash",
+                    orderType: "checkoutAll",
+                    ...addressPayload
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
 
-        }else{
             toast.success(
-                `Proceeding to checkout for all restaurants (${formatPrice(globalFees.grandTotal)})!\nDelivering to: ${selectedAddress.label} (${selectedAddress.city})`
+                `Successfully placed orders for ${validRestaurants.length} restaurant(s)!`
             );
+
+            if(refreshCart) await refreshCart();
+
+        }catch(error){
+            console.error(
+                "Order creation failed:",
+                error
+            );
+
+            toast.error(
+                error?.response?.data?.message || 
+                "Failed to place order"
+            );
+
+        }finally{
+            setPlacingOrder(false);
         }
     };
     

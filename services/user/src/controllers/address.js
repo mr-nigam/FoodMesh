@@ -271,7 +271,7 @@ const fetchDefaultAddress = asyncHandler( async (req, res) => {
         );
 });
 
-const fecthAddress = asyncHandler( async (req,res) => {
+const fecthAddress = asyncHandler( async (req, res) => {
     const addressId = req?.params?.addressId?.trim() || "";
 
     if(!addressId){

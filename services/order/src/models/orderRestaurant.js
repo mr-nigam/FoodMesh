@@ -1,7 +1,7 @@
 import pool from "../config/postgre.js";
 
 import createUpdatedAtTrigger
-from "../utils/dbTriggers.js";
+from "../utils/dbTrigger.js";
 
 
 const createOrderRestaurantTable = async () => {
@@ -19,6 +19,15 @@ const createOrderRestaurantTable = async () => {
                 restaurant_id UUID NOT NULL,
 
                 restaurant_name VARCHAR(255) NOT NULL,
+
+                restaurant_phone VARCHAR(15) UNIQUE
+                    CHECK (
+                        phone ~ '^\\+[1-9][0-9]{6,14}$'
+                    ),
+
+                restaurant_location GEOGRAPHY(POINT, 4326) NOT NULL,
+
+                restaurant_address JSONB NOT NULL,
 
                 subtotal NUMERIC(12,2) NOT NULL
                     CHECK (subtotal >= 0),
