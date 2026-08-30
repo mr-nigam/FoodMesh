@@ -15,7 +15,9 @@ const createOrderItemsTable = async() => {
                     REFERENCES order_restaurants(id)
                     ON DELETE CASCADE,
 
-                item_id UUID,
+                cart_id UUID UNIQUE NOT NULL,
+
+                item_id UUID NOT NULL,
 
                 item_name VARCHAR(255) NOT NULL,
 

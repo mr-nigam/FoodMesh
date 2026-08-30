@@ -140,6 +140,7 @@ const COIItemsTableRepo = async({
 }) => { 
 
     const itemId = item.item_id || item.id;
+    const cartId = item.cart_id;
     const itemName = item.name || item.item_name || "";
     const unitPrice = Number(item.price ?? item.unit_price ?? 0);
     const quantity = Number(item.quantity || 1);
@@ -147,6 +148,7 @@ const COIItemsTableRepo = async({
 
     const values = [
         orderRestaurantId,
+        cartId,
         itemId,
         itemName,
         unitPrice,
@@ -157,6 +159,7 @@ const COIItemsTableRepo = async({
     const IOrderInsertQuery = `
         INSERT INTO order_items (
             order_restaurant_id,
+            cart_id,
             item_id,
             item_name,
             unit_price,
@@ -165,10 +168,12 @@ const COIItemsTableRepo = async({
         )
         VALUES (
             $1, $2, $3,
-            $4, $5, $6
+            $4, $5, $6,
+            $7
         )
         RETURNING
             id,
+            cart_id,
             item_id,
             order_restaurant_id,
             item_name,

@@ -22,6 +22,9 @@ const createOrder = asyncHandler ( async(req, res) => {
         );
 });
 
+const fetchOrderForPayment = asyncHandler ( async(req, res) =>{
+    
+});
 
 export {
     createOrder
