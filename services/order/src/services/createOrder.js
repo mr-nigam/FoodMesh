@@ -3,43 +3,24 @@ import ApiError from '../utils/apiError.js';
 
 import {
     getAddress,
-    getAllCartItems,
-    getSingleRestaurantCartItems
+    getCartData,
+    deleteCartData,
 } from '../clients/user.client.js';
 
-
 import {
-    fetchAddressRepo,
-    fetchCartItemsRepo
-} from '../repositories/order.js';
+    COIOrdersTableRepo,
+    COIRestarurantTableRepo,
+    COIItemsTableRepo
+} from '../repositories/createOrder.js';
 
 
-const singleService = async({
+const getAddressService = async({
+    userId,
+    address,
+    addressId
+}) => {
 
-}) =>{
-
-};
-
-const allService = async({
-
-}) =>{
-
-};
-
-const createOrderService = async ({ user, body }) => {
-    const userId = user?.id;
-
-    const {
-        restaurantId,
-        addressId,
-        address,
-        paymentMethod = 'cash',
-        orderType
-    } = body || {};
-
-
-    // 1. Resolve Delivery Address
-    let deliveryAddressObj = null;
+    let deliveryAddress = null;
     let userPhone = null;
 
     if(addressId?.trim()){
@@ -56,7 +37,7 @@ const createOrderService = async ({ user, body }) => {
         }
 
         userPhone = addr.phone;
-        deliveryAddressObj = {
+        deliveryAddress = {
             id: addr.id,
             label: addr.label,
             recipientName: addr.recipient_name,
@@ -96,7 +77,7 @@ const createOrderService = async ({ user, body }) => {
         }
 
         userPhone = phone.trim();
-        deliveryAddressObj = {
+        deliveryAddress = {
             recipientName: recipientName.trim(),
             phone: userPhone,
             formattedAddress: formattedAddress.trim(),
@@ -114,212 +95,229 @@ const createOrderService = async ({ user, body }) => {
         );
     }
 
-    // 2. Fetch Cart Items & Live Menu Data for the user
-    const targetRestId = restaurantId?.trim() || null;
+    return {
+        userPhone,
+        deliveryAddress
+    };
+};
 
-    const cartRows = await fetchCartItemsRepo({
+const createOrderService = async ({ 
+    user,
+    body 
+}) => {
+    const userId = user?.id;
+
+    const {
+        address,
+        addressId,
+        paymentMethod = 'cash',
+        restaurantId = null
+    } = body || {};
+
+
+    // 1. Resolve Delivery Address
+    const {
+        userPhone,
+        deliveryAddress
+    } = await getAddressService({
         userId,
-        targetRestId
+        address,
+        addressId
     });
 
-    // Check restaurant status and item availability
-    for(const item of cartRows){
-        if(item.is_open === false){
-            throw new ApiError(
-                400,
-                `${item.restaurant_name} is currently closed`
-            );
-        }
-        if(item.is_available === false){
-            throw new ApiError(400,
-                `Item "${item.item_name}" is currently unavailable`
-            );
-        }
-    }
-
-    // 3. Group Cart Items by Restaurant & Calculate Fee Breakdowns
-    const restaurantGroupsMap = new Map();
-
-    for (const row of cartRows) {
-        const rId = row.restaurant_id;
-        if (!restaurantGroupsMap.has(rId)) {
-            restaurantGroupsMap.set(rId, {
-                restaurantId: rId,
-                restaurantName: row.restaurant_name,
-                items: [],
-                subtotal: 0
-            });
-        }
-
-        const group = restaurantGroupsMap.get(rId);
-        const itemPrice = Number(row.menu_price || row.cart_price || 0);
-        const itemSubtotal = itemPrice * Number(row.quantity);
-
-        group.items.push({
-            cart_id: row.cart_id,
-            item_id: row.item_id,
-            item_name: row.item_name,
-            unit_price: itemPrice,
-            quantity: Number(row.quantity),
-            subtotal: itemSubtotal
+    // 2. Normalize restaurant   
+    const targetRestId =
+        typeof restaurantId === "string"
+            ? restaurantId.trim() || null
+            : null;
+    // 3. Fetch cart
+    const cartData = targetRestId
+        ? await getCartData({
+            userId,
+            targetRestId
+        }) 
+        : await getCartData({
+            userId
         });
 
-        group.subtotal += itemSubtotal;
+    if(
+        !Array.isArray(cartData) || 
+        cartData.length === 0
+    ){
+        throw new ApiError(
+            400,
+            "Cart is empty"
+        );
     }
 
-    // Calculate fees per restaurant and globally
+    // 4. Validate payment
+    const pMethod =
+        typeof paymentMethod === "string"
+            ? paymentMethod.trim().toLowerCase()
+            : null;
+
+    const validPaymentMethods = [
+        "cash",
+        "razorpay",
+        "stripe"
+    ];
+
+    if(!validPaymentMethods.includes(pMethod)){
+        throw new ApiError(
+            400,
+            "Invalid payment method"
+        );
+    }
+
+    // 5. Validate cart + calculate totals
     let globalSubtotal = 0;
     let globalTax = 0;
     let globalDelivery = 0;
+    
+    for(const row of cartData){
+        if(!row.restaurant){
+            throw new ApiError(
+                400,
+                "Invalid restaurant data"
+            );
+        }
 
-    const restaurantGroups = Array.from(restaurantGroupsMap.values()).map((group) => {
-        const taxAmount = Math.round(group.subtotal * 0.05); // 5% GST
-        const deliveryFee = 4500; // ₹45.00
-        const packagingFee = 1000; // ₹10.00
-        const restaurantTotal = group.subtotal + taxAmount + deliveryFee + packagingFee;
+        if(row.restaurant.is_open === false){
+            throw new ApiError(
+                400,
+                `${row.restaurant.name} is currently closed`
+            );
+        }
+        
+        if(
+            !Array.isArray(row.items) || 
+            row.items.length === 0
+        ){
+            throw new ApiError(
+                400,
+                `No items found for ${row.restaurant.name}`
+            );
+        }
 
-        globalSubtotal += group.subtotal;
+        for(const item of row.items){
+            if(item.is_available === false){
+                const itemName = item.name || item.item_name || "Item";
+                throw new ApiError(400,
+                    `Item "${itemName}" is currently unavailable`
+                );
+            }
+        }
+        
+        const subtotal = Number(row.total_value || row.totalValue || 0);
+
+        if(!Number.isFinite(subtotal) || subtotal < 0){
+            throw new ApiError(
+                400,
+                "Invalid cart subtotal"
+            );
+        }
+
+        const taxAmount = Math.round(subtotal * 0.05);
+        const deliveryFee = 4500;
+
+        globalSubtotal += subtotal;
         globalTax += taxAmount;
         globalDelivery += deliveryFee;
+    }
 
-        return {
-            ...group,
-            taxAmount,
-            deliveryFee,
-            packagingFee,
-            restaurantTotal
-        };
-    });
-
-    const platformFee = 500; // ₹5.00
+    const platformFee = 1000; // ₹10.00
     const globalTotal = globalSubtotal + globalTax + globalDelivery + platformFee;
 
-    // Validate payment method
-    const validPaymentMethods = ['cash', 'razorpay', 'stripe'];
-    const pMethod = validPaymentMethods.includes(paymentMethod) ? paymentMethod : 'cash';
-
-    // 4. Execute PostgreSQL Transaction
+    // 6. Execute PostgreSQL Transaction
     const client = await pool.connect();
+
+    let createdOrder;
+    const createdOrderRestaurants = [];
 
     try {
         await client.query("BEGIN");
 
-        const values = [
+        createdOrder = await COIOrdersTableRepo({
+            client,
             userId,
             userPhone,
-            JSON.stringify(deliveryAddressObj),
+            deliveryAddress,
             pMethod,
             globalSubtotal,
             globalDelivery,
             globalTax,
             globalTotal  
-        ];
+        });
 
-        // Insert main order record
-        const orderInsertQuery = `
-            INSERT INTO orders (
-                user_id,
-                user_phone,
-                delivery_address,
-                status,
-                payment_method,
-                payment_status,
-                subtotal,
-                delivery_fee,
-                tax_amount,
-                total_amount
-            )
-            VALUES ($1, $2, $3, 'placed', $4, 'pending', $5, $6, $7, $8)
-            RETURNING id, user_id, user_phone, status, payment_method, payment_status, subtotal, delivery_fee, tax_amount, total_amount, created_at;
-        `;
+        // order_restaurants
 
-        const orderRes = await client.query(
-            orderInsertQuery, values
-        );
+        for(const row of cartData){
 
-        const createdOrder = orderRes.rows[0];
+            const taxAmount = Math.round(Number(row.total_value || row.totalValue || 0) * 0.05); // 5% GST
 
-        // Insert order_restaurants and order_items
-        const createdOrderRestaurants = [];
+            const createdROrder = await COIRestarurantTableRepo({
+                client,
+                orderId: createdOrder.id,
+                restaurant: row.restaurant,
+                subtotal: Number(row.total_value || row.totalValue || 0),
+                taxAmount
+            });
 
-        for (const rGroup of restaurantGroups){
-            const rOrderInsertQuery = `
-                INSERT INTO order_restaurants (
-                    order_id,
-                    restaurant_id,
-                    restaurant_name,
-                    subtotal,
-                    tax_amount,
-                    delivery_fee,
-                    total_amount,
-                    status
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, 'placed')
-                RETURNING id, order_id, restaurant_id, restaurant_name, subtotal, tax_amount, delivery_fee, total_amount, status;
-            `;
-
-            const rOrderRes = await client.query(rOrderInsertQuery, [
-                createdOrder.id,
-                rGroup.restaurantId,
-                rGroup.restaurantName,
-                rGroup.subtotal,
-                rGroup.taxAmount,
-                rGroup.deliveryFee,
-                rGroup.restaurantTotal
-            ]);
-
-            const createdROrder = rOrderRes.rows[0];
-
-            for (const item of rGroup.items) {
-                const itemInsertQuery = `
-                    INSERT INTO order_items (
-                        order_restaurant_id,
-                        item_id,
-                        item_name,
-                        unit_price,
-                        quantity,
-                        subtotal
-                    )
-                    VALUES ($1, $2, $3, $4, $5, $6);
-                `;
-
-                await client.query(itemInsertQuery, [
-                    createdROrder.id,
-                    item.item_id,
-                    item.item_name,
-                    item.unit_price,
-                    item.quantity,
-                    item.subtotal
-                ]);
+            // order_items
+            for(const item of row.items){
+                await COIItemsTableRepo({
+                    client,
+                    orderRestaurantId: createdROrder.id,
+                    item
+                });
+                
             }
 
             createdOrderRestaurants.push(createdROrder);
         }
 
-        // Delete processed cart items from carts table
-        const deleteCartQuery = `
-            DELETE FROM carts
-            WHERE user_id = $1
-              AND ($2::uuid IS NULL OR restaurant_id = $2::uuid);
-        `;
-
-        await client.query(deleteCartQuery, [userId, targetRestId]);
-
         await client.query("COMMIT");
 
-        return {
-            order: createdOrder,
-            orderRestaurants: createdOrderRestaurants,
-            deliveryAddress: deliveryAddressObj
-        };
-
-    } catch (error) {
+    }catch(error){
         await client.query("ROLLBACK");
-        console.error("Order Transaction Error:", error);
-        throw new ApiError(500, error.message || "Failed to process order creation");
-    } finally {
+
+        console.error(
+            "Order Transaction Error:",
+            error
+        );
+        
+        throw new ApiError(
+            500,
+            error.message || 
+            "Failed to process order creation"
+        );
+
+    }finally{
         client.release();
     }
+
+    // 7. Cart cleanup AFTER successful commit
+    
+    try{
+        const deletedData = await deleteCartData({
+            userId,
+            restaurantId: targetRestId,
+            requestType: targetRestId ? "single" : "all"
+        });
+    }catch(error){
+        console.error("Cart deletion failed after order creation", {
+            userId,
+            restaurantId: targetRestId,
+            orderId: createdOrder.id,
+            error: error.message
+        });
+    }
+
+    return {
+        order: createdOrder,
+        orderRestaurants: createdOrderRestaurants,
+        deliveryAddress: deliveryAddress
+    };
 };
 
 

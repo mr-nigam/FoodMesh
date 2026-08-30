@@ -6,6 +6,7 @@ import {
 
 import {
     fetchCartItems,
+    deleteCartData
 } from '../controllers/internal.js';
 
 
@@ -16,13 +17,23 @@ router.use(authenticateService);
 
 
 router.get(
-    "/users/:userId/restaurant/:restaurantId",
+    "/users/:userId/:requestType/restaurant/:restaurantId",
     fetchCartItems
 );
 
 router.get(
-    "/users/:userId/",
+    "/users/:userId/:requestType",
     fetchCartItems
+);
+
+router.delete(
+    "/users/:userId/:requestType/restaurant/:restaurantId",
+    deleteCartData
+);
+
+router.delete(
+    "/users/:userId/:requestType",
+    deleteCartData
 );
 
 

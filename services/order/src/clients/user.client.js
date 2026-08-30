@@ -28,35 +28,21 @@ const getAddress = async ({
     return address;
 };
 
-const getAllCartItems = async({
-    userId
-}) => {
-    
-    const {data} = await axios.get(
-        `${RESTAURANT_SERVICE}/internal/users/${userId}`,
-        {
-            headers: {
-                "x-service-name": "order-service",
-                "x-service-key": ORDER_SERVICE_KEY
-            }   
-        }
-    );
-
-     const cartItens = 
-        data?.data?.address ??
-        data?.address ??
-        null;
-
-    return cartItems;
-};
-
-const getSingleRestaurantCartItems = async({
+const getCartData = async({
     userId,
-    restaurantId
+    restaurantId,
+    targetRestId,
+    requestType
 }) => {
+    const restId = restaurantId || targetRestId || null;
+    const reqType = requestType || (restId ? "single" : "all");
     
-    const {data} = await axios.get(
-        `${RESTAURANT_SERVICE}/internal/users/${userId}/restaurant/${restaurantId}`,
+    const restaurantPath = restId
+        ? `/restaurant/${restId}`
+        : "";
+
+    const { data } = await axios.get(
+        `${RESTAURANT_SERVICE}/internal/users/${userId}/${reqType}${restaurantPath}`,
         {
             headers: {
                 "x-service-name": "order-service",
@@ -65,16 +51,48 @@ const getSingleRestaurantCartItems = async({
         }
     );
 
-     const cartItems = 
-        data?.data?.address ??
-        data?.address ??
+    const cartData = 
+        data?.data?.restaurants ??
+        data?.restaurants ??
         null;
 
-    return cartItems;
+    return cartData;
 };
+
+const deleteCartData = async({
+    userId,
+    restaurantId = null,
+    targetRestId = null,
+    requestType
+}) =>{
+    const restId = restaurantId || targetRestId || null;
+    const reqType = requestType || (restId ? "single" : "all");
+    
+    const restaurantPath = restId
+        ? `/restaurant/${restId}`
+        : "";
+
+    const { data } = await axios.delete(
+        `${RESTAURANT_SERVICE}/internal/users/${userId}/${reqType}${restaurantPath}`,
+        {
+            headers: {
+                "x-service-name": "order-service",
+                "x-service-key": ORDER_SERVICE_KEY
+            }   
+        }
+    );
+
+    const deletedData = 
+        data?.data ??
+        data ??
+        null;
+
+    return deletedData;
+};
+
 
 export {
     getAddress,
-    getAllCartItems,
-    getSingleRestaurantCartItems
+    getCartData,
+    deleteCartData
 };

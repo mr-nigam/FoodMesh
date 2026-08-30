@@ -130,7 +130,7 @@ const updateRole = asyncHandler(async (req, res)=>{
             name,
             email,
             role,
-            profile_picture_url;;
+            profile_picture_url;
     `;
     
     const result = await pool.query(

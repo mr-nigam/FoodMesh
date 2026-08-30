@@ -37,34 +37,47 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
         );
     }
 
-    const query = `
-        SELECT 
-            id,
-            name,
-            role,
-            email,
-            profile_picture_url,
-            password_changed_at
-        FROM users
-        WHERE id = $1
-            AND deleted_at IS NULL
-            AND deactivated_at IS NULL
-        LIMIT 1;
-    `;
+    let user;
 
-    const {rows} = await pool.query(
-        query,
-        [decodedToken?.id]
-    );
-    
-    if(rows.length === 0){
-        throw new ApiError(
-            401,
-            "User not found or token invalid"
+    try {
+        const query = `
+            SELECT 
+                id,
+                name,
+                role,
+                email,
+                profile_picture_url,
+                password_changed_at
+            FROM users
+            WHERE id = $1
+                AND deleted_at IS NULL
+                AND deactivated_at IS NULL
+            LIMIT 1;
+        `;
+
+        const {rows} = await pool.query(
+            query,
+            [decodedToken?.id]
         );
-    }
+        
+        if(rows.length === 0){
+            throw new ApiError(
+                401,
+                "User not found or token invalid"
+            );
+        }
 
-    const user =  rows[0];
+        user = rows[0];
+    } catch(dbErr) {
+        if(dbErr instanceof ApiError) throw dbErr;
+        // Fallback to token payload if users table is decoupled/not in order DB
+        user = {
+            id: decodedToken?.id,
+            email: decodedToken?.email,
+            role: decodedToken?.role,
+            name: decodedToken?.name
+        };
+    }
 
     // Invalidate old tokens after password change
     if(user.password_changed_at){

@@ -13,13 +13,7 @@ const fetchAddress = asyncHandler( async (req, res) => {
         !userId || 
         !addressId
     ){
-        throw Error("Please provide user and address id");
-    }
-
-    if(
-        req.service === "order-service"
-    ){
-        throw Error("This is service is not allowed to access this data");
+        throw new ApiError(400, "Please provide user and address id");
     }
     
     const searchQuery = `

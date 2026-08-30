@@ -62,7 +62,7 @@ const createOrderRestaurantTable = async () => {
                             'cancelled'
                         )
                     ),
-
+                    
                 created_at TIMESTAMPTZ NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
 
