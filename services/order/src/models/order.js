@@ -19,7 +19,10 @@ const createOrdersTable = async () => {
                 -- Reference to user-service user.
                 user_id UUID NOT NULL,
 
-                user_phone VARCHAR(15)
+                recipient_name VARCHAR(100) 
+                    DEFAULT 'account_holder',
+
+                recipient_phone VARCHAR(15)
                     CHECK (
                         user_phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
@@ -31,7 +34,8 @@ const createOrdersTable = async () => {
                     CHECK (
                         status IN (
                             'placed',
-                            'accepted',
+                            'confirmed',
+                            'accepted_at_restaurant',
                             'preparing',
                             'ready_for_rider',
                             'rider_assigned',
@@ -39,26 +43,6 @@ const createOrdersTable = async () => {
                             'on_the_way',
                             'delivered',
                             'cancelled'
-                        )
-                    ),
-
-                payment_method VARCHAR(30) NOT NULL
-                    DEFAULT 'razorpay'
-                    CHECK (
-                        payment_method IN (
-                            'cash',
-                            'razorpay',
-                            'stripe'
-                        )
-                    ),
-
-                payment_status VARCHAR(30) NOT NULL
-                    DEFAULT 'pending'
-                    CHECK (
-                        payment_status IN (
-                            'pending',
-                            'paid',
-                            'failed'
                         )
                     ),
 

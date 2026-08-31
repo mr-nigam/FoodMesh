@@ -20,9 +20,9 @@ const createOrderRestaurantTable = async () => {
 
                 restaurant_name VARCHAR(255) NOT NULL,
 
-                restaurant_phone VARCHAR(15) UNIQUE
+                restaurant_phone VARCHAR(15)
                     CHECK (
-                        phone ~ '^\\+[1-9][0-9]{6,14}$'
+                        restaurant_phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
 
                 restaurant_location GEOGRAPHY(POINT, 4326) NOT NULL,

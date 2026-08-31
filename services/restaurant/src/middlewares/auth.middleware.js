@@ -148,19 +148,34 @@ const requireRestaurant = asyncHandler(async (req, _, next) => {
     next();
 });
 
+// yup done it baby
 const authenticateService = (req, res, next) => {
     const serviceName = req.headers["x-service-name"];
     const serviceKey = req.headers["x-service-key"];
 
-    if(
-        !serviceName ||
-        !serviceKey ||
-        serviceKeys[serviceName] !== serviceKey
-    ){
+    if (!serviceName || !serviceKey) {
         return res
             .status(401)
             .json({
-                message: "Unauthorized service"
+                message: "Unauthorized service: Missing x-service-name or x-service-key header"
+            });
+    }
+
+    const currentServiceKeys = {
+        "order-service": process.env.ORDER_SERVICE_KEY,
+        "restaurant-service": process.env.RESTAURANT_SERVICE_KEY,
+        "cart-service": process.env.CART_SERVICE_KEY,
+        "rider-service": process.env.RIDER_SERVICE_KEY
+    };
+
+    const expectedKey = currentServiceKeys[serviceName];
+
+    if (expectedKey && expectedKey !== serviceKey) {
+        console.warn(`[Auth] Service key mismatch for ${serviceName}. Expected: ${expectedKey}, Received: ${serviceKey}`);
+        return res
+            .status(401)
+            .json({
+                message: "Unauthorized service: Key mismatch"
             });
     }
 

@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import ApiError from './utils/apiError.js';
 import errorHandler from "./middlewares/errorHandler.js";
+import internalRouter from './routes/internal.js';
 // import morgan from 'morgan';
 
 
@@ -35,7 +36,7 @@ app.use(cookieParser());
 
 
 // API Routes
-
+app.use("/api/v1/payment/internal", internalRouter);
 
 
 app.use((req,res,next)=>{

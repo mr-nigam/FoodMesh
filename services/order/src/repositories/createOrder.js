@@ -3,24 +3,36 @@
 const COIOrdersTableRepo = async({
     client,
     userId,
-    userPhone,
+    recipientName,
+    recipientPhone,
     deliveryAddress,
-    pMethod,
     globalSubtotal,
     globalDelivery,
     globalTax,
     globalTotal
 }) => { 
     
-    const formattedAddressObj = typeof deliveryAddress === 'string' 
-        ? deliveryAddress 
-        : JSON.stringify(deliveryAddress);
+    let formattedAddressObj = null;
+    if (deliveryAddress) {
+        if (typeof deliveryAddress === 'object') {
+            formattedAddressObj = JSON.stringify(deliveryAddress);
+        } else if (typeof deliveryAddress === 'string') {
+            const str = deliveryAddress.trim();
+            if (str.startsWith('{') || str.startsWith('[') || str.startsWith('"')) {
+                formattedAddressObj = str;
+            } else {
+                formattedAddressObj = JSON.stringify(str);
+            }
+        }
+    } else {
+        formattedAddressObj = JSON.stringify({});
+    }
 
     const values = [
         userId,
-        userPhone,
+        recipientName,
+        recipientPhone,
         formattedAddressObj,
-        pMethod,
         Number(globalSubtotal),
         Number(globalDelivery),
         Number(globalTax),
@@ -30,11 +42,10 @@ const COIOrdersTableRepo = async({
     const orderInsertQuery = `
         INSERT INTO orders (
             user_id,
-            user_phone,
+            recipient_name,
+            recipient_phone,
             delivery_address,
             status,
-            payment_method,
-            payment_status,
             subtotal,
             delivery_fee,
             tax_amount,
@@ -42,17 +53,15 @@ const COIOrdersTableRepo = async({
         )
         VALUES (
             $1, $2, $3,
-            'placed', $4, 
-            'pending', $5, 
-            $6, $7, $8
+            $4, 'placed', 
+            $5, $6, $7, $8
         )
         RETURNING 
             id,
             user_id,
-            user_phone,
+            recipient_name,
+            recipient_phone,
             status,
-            payment_method,
-            payment_status,
             subtotal,
             delivery_fee,
             tax_amount,
@@ -81,13 +90,47 @@ const COIRestarurantTableRepo = async({
     const numTaxAmount = Number(taxAmount || 0);
     const totalAmount = numSubtotal + numTaxAmount + deliveryFee;
 
+    let lng = 0, lat = 0;
+    if (restaurant.location) {
+        if (typeof restaurant.location === 'object') {
+            lng = Number(restaurant.location.x ?? restaurant.location.longitude ?? restaurant.location.coordinates?.[0] ?? 0);
+            lat = Number(restaurant.location.y ?? restaurant.location.latitude ?? restaurant.location.coordinates?.[1] ?? 0);
+        } else if (typeof restaurant.location === 'string') {
+            const match = restaurant.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+            if (match) {
+                lng = Number(match[1]);
+                lat = Number(match[2]);
+            }
+        }
+    }
+
+    let phone = restaurant.phone || null;
+    if (phone && !phone.startsWith('+')) {
+        phone = '+' + phone;
+    }
+
+    let formattedRestaurantAddress = JSON.stringify({});
+    if (restaurant.address) {
+        if (typeof restaurant.address === 'object') {
+            formattedRestaurantAddress = JSON.stringify(restaurant.address);
+        } else if (typeof restaurant.address === 'string') {
+            const str = restaurant.address.trim();
+            if (str.startsWith('{') || str.startsWith('[') || str.startsWith('"')) {
+                formattedRestaurantAddress = str;
+            } else {
+                formattedRestaurantAddress = JSON.stringify(str);
+            }
+        }
+    }
+
     const values = [
         orderId,
         restaurant.id,
         restaurant.name,
-        restaurant.phone || null,
-        restaurant.location ? (typeof restaurant.location === 'string' ? restaurant.location : JSON.stringify(restaurant.location)) : null,
-        restaurant.address ? (typeof restaurant.address === 'string' ? restaurant.address : JSON.stringify(restaurant.address)) : null,
+        phone,
+        lng,
+        lat,
+        formattedRestaurantAddress,
         numSubtotal,
         numTaxAmount,
         deliveryFee,
@@ -110,8 +153,8 @@ const COIRestarurantTableRepo = async({
         )
         VALUES (
             $1, $2, $3, $4,
-            $5, $6, $7, $8,
-            $9, $10, 'placed'
+            ST_SetSRID(ST_MakePoint($5, $6), 4326)::GEOGRAPHY,
+            $7, $8, $9, $10, $11, 'placed'
         )
         RETURNING 
             id,
@@ -140,7 +183,7 @@ const COIItemsTableRepo = async({
 }) => { 
 
     const itemId = item.item_id || item.id;
-    const cartId = item.cart_id;
+    const cartId = item.cart_id || item.id || globalThis.crypto?.randomUUID?.() || '00000000-0000-0000-0000-000000000000';
     const itemName = item.name || item.item_name || "";
     const unitPrice = Number(item.price ?? item.unit_price ?? 0);
     const quantity = Number(item.quantity || 1);

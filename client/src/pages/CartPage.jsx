@@ -205,7 +205,7 @@ const CartPage = () => {
                     }
                 };
             
-            await axios.post(
+            const {data } = await axios.post(
                 `${orderService}/create`,
                 {
                     paymentMethod: "cash",

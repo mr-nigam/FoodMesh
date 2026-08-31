@@ -5,6 +5,7 @@ import {
     getAddress,
     getCartData,
     deleteCartData,
+    createPaymentForOrder
 } from '../clients/user.client.js';
 
 import {
@@ -21,7 +22,8 @@ const getAddressService = async({
 }) => {
 
     let deliveryAddress = null;
-    let userPhone = null;
+    let recipientPhone = null;
+    let recipientName = null;
 
     if(addressId?.trim()){
         const addr = await getAddress({
@@ -36,12 +38,14 @@ const getAddressService = async({
             );
         }
 
-        userPhone = addr.phone;
+        recipientPhone = addr.recipient_phone;
+        recipientName = addr.recipient_name;
+        
         deliveryAddress = {
             id: addr.id,
             label: addr.label,
             recipientName: addr.recipient_name,
-            phone: addr.phone,
+            recipientPhone: addr.recipient_phone,
             addressLine1: addr.address_line_1,
             addressLine2: addr.address_line_2,
             landmark: addr.landmark,
@@ -60,7 +64,7 @@ const getAddressService = async({
             latitude,
             longitude,
             recipientName,
-            phone 
+            recipientPhone 
         } = address;
 
         if(
@@ -68,7 +72,7 @@ const getAddressService = async({
             latitude === undefined || 
             longitude === undefined || 
             !recipientName || 
-            !phone
+            !recipientPhone
         ){
             throw new ApiError(
                 400,
@@ -76,7 +80,9 @@ const getAddressService = async({
             );
         }
 
-        userPhone = phone.trim();
+        recipientName = recipientName.trim();
+        recipientPhone = recipientPhone.trim();
+
         deliveryAddress = {
             recipientName: recipientName.trim(),
             phone: userPhone,
@@ -96,7 +102,8 @@ const getAddressService = async({
     }
 
     return {
-        userPhone,
+        recipientName,
+        recipientPhone,
         deliveryAddress
     };
 };
@@ -110,14 +117,15 @@ const createOrderService = async ({
     const {
         address,
         addressId,
-        paymentMethod = 'cash',
+        paymentMethod = 'razorpay',
         restaurantId = null
     } = body || {};
 
 
     // 1. Resolve Delivery Address
     const {
-        userPhone,
+        recipientName,
+        recipientPhone,
         deliveryAddress
     } = await getAddressService({
         userId,
@@ -150,26 +158,7 @@ const createOrderService = async ({
         );
     }
 
-    // 4. Validate payment
-    const pMethod =
-        typeof paymentMethod === "string"
-            ? paymentMethod.trim().toLowerCase()
-            : null;
-
-    const validPaymentMethods = [
-        "cash",
-        "razorpay",
-        "stripe"
-    ];
-
-    if(!validPaymentMethods.includes(pMethod)){
-        throw new ApiError(
-            400,
-            "Invalid payment method"
-        );
-    }
-
-    // 5. Validate cart + calculate totals
+    // 4. Validate cart + calculate totals
     let globalSubtotal = 0;
     let globalTax = 0;
     let globalDelivery = 0;
@@ -228,7 +217,7 @@ const createOrderService = async ({
     const platformFee = 1000; // ₹10.00
     const globalTotal = globalSubtotal + globalTax + globalDelivery + platformFee;
 
-    // 6. Execute PostgreSQL Transaction
+    // 5. Execute PostgreSQL Transaction
     const client = await pool.connect();
 
     let createdOrder;
@@ -237,12 +226,19 @@ const createOrderService = async ({
     try {
         await client.query("BEGIN");
 
+        // yup done it baby
+        const formattedPhone = recipientPhone && !recipientPhone.startsWith('+') 
+            ? '+' + recipientPhone 
+            : recipientPhone;
+
+        const formattedName = recipientName?.trim() || "account_holder";
+
         createdOrder = await COIOrdersTableRepo({
             client,
             userId,
-            userPhone,
+            recipientName: formattedName,
+            recipientPhone: formattedPhone,
             deliveryAddress,
-            pMethod,
             globalSubtotal,
             globalDelivery,
             globalTax,
@@ -250,7 +246,6 @@ const createOrderService = async ({
         });
 
         // order_restaurants
-
         for(const row of cartData){
 
             const taxAmount = Math.round(Number(row.total_value || row.totalValue || 0) * 0.05); // 5% GST
@@ -296,10 +291,10 @@ const createOrderService = async ({
         client.release();
     }
 
-    // 7. Cart cleanup AFTER successful commit
+    // 6. Cart cleanup AFTER successful commit
     
     try{
-        const deletedData = await deleteCartData({
+        await deleteCartData({
             userId,
             restaurantId: targetRestId,
             requestType: targetRestId ? "single" : "all"
@@ -313,10 +308,29 @@ const createOrderService = async ({
         });
     }
 
+    let payment;
+    
+    // yup done it baby
+    try{
+        payment = await createPaymentForOrder({
+            userId,
+            orderId: createdOrder.id,
+            amount: globalTotal,
+            currency: "INR",
+            paymentMethod
+        });
+    }catch(paymentError){
+        console.error(
+            "Payment creation for order failed:",
+            paymentError?.message || paymentError
+        );
+    }
+
     return {
-        order: createdOrder,
+        orderDetails: createdOrder,
         orderRestaurants: createdOrderRestaurants,
-        deliveryAddress: deliveryAddress
+        deliveryAddress: deliveryAddress,
+        payment,
     };
 };
 

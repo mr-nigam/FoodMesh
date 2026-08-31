@@ -38,10 +38,11 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
+// yup done it baby
+app.use("/api/v1/restaurant/internal", internalRouter);
 app.use("/api/v1/restaurant/menu", menuItemsRouter);
 app.use("/api/v1/restaurant/cart", cartRouter);
 app.use("/api/v1/restaurant", restaurantRouter);
-app.use("/api/v1/restaurant/internal", internalRouter);
 
 
 app.use((req,res,next)=>{

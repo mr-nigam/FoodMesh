@@ -26,7 +26,7 @@ const createAddressTable = async() => {
                 recipient_name VARCHAR(100) NOT NULL
                     CHECK (length(trim(recipient_name)) > 0),
 
-                phone VARCHAR(15)
+                recipient_phone VARCHAR(15)
                     CHECK (
                         phone ~ '^\+[1-9][0-9]{6,14}$'
                     ),

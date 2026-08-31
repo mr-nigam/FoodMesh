@@ -21,7 +21,7 @@ const fetchAddress = asyncHandler( async (req, res) => {
             id,
             label,
             recipient_name,
-            phone,
+            recipient_phone,
             address_line_1,
             address_line_2,
             landmark,
