@@ -74,7 +74,7 @@ const AddAddressPage = () => {
   const [recipientName, setRecipientName] = useState("");
   const [countryDialCode, setCountryDialCode] = useState("+91");
   const [countryCode, setCountryCode] = useState("IN");
-  const [phone, setPhone] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
   const [landmark, setLandmark] = useState("");
@@ -135,7 +135,7 @@ const AddAddressPage = () => {
       return;
     }
 
-    if (!phone.trim()) {
+    if (!recipientPhone.trim()) {
       toast.error("Phone number is required");
       return;
     }
@@ -154,7 +154,7 @@ const AddAddressPage = () => {
     const dialCode = countryDialCode.trim().startsWith("+")
       ? countryDialCode.trim()
       : `+${countryDialCode.trim()}`;
-    const rawNumber = phone.trim().replace(/^[+]/, "");
+    const rawNumber = recipientPhone.trim().replace(/^[+]/, "");
     const fullPhone = `${dialCode}${rawNumber}`;
 
     try {
@@ -166,7 +166,7 @@ const AddAddressPage = () => {
         {
           label,
           recipientName: recipientName.trim(),
-          phone: fullPhone,
+          recipientPhone: fullPhone,
           addressLine1: addressLine1.trim(),
           addressLine2: addressLine2.trim(),
           landmark: landmark.trim(),
@@ -315,19 +315,19 @@ const AddAddressPage = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number *</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Recipient Phone Number *</label>
               <input
                 type="text"
                 required
                 placeholder="91938611118"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={recipientPhone}
+                onChange={(e) => setRecipientPhone(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#E23744] focus:outline-none"
               />
             </div>
           </div>
           <p className="text-[11px] text-gray-500">
-            Combined number sent to backend: <span className="font-mono text-gray-800 font-bold">{countryDialCode}{phone.trim().replace(/^[+]/, "") || "91938611118"}</span>
+            Combined number sent to backend: <span className="font-mono text-gray-800 font-bold">{countryDialCode}{recipientPhone.trim().replace(/^[+]/, "") || "91938611118"}</span>
           </p>
 
           {/* Address Line 1 */}

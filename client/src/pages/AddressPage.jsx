@@ -127,9 +127,9 @@ const AddressPage = () => {
 
                     <h4 className="text-sm font-bold text-gray-900"> 
                       {addr.recipient_name || addr.recipientName || "Recipient"} 
-                      {(addr.phone || addr.mobile) && (
+                      {(addr.recipient_phone || addr.mobile) && (
                         <span className="ml-2 font-normal text-gray-500 text-xs"> 
-                          📞 {addr.phone || addr.mobile} 
+                          📞 {addr.recipient_phone || addr.mobile} 
                         </span> 
                       )}
                     </h4> 

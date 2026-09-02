@@ -11,6 +11,10 @@ const createOrderItemsTable = async() => {
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 
+                 order_id UUID NOT NULL
+                    REFERENCES orders(id)
+                    ON DELETE CASCADE,
+                
                 order_restaurant_id UUID NOT NULL
                     REFERENCES order_restaurants(id)
                     ON DELETE CASCADE,

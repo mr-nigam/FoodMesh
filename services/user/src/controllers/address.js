@@ -10,7 +10,7 @@ const addAddress = asyncHandler( async (req,res) => {
     const validatedData = validateAddress({
         label: req.body.label,
         recipientName: req.body.recipientName,
-        recipientPhone: req.body.phone,
+        recipientPhone: req.body.recipientPhone,
         addressLine1: req.body.addressLine1,
         addressLine2: req.body.addressLine2,
         landmark: req.body.landmark,
@@ -340,7 +340,7 @@ const editAddress = asyncHandler( async (req, res) => {
     const validatedData = validateAddress({
         label: req.body.label,
         recipientName: req.body.recipientName,
-        recipient_phone: req.body.phone,
+        recipientPhone: req.body.recipientPhone,
         addressLine1: req.body.addressLine1,
         addressLine2: req.body.addressLine2,
         landmark: req.body.landmark,
