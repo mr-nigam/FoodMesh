@@ -1,9 +1,11 @@
-import 'dotenv/config';
+// Central env loader
+import '@foodmesh/utils/config/env';
 import app from './app.js';
 
 import {
     connectProducer
 } from "@foodmesh/kafka";
+
 
 import bootstrapDB from 
 './bootstrap/db.bootstrap.js';

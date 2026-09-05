@@ -1,0 +1,17 @@
+{
+  "name": "@foodmesh/utils",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./config/env": "./src/config/env.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

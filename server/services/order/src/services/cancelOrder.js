@@ -1,4 +1,6 @@
-import ApiError from '../utils/apiError.js';
+import {
+    ApiError
+} from '@foodmesh/utils';
 
 import {
     createOrderRepository

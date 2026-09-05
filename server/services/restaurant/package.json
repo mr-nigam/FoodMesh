@@ -13,6 +13,7 @@
   "type": "module",
   "dependencies": {
     "@foodmesh/kafka": "1.0.0",
+    "@foodmesh/utils": "*",
     "axios": "^1.19.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

@@ -1,19 +1,18 @@
 import pool from "../config/postgre.js";
 
-import createUpdatedAtTrigger 
-from "../utils/dbTriggers.util.js";
+import {
+    createUpdatedAtTrigger
+} from "@foodmesh/utils";
 
 
 const createRestaurantTable = async () => {
-    try {
-        // Required Extensions
+    try{
         await pool.query(`
             CREATE EXTENSION IF NOT EXISTS citext CASCADE;
             CREATE EXTENSION IF NOT EXISTS pgcrypto CASCADE;
             CREATE EXTENSION IF NOT EXISTS postgis CASCADE;
         `);
 
-        // Restaurant Type ENUM
         await pool.query(`
             DO $$
             BEGIN
@@ -28,7 +27,6 @@ const createRestaurantTable = async () => {
             END $$;
         `);
 
-        // Restaurant Table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS restaurants (
                 id UUID PRIMARY KEY
@@ -77,7 +75,6 @@ const createRestaurantTable = async () => {
             );
         `);
 
-        // Indexes
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_restaurants_name
                 ON restaurants(name);
@@ -93,8 +90,7 @@ const createRestaurantTable = async () => {
                 --WHERE deleted_at IS NULL;
         `);
 
-        // Trigger
-        await createUpdatedAtTrigger("restaurants");
+        await createUpdatedAtTrigger(pool, "restaurants");
 
         console.log("✅ Restaurants table created successfully.");
     

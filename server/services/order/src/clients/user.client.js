@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 
-// yup done it baby
 const getBaseUrl = (url, prefix) => {
     if (!url) return '';
     const cleanUrl = url.replace(/\/$/, '');

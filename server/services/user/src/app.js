@@ -1,12 +1,16 @@
-import 'dotenv/config';
+import '@foodmesh/utils/config/env';
+
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import ApiError from './utils/apiError.js';
-import errorHandler from "./middlewares/errorHandler.js";
+import cookieParser from "cookie-parser";
+
+import { 
+    ApiError,
+    errorHandler
+ } from '@foodmesh/utils';
+
 import addressRouter from './routes/address.js';
 import internalRouter from './routes/internal.js';
-// import morgan from 'morgan';
 
 
 const app = express();
@@ -21,10 +25,6 @@ app.use((req,res,next)=>{
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
     next();
 });
-
-// if(process.env.NODE_ENV === "development"){
-//     app.use(morgan('dev'));
-// };
 
 app.use(express.urlencoded({
     extended: true,

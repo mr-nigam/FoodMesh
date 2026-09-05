@@ -29,5 +29,6 @@ export {
 } from './events/events.js';
 
 export {
+    createOrdersEvent,
     createOrderCreatedEvent
 } from "./events/orderEvents.js";

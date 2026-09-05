@@ -1,18 +1,15 @@
 import pool from 
 '../config/postgre.js';
 
-import createUpdatedAtTrigger 
-from '../utils/dbTriggers.js';
-
+import { 
+    createUpdatedAtTrigger
+ } from '@foodmesh/utils';
 
 const createUsersTable = async() => {
     try{
         await pool.query(`
             CREATE EXTENSION IF NOT EXISTS citext;
-        `);
-        
-        await pool.query(`
-            CREATE EXTENSION IF NOT EXISTS pgcrypto;    
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
         `);
 
         await pool.query(`
@@ -76,8 +73,8 @@ const createUsersTable = async() => {
             ON users(role)
         `);
         
-        await createUpdatedAtTrigger('users');
-        
+        await createUpdatedAtTrigger(pool, 'users');
+
         console.log("User table and indexes created successfully");
 
     }catch(err){

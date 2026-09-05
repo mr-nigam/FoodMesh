@@ -2,9 +2,8 @@ import { Router } from 'express';
 
 import {
     authenticateUser,
-    isSeller,
-    requireRestaurant
-} from '../middlewares/auth.middleware.js';
+    isSeller
+} from '@foodmesh/utils';
 
 import uploadFile from 
 '../middlewares/multer.middleware.js';
@@ -25,11 +24,10 @@ const router = Router();
 router.get("/all-nearby", getNearbyRestaurants);
 
 
-// Authentication boundary
 router.use(authenticateUser);
 
 
-router.get("/my", isSeller, requireRestaurant, fetchMyRestaurant);
+router.get("/my", isSeller, fetchMyRestaurant);
 router.get("/:restaurantId", fetchSingleRestaurant);
 
 
@@ -37,9 +35,6 @@ router.use(isSeller);
 
 
 router.post("/add", uploadFile, addRestaurant);
-
-
-router.use(requireRestaurant);
 
 
 router.patch("/status", updateRestaurantStatus);

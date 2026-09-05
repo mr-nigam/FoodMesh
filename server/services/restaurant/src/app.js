@@ -1,9 +1,14 @@
-import 'dotenv/config';
+import '@foodmesh/utils/config/env';
+
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import ApiError from './utils/apiError.js';
-import errorHandler from "./middlewares/errorHandler.js";
+import cookieParser from "cookie-parser";
+
+import { 
+    ApiError,
+    errorHandler
+} from '@foodmesh/utils';
+
 import restaurantRouter from './routes/restaurant.routes.js';
 import menuItemsRouter from './routes/menuItem.routes.js';
 import cartRouter from './routes/cart.routes.js';

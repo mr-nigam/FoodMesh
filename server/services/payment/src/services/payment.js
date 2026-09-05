@@ -1,5 +1,10 @@
-import ApiError from '../utils/apiError.js';
-import { fetchOrderForPaymentRepo } from '../repositories/payment.js';
+import {
+    ApiError
+} from '@foodmesh/utils';
+
+import { 
+    fetchOrderForPaymentRepo
+} from '../repositories/payment.js';
 
 
 const fetchOrderForPaymentService = async({

@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import {
     authenticateUser
-} from "../middlewares/auth.middleware.js";
+} from "@foodmesh/utils";
 
 import {
     addToCart,

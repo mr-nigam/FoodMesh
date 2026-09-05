@@ -1,7 +1,8 @@
 import pool from "../config/postgre.js";
 
-import createUpdatedAtTrigger
-from "../utils/dbTrigger.js";
+import { 
+    createUpdatedAtTrigger
+} from '@foodmesh/utils';
 
 
 const createOrderDeliveriesTable = async () => {
@@ -145,8 +146,8 @@ const createOrderDeliveriesTable = async () => {
                 USING GIST(drop_location);
         `);
 
-        await createUpdatedAtTrigger("order_deliveries");
-
+        await createUpdatedAtTrigger(pool, 'order_deliveries');
+        
         console.log(
             "✅ Order Deliveries table created successfully."
         );

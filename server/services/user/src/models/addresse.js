@@ -1,7 +1,9 @@
 import pool from "../config/postgre.js";
 
-import createUpdatedAtTrigger 
-from "../utils/dbTriggers.js";
+import {
+    createUpdatedAtTrigger
+} from '@foodmesh/utils';
+
 
 
 const createAddressTable = async() => {
@@ -66,7 +68,6 @@ const createAddressTable = async() => {
             );
         `);
         
-        
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_addresses_user_id
                 ON addresses(user_id);
@@ -81,7 +82,7 @@ const createAddressTable = async() => {
                     AND deleted_at IS NULL;
         `);
 
-        await createUpdatedAtTrigger("addresses");
+        await createUpdatedAtTrigger(pool, "addresses");
 
         console.log("✅ Address table created successfully.");
 

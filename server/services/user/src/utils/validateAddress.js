@@ -1,4 +1,6 @@
-import ApiError from './apiError.js';
+import {
+    ApiError
+} from '@foodmesh/utils';
 
 
 const checkCoordinates = ({

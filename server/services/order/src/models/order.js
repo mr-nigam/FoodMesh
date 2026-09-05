@@ -1,7 +1,8 @@
 import pool from "../config/postgre.js";
 
-import createUpdatedAtTrigger
-from "../utils/dbTrigger.js";
+import { 
+    createUpdatedAtTrigger
+} from '@foodmesh/utils';
 
 
 const createOrdersTable = async () => {
@@ -88,8 +89,8 @@ const createOrdersTable = async () => {
             CREATE INDEX IF NOT EXISTS idx_orders_created_at
             ON orders(created_at DESC);
         `);
-
-        await createUpdatedAtTrigger("orders");
+        
+        await createUpdatedAtTrigger(pool, 'orders');
 
         console.log("✅ Orders table created successfully.");
 

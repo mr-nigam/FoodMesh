@@ -1,12 +1,17 @@
-import 'dotenv/config';
+// Central env loader
+import '@foodmesh/utils/config/env';
+
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import ApiError from './utils/apiError.js';
-import errorHandler from "./middlewares/errorHandler.js";
+import cookieParser from "cookie-parser";
+
+import { 
+    ApiError,
+    errorHandler
+ } from '@foodmesh/utils';
+
 import internalRouter from './routes/internal.js';
 import paymentRouter from './routes/payment.js';
-// import morgan from 'morgan';
 
 
 const app = express();
@@ -22,9 +27,6 @@ app.use((req,res,next)=>{
     next();
 });
 
-// if(process.env.NODE_ENV === "development"){
-//     app.use(morgan('dev'));
-// };
 
 app.use(express.urlencoded({
     extended: true,
@@ -44,6 +46,7 @@ app.use("/api/v1/payment", paymentRouter);
 app.use((req,res,next)=>{
     next(new ApiError(404, "Route to nhi mila"));
 });
+
 
 app.use(errorHandler);
 

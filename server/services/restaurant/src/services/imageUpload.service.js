@@ -1,6 +1,9 @@
 import axios from "axios";
-import ApiError from "../utils/apiError.js";
 import getBuffer from "../config/datauri.js";
+
+import {
+    ApiError
+} from '@foodmesh/utils';
 
 
 const uploadImage = async (file) => {
@@ -22,7 +25,7 @@ const uploadImage = async (file) => {
 
     try {
         const uploadResponse = await axios.post(
-            `${process.env.UTILS_SERVICE}/upload`,
+            `${process.env.UTILS_SERVICE_URL}/upload`,
             {
                 buffer: fileBuffer.content
             }

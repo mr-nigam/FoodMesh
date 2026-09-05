@@ -4,9 +4,8 @@ import uploadFile from "../middlewares/multer.middleware.js";
 
 import {
     authenticateUser,
-    isSeller,
-    requireRestaurant
-} from "../middlewares/auth.middleware.js";
+    isSeller
+} from "@foodmesh/utils";
 
 import {
     addMenuItem,
@@ -33,7 +32,7 @@ router.get(
 
 router.use(authenticateUser);
 router.use(isSeller);
-router.use(requireRestaurant);
+
 
 router.post(
     "/add-item",

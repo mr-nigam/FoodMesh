@@ -1,7 +1,8 @@
 import pool from '../config/postgre.js';
 
-import createUpdatedAtTrigger
-from '../utils/dbTrigger.js';
+import {
+    createUpdatedAtTrigger
+} from '@foodmesh/utils';
 
 
 const createPaymentAttemptsTable = async () => {
@@ -94,7 +95,7 @@ const createPaymentAttemptsTable = async () => {
             WHERE provider_payment_id IS NOT NULL;
         `);
 
-        await createUpdatedAtTrigger("payment_attempts");
+        await createUpdatedAtTrigger(pool,"payment_attempts");
 
         console.log("✅ Payment Attempts table created successfully.");
 

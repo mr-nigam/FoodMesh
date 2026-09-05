@@ -1,10 +1,16 @@
-import 'dotenv/config';
+// Central env loader
+import '@foodmesh/utils/config/env';
+
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import ApiError from './utils/apiError.js';
-import errorHandler from "./middlewares/errorHandler.js";
-// import morgan from 'morgan';
+import cookieParser from "cookie-parser";
+
+import { 
+    ApiError,
+    errorHandler
+} from '@foodmesh/utils';
+
+import userOrderRouter from './routes/order.user.js';
 
 
 const app = express();
@@ -20,10 +26,6 @@ app.use((req,res,next)=>{
     next();
 });
 
-// if(process.env.NODE_ENV === "development"){
-//     app.use(morgan('dev'));
-// };
-
 app.use(express.urlencoded({
     extended: true,
     limit: "50mb"
@@ -34,17 +36,14 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
-import userOrderRouter from './routes/order.user.js';
-
 // API Routes
 app.use("/api/v1/order", userOrderRouter);
-app.use("/api/v1/orders", userOrderRouter);
-app.use("/api/v1/user/order", userOrderRouter);
 
 
 app.use((req,res,next)=>{
     next(new ApiError(404, "Route to nhi mila"));
 });
+
 
 app.use(errorHandler);
 

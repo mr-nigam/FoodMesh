@@ -15,7 +15,16 @@ const KAFKA_TOPICS = Object.freeze({
         "foodmesh.delivery",
 
     REVIEW:
-        "foodmesh.review"
+        "foodmesh.review",
+    
+    CART:
+        "foodmesh.cart",
+
+    NOTIFICATION:
+        "foodmesh.notification",
+
+    ANALYTICS:
+        "foodmesh.analytics"
 });
 
 

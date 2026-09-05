@@ -1,10 +1,16 @@
-import 'dotenv/config';
+// Central env loader
+import '@foodmesh/utils/config/env';
+
 import express from 'express';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
+
+import { 
+    ApiError,
+    errorHandler
+ } from '@foodmesh/utils';
+
 import authRouter from './routes/auth.js';
-import ApiError  from './utils/apiError.js';
-import morgan from 'morgan';
 
 
 const app = express();
@@ -21,11 +27,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// dev logger
-// if(process.env.NODE_ENV === "development"){
-//     app.use(morgan("dev"));
-// }
-
 app.use(express.urlencoded({
     extended: true,
     limit: "50mb"
@@ -36,12 +37,14 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
-app.use("/api/v1/auth",authRouter);
+app.use("/api/v1/auth", authRouter);
 
 
 app.use((req,res,next)=>{
     next(new ApiError(404, "Route not Found"));
 });
+
+app.use(errorHandler);
 
 
 export default app;

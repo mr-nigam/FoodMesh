@@ -1,0 +1,13 @@
+{
+    "name": "foodmesh",
+    "private": true,
+
+    "workspaces": [
+        "services/*",
+        "packages/*"
+    ],
+
+    "scripts": {
+        "kafka:topics": "npm run setup --workspace=@foodmesh/kafka"
+    }
+}

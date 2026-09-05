@@ -1,5 +1,15 @@
 import pool from '../config/postgre.js';
-import ApiError from '../utils/apiError.js';
+
+import {
+    ApiError
+} from '@foodmesh/utils';
+
+import {
+    publishEvent,
+    KAFKA_TOPICS,
+    KAFKA_EVENTS,
+    createOrdersEvent
+} from "@foodmesh/kafka";
 
 import {
     getAddress,
@@ -12,13 +22,6 @@ import {
     COIRestarurantTableRepo,
     COIItemsTableRepo
 } from '../repositories/createOrder.js';
-
-import {
-    publishEvent,
-    KAFKA_TOPICS,
-    KAFKA_EVENTS,
-    createOrdersEvent
-} from "@foodmesh/kafka";
 
 
 const getAddressService = async({
@@ -316,7 +319,7 @@ const createOrderService = async ({
             restaurantId,
             totalAmount: createdOrder.total_amount
         }
-    });
+    }); 
 
     await publishEvent({
         topic: KAFKA_TOPICS.ORDER,

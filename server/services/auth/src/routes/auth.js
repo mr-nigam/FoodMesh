@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import authenticateUser from '../middlewares/auth.js';
+
+import { 
+    authenticateUser
+} from '@foodmesh/utils';
 
 import {
     loginUser,

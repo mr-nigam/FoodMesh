@@ -1,7 +1,8 @@
 import pool from '../config/postgre.js';
 
-import createUpdatedAtTrigger
-from '../utils/dbTrigger.js';
+import {
+    createUpdatedAtTrigger
+} from '@foodmesh/utils';
 
 
 const createPaymentOutboxTable = async () => {
@@ -75,7 +76,7 @@ const createPaymentOutboxTable = async () => {
             ON payment_outbox(event_type);
         `);
 
-        await createUpdatedAtTrigger("payment_outbox");
+        await createUpdatedAtTrigger(pool, "payment_outbox");
 
         console.log("✅ Payment Outbox table created successfully.");
 

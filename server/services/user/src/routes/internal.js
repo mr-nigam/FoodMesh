@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { 
     authenticateService 
-} from '../middlewares/auth.js';
+} from '@foodmesh/utils';
 
 import {
     fetchAddress
