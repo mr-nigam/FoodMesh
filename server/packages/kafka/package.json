@@ -1,0 +1,14 @@
+{
+    "name": "@foodmesh/kafka",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.js",
+    "scripts": {
+        "setup": "node ./src/admin/admin.js"
+    },
+    "dependencies": {
+        "dotenv": "^17.4.2",
+        "kafkajs": "^2.2.4"
+    }
+}

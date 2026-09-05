@@ -2,29 +2,22 @@ import asyncHandler from '../middlewares/asyncHandler.js';
 import ApiResponse from '../utils/apiResponse.js';
 import createOrderService from '../services/createOrder.js';
 
-
 import {
     fetchMyOrdersService
 } from '../services/getOrder.js';
 
 
-const createOrder = asyncHandler ( async(req, res) => { 
+const createOrder = asyncHandler ( async (req, res) => { 
         
     const {
         orderDetails,
         orderRestaurants,
-        deliveryAddress,
-        payment
+        deliveryAddress
     } = await createOrderService({
-        user: req.user,
+        userId: req.user.id,
         body: req.body
     });
 
-    let message = "Order created successfully";
-
-    if(payment){
-        message += " and payment is also created successfully";
-    }
 
     return res
         .status(201)
@@ -34,15 +27,14 @@ const createOrder = asyncHandler ( async(req, res) => {
                 {
                     orderDetails,
                     orderRestaurants,
-                    deliveryAddress,
-                    payment
+                    deliveryAddress
                 },
-                message
+                "Order created successfully"
             )
         );
 });
 
-const fetchMyOrders = asyncHandler ( async(req, res) => {
+const fetchMyOrders = asyncHandler ( async (req, res) => {
     
     const ordersData = await fetchMyOrdersService({
         userId: req.user.id

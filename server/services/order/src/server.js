@@ -1,6 +1,10 @@
 import 'dotenv/config';
 import app from './app.js';
 
+import {
+    connectProducer
+} from "@foodmesh/kafka";
+
 import bootstrapDB from 
 './bootstrap/db.bootstrap.js';
 
@@ -8,6 +12,8 @@ import bootstrapDB from
 const startServer = async()=>{
 
     await bootstrapDB();
+
+    await connectProducer();
 
     const PORT = process.env.PORT || 4006;
 

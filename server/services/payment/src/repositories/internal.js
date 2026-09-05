@@ -5,13 +5,14 @@ const CPIPaymentTableRepo = async({
     userId,
     orderId,
     amount,
-    currency
+    currency,
 }) => {
     const values = [
         userId,
         orderId,
         amount,
-        currency
+        currency,
+        "pending"
     ];
     
     const insertQuery = `
@@ -19,13 +20,16 @@ const CPIPaymentTableRepo = async({
             user_id,
             order_id,
             amount,
-            currency
+            currency,
+            status
         )
         VALUES(
-            $1, $2, $3, $4
+            $1, $2, $3, $4, $5
         )
         RETURNING
             id,
+            user_id,
+            order_id
             amount,
             currency,
             status;

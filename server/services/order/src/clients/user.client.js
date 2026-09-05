@@ -70,10 +70,10 @@ const getCartData = async({
 const deleteCartData = async({
     userId,
     restaurantId = null,
-    targetRestId = null,
     requestType
 }) =>{
-    const restId = restaurantId || targetRestId || null;
+    
+    const restId = restaurantId || null;
     const reqType = requestType || (restId ? "single" : "all");
     
     const restaurantPath = restId

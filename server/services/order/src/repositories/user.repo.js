@@ -31,8 +31,7 @@ const fetchMyOrdersRepo = async({
                 'delivery_fee', or.delivery_fee,
                 'discount_amount', or.discount_amount,
                 'total_amount', or.total_amount,
-                'status', or.status,
-
+                'status', or.status
             ) AS restaurant,
 
             jsonb_agg(
@@ -45,8 +44,8 @@ const fetchMyOrdersRepo = async({
                     'quantity', oi.quantity,
                     'subtotal', oi.subtotal
                 )
-                ORDER BY c.created_at ASC
-            ) as ordered_items,
+                ORDER BY oi.id ASC
+            ) as ordered_items
 
         FROM orders AS o
 
@@ -56,21 +55,21 @@ const fetchMyOrdersRepo = async({
         JOIN order_items oi
             ON or.id = oi.order_restaurant_id
 
-        where o.user_id = $1
+        WHERE o.user_id = $1
     `;
 
     const params = [userId];
     if(orderId){
-        searchQuery += `AND o.id = $2`;
+        searchQuery += ` AND o.id = $2`;
 
         params.push(orderId);
     }
 
     searchQuery += `
-        AND deleted_at IS NULL
+        AND o.deleted_at IS NULL
 
         GROUP BY
-            o.id AS order_id,
+            o.id,
             o.recipient_name,
             o.recipient_phone,
             o.delivery_address,
@@ -92,7 +91,7 @@ const fetchMyOrdersRepo = async({
             or.delivery_fee,
             or.discount_amount,
             or.total_amount,
-            or.status,
+            or.status
         ORDER BY MIN(o.created_at) ASC;
     `;
 

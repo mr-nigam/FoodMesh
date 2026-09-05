@@ -24,7 +24,7 @@ const createOrdersTable = async () => {
 
                 recipient_phone VARCHAR(15)
                     CHECK (
-                        user_phone ~ '^\\+[1-9][0-9]{6,14}$'
+                        recipient_phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
 
                 delivery_address JSONB NOT NULL,

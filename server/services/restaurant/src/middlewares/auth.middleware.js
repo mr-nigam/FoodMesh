@@ -165,17 +165,19 @@ const authenticateService = (req, res, next) => {
         "order-service": process.env.ORDER_SERVICE_KEY,
         "restaurant-service": process.env.RESTAURANT_SERVICE_KEY,
         "cart-service": process.env.CART_SERVICE_KEY,
-        "rider-service": process.env.RIDER_SERVICE_KEY
+        "rider-service": process.env.RIDER_SERVICE_KEY,
+        "payment-service": process.env.PAYMENT_SERVICE_KEY,
+        "user-service": process.env.USER_SERVICE_KEY
     };
 
     const expectedKey = currentServiceKeys[serviceName];
 
-    if (expectedKey && expectedKey !== serviceKey) {
-        console.warn(`[Auth] Service key mismatch for ${serviceName}. Expected: ${expectedKey}, Received: ${serviceKey}`);
+    if (!expectedKey || expectedKey !== serviceKey) {
+        console.warn(`[Auth] Service auth failed for ${serviceName}. Expected key present: ${Boolean(expectedKey)}`);
         return res
             .status(401)
             .json({
-                message: "Unauthorized service: Key mismatch"
+                message: "Unauthorized service: Invalid or unconfigured service key"
             });
     }
 

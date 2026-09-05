@@ -1,4 +1,5 @@
 import ApiError from '../utils/apiError.js';
+import { fetchMyOrdersRepo } from '../repositories/user.repo.js';
 
 
 const fetchMyOrdersService = async({
@@ -11,6 +12,11 @@ const fetchMyOrdersService = async({
         );
     }
      
+    const orders = await fetchMyOrdersRepo({
+        userId
+    });
+
+    return orders;
 };
 
 

@@ -4,8 +4,7 @@ import ApiError from '../utils/apiError.js';
 import {
     getAddress,
     getCartData,
-    deleteCartData,
-    createPaymentForOrder
+    deleteCartData
 } from '../clients/user.client.js';
 
 import {
@@ -13,6 +12,13 @@ import {
     COIRestarurantTableRepo,
     COIItemsTableRepo
 } from '../repositories/createOrder.js';
+
+import {
+    publishEvent,
+    KAFKA_TOPICS,
+    KAFKA_EVENTS,
+    createOrdersEvent
+} from "@foodmesh/kafka";
 
 
 const getAddressService = async({
@@ -62,17 +68,15 @@ const getAddressService = async({
         const { 
             formattedAddress,
             latitude,
-            longitude,
-            recipientName,
-            recipientPhone 
+            longitude
         } = address;
 
         if(
             !formattedAddress ||
             latitude === undefined || 
             longitude === undefined || 
-            !recipientName || 
-            !recipientPhone
+            !address.recipientName || 
+            !address.recipientPhone
         ){
             throw new ApiError(
                 400,
@@ -80,12 +84,12 @@ const getAddressService = async({
             );
         }
 
-        recipientName = recipientName.trim();
-        recipientPhone = recipientPhone.trim();
+        recipientName = String(address.recipientName).trim();
+        recipientPhone = String(address.recipientPhone).trim();
 
         deliveryAddress = {
-            recipientName: recipientName.trim(),
-            phone: userPhone,
+            recipientName,
+            recipientPhone,
             formattedAddress: formattedAddress.trim(),
             latitude: Number(latitude),
             longitude: Number(longitude),
@@ -109,18 +113,15 @@ const getAddressService = async({
 };
 
 const createOrderService = async ({ 
-    user,
+    userId,
     body 
 }) => {
-    const userId = user?.id;
 
     const {
         address,
         addressId,
-        paymentMethod = 'razorpay',
         restaurantId = null
     } = body || {};
-
 
     // 1. Resolve Delivery Address
     const {
@@ -138,6 +139,7 @@ const createOrderService = async ({
         typeof restaurantId === "string"
             ? restaurantId.trim() || null
             : null;
+    
     // 3. Fetch cart
     const cartData = targetRestId
         ? await getCartData({
@@ -226,7 +228,6 @@ const createOrderService = async ({
     try {
         await client.query("BEGIN");
 
-        // yup done it baby
         const formattedPhone = recipientPhone && !recipientPhone.startsWith('+') 
             ? '+' + recipientPhone 
             : recipientPhone;
@@ -292,7 +293,6 @@ const createOrderService = async ({
     }
 
     // 6. Cart cleanup AFTER successful commit
-    
     try{
         await deleteCartData({
             userId,
@@ -308,29 +308,26 @@ const createOrderService = async ({
         });
     }
 
-    let payment;
-    
-    // yup done it baby
-    try{
-        payment = await createPaymentForOrder({
-            userId,
+    const orderCreatedEvent = createOrdersEvent({
+        eventType: KAFKA_EVENTS.ORDER.CREATED,
+        eventData: {
             orderId: createdOrder.id,
-            amount: globalTotal,
-            currency: "INR",
-            paymentMethod
-        });
-    }catch(paymentError){
-        console.error(
-            "Payment creation for order failed:",
-            paymentError?.message || paymentError
-        );
-    }
+            userId,
+            restaurantId,
+            totalAmount: createdOrder.total_amount
+        }
+    });
+
+    await publishEvent({
+        topic: KAFKA_TOPICS.ORDER,
+        key: createdOrder.id,
+        event: orderCreatedEvent
+    });
 
     return {
         orderDetails: createdOrder,
         orderRestaurants: createdOrderRestaurants,
-        deliveryAddress: deliveryAddress,
-        payment,
+        deliveryAddress: deliveryAddress
     };
 };
 

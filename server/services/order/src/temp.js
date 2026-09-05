@@ -15,3 +15,19 @@
             "Invalid payment method"
         );
     }
+
+ // yup done it baby
+    try{
+        payment = await createPaymentForOrder({
+            userId,
+            orderId: createdOrder.id,
+            amount: globalTotal,
+            currency: "INR",
+            paymentMethod
+        });
+    }catch(paymentError){
+        console.error(
+            "Payment creation for order failed:",
+            paymentError?.message || paymentError
+        );
+    }
