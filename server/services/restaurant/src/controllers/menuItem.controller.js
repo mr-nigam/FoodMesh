@@ -11,8 +11,40 @@ import {
 } from '../services/imageUpload.service.js';
 
 
+const fetcheRestaurnt = async({
+    userId
+})=>{
+    const searchQuery = `
+        SELECT
+            id,
+            name,
+            is_open,
+            type,
+            pictures_urls,
+            created_at
+        FROM restaurants
+        WHERE owner_id = $1;
+    `;
+
+    const {rows} = await pool.query(
+        searchQuery,
+        [userId]
+    );
+
+    if(rows.length === 0){
+        throw new ApiError(
+            400,
+            "Restaurant not found"
+        );
+    }
+
+    return rows[0];
+};
+
 const addMenuItem = asyncHandler(async (req,res) => {
-    const restaurant = req.restaurant;
+    const restaurant = await fetcheRestaurnt({
+        userId: req.user.id
+    });
     
     const {
         name,
@@ -135,7 +167,10 @@ const fetchAllItems = asyncHandler(async (req,res) => {
 });
 
 const updateMenuItem = asyncHandler(async (req,res) => {
-    const restaurant = req.restaurant;
+    const restaurant = await fetcheRestaurnt({
+        userId: req.user.id
+    });
+
     const { itemId } = req.params;
 
     if(!itemId){
@@ -279,7 +314,10 @@ const updateMenuItem = asyncHandler(async (req,res) => {
 });
 
 const deleteMenuItem = asyncHandler(async (req,res) => {
-    const restaurant = req.restaurant;
+    const restaurant = await fetcheRestaurnt({
+        userId: req.user.id
+    });
+
     const { itemId } = req.params;
 
     if(!itemId){
@@ -330,7 +368,10 @@ const deleteMenuItem = asyncHandler(async (req,res) => {
 });
 
 const toggleItemAvailability = asyncHandler(async(req,res)=>{
-    const restaurant = req.restaurant;
+    const restaurant = await fetcheRestaurnt({
+        userId: req.user.id
+    });
+
     const { itemId } = req.params;
 
     if(!itemId){

@@ -63,7 +63,7 @@ const setup = async () => {
 
         await connectAdmin();
 
-        await createTopics();
+        //await createTopics();
 
     } catch (error) {
 

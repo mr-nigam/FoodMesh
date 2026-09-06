@@ -327,6 +327,8 @@ const createOrderService = async ({
         event: orderCreatedEvent
     });
 
+    console.log("create order");
+    
     return {
         orderDetails: createdOrder,
         orderRestaurants: createdOrderRestaurants,

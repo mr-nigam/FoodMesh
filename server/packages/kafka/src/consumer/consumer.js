@@ -6,10 +6,10 @@ const createConsumer = ({
 }) => {
 
     return kafka.consumer({
-
         groupId,
         allowAutoTopicCreation: false,
         sessionTimeout: 30000,
+        rebalanceTimeout: 60000,
         heartbeatInterval: 3000
     });
 };
@@ -42,32 +42,24 @@ const runConsumer = async ({
 
             try {
 
-                if (!message.value) {
+                if(!message.value){
                     return;
                 }
-
 
                 const event =
                     JSON.parse(
                         message.value.toString()
                     );
 
-
                 await handler({
-
                     topic,
-
                     partition,
-
                     message,
-
                     event
-
                 });
 
 
-            } catch (error) {
-
+            }catch(error){
                 console.error(
                     "Kafka event processing failed:",
                     error
@@ -76,11 +68,8 @@ const runConsumer = async ({
                 throw error;
 
             }
-
         }
-
     });
-
 };
 
 

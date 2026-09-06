@@ -1,9 +1,17 @@
-import pool from '../config/postgre.js';
+import pool from '../../config/postgre.js';
 
 
-const handleOrderCreated = async ({
-    eventData
-}) => {
+const handleOrderCreated = async (payload) => {
+    console.log("handler-1");
+
+    
+    const eventData = payload?.eventData || payload;
+
+    if(!eventData || !eventData.orderId){
+        console.error("[Payment Service] Invalid event payload received:", payload);
+        return null;
+    }
+
     const { 
         orderId,
         userId,
@@ -32,33 +40,35 @@ const handleOrderCreated = async ({
         RETURNING
             id,
             user_id,
-            order_id
+            order_id,
             amount,
             currency,
             status;
     `;
 
-    let rows;
-    try{
-        
-        rows = await pool.query(
+    let newPayment = null;
+
+    try {
+        const { rows } = await pool.query(
             insertQuery,
             values
         );
 
+        newPayment = rows[0];
+        console.log(`[Payment Service] Created pending payment record: ${newPayment?.id} for order: ${orderId}`);
+    
     }catch(error){
-        if(error.statusCode === "23505"){
+        
+        if(error.code === "23505"){
             console.warn(`[Payment Service] Unique violation caught for order_id: ${orderId}`);
+            return null;
         }
 
         console.error(`[Payment Service] Error creating payment for order ${orderId}:`, error);
+        throw error;
     }
 
-    const newPayment = rows[0];
-    console.log(`[Payment Service] Created pending payment record: ${newPayment.id} for order: ${orderId}`);
-    
-    // Optional: Trigger payment gateway flow or publish payment.created event here
-
+    console.log("handler-2");
     return newPayment;
 };
 

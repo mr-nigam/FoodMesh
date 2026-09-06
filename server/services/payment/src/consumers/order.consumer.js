@@ -6,6 +6,10 @@ import {
     KAFKA_EVENTS
 } from "@foodmesh/kafka";
 
+import {
+    handleOrderCreated
+} from './handlers/orderCreated.js';
+
 
 const consumer = createConsumer({
     groupId: "payment-service"
@@ -31,7 +35,8 @@ const startOrderConsumer = async() =>{
             
             switch(eventType){
                 case KAFKA_EVENTS.ORDER.CREATED:
-                    await handleOrderCreated({data});
+                    console.log("payment cosumer");
+                    await handleOrderCreated(data);
                     break;
 
                 default:
