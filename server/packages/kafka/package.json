@@ -6,7 +6,7 @@
     "main": "./src/index.js",
     "types": "src/index.d.ts",
     "scripts": {
-        "setup": "node ./src/admin/admin.js"
+        "setup": "node ./src/admin/setup.js"
     },
     "dependencies": {
         "dotenv": "^17.4.2",

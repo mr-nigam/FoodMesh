@@ -12,13 +12,13 @@ import {
 
 
 const consumer = createConsumer({
-    groupId: "payment-service",
-    clientId: "payment-service"
+    groupId: "notification-service",
+    clientId: "notification-service"
 });
 
-const startOrderConsumer = async() =>{
+const startOrderConsumer = async() => {
     await consumer.connect();
-
+    
     await subscribeConsumer({
         consumer,
         topics: [
@@ -31,17 +31,16 @@ const startOrderConsumer = async() =>{
         handler: async({
             event
         })=>{
+            const {eventType, data} = event;
 
-            const {eventType, data }= event;
-            
             switch(eventType){
                 case KAFKA_EVENTS.ORDER.CREATED:
-                    // console.log("payment consumer");
+                    console.log("notification consumer");
                     await handleOrderCreated(data);
                     break;
 
                 default:
-                    console.log(`[Payment Service] Unhandled event type: ${eventType}`);
+                    console.log(`[Notification Service] Unhandled event type: ${eventType}`);
                     break;
             }
         }
@@ -49,7 +48,6 @@ const startOrderConsumer = async() =>{
 };
 
 
-export {
+export{
     startOrderConsumer
 };
-

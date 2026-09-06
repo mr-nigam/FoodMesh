@@ -2,11 +2,13 @@ import kafka from "../config/kafka.js";
 
 
 const createConsumer = ({
-    groupId
+    groupId,
+    clientId
 }) => {
 
     return kafka.consumer({
         groupId,
+        clientId,
         allowAutoTopicCreation: false,
         sessionTimeout: 30000,
         rebalanceTimeout: 60000,
@@ -39,8 +41,14 @@ const runConsumer = async ({
             partition,
             message
         }) => {
+            
+            const startedAt = Date.now();
 
-            try {
+            console.log(
+                `[Kafka] Processing ${topic}[${partition}] offset=${message.offset}`
+            );
+
+            try{
 
                 if(!message.value){
                     return;
@@ -58,7 +66,6 @@ const runConsumer = async ({
                     event
                 });
 
-
             }catch(error){
                 console.error(
                     "Kafka event processing failed:",
@@ -66,7 +73,6 @@ const runConsumer = async ({
                 );
 
                 throw error;
-
             }
         }
     });

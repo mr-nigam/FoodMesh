@@ -4,12 +4,17 @@ import app from './app.js';
 import bootstrapDB from 
 './bootstrap/db.bootstrap.js';
 
+import {
+    startOrderConsumer
+} from './consumers/order.consumer.js';
 
 const startServer = async()=>{
 
     await bootstrapDB();
 
-    const PORT = process.env.PORT || 4003;
+    await startOrderConsumer();
+
+    const PORT = process.env.PORT || 4009;
 
     app.listen(PORT,()=>{
         console.log(`🚀 Notification Server running on port: ${PORT}`);
