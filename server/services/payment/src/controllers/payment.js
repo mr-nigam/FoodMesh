@@ -4,18 +4,15 @@ import {
 } from '@foodmesh/utils';
 
 import { 
-    createPaymentForOrderService
-} from '../services/internal.js';
+    createPaymentAttemptsService
+} from '../services/payment.js';
 
 
-const createPaymentForOrder = asyncHandler( async(req, res) => {
-    const userId = req.user.id;
-
-    const payment = await createPaymentForOrderService({
-        body: {
-            ...req.body,
-            userId
-        }
+const createPaymentAttempts = asyncHandler( async(req, res) => {
+    
+    const payment = await createPaymentAttemptsService({
+        userId: req.user.id,
+        body: req.body
     });
 
     return res
@@ -24,12 +21,12 @@ const createPaymentForOrder = asyncHandler( async(req, res) => {
             new ApiResponse(
                 201,
                 { payment },
-                "Payment created successfully"
+                "Payment attempt created successfully"
             )
         );
 });
 
 
 export {
-    createPaymentForOrder
+    createPaymentAttempts
 };

@@ -9,7 +9,6 @@ const getBaseUrl = (url, prefix) => {
 
 const USER_SERVICE = getBaseUrl(process.env.USER_SERVICE_URL, '/api/v1/user');
 const RESTAURANT_SERVICE = getBaseUrl(process.env.RESTAURANT_SERVICE_URL, '/api/v1/restaurant');
-const PAYMENT_SERVICE = getBaseUrl(process.env.PAYMENT_SERVICE_URL, '/api/v1/payment');
 const ORDER_SERVICE_KEY = process.env.ORDER_SERVICE_KEY;
 
 const getAddress = async ({
@@ -97,41 +96,9 @@ const deleteCartData = async({
     return deletedData;
 };
 
-const createPaymentForOrder = async({
-    userId,
-    orderId,
-    amount,
-    currency,
-    paymentMethod
-})=>{
-
-    const {data} = await axios.post(`${PAYMENT_SERVICE}/internal/create`,
-        {
-            userId,
-            orderId,
-            amount,
-            currency,
-            paymentMethod
-        },
-        {
-            headers: {
-                "x-service-name": "order-service",
-                "x-service-key": ORDER_SERVICE_KEY
-            }
-        }
-    );
-
-    const payment =  data?.data?.payment ??
-        data?.payment ??
-        null;
-
-    return payment
-};
-
 
 export {
     getAddress,
     getCartData,
-    deleteCartData,
-    createPaymentForOrder
+    deleteCartData
 };

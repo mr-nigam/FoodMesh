@@ -4,7 +4,7 @@ import {
 } from '@foodmesh/utils';
 
 import {
-    createPaymentForOrder
+    createPaymentAttemptsForOrder
 } from '../controllers/payment.js';
 
 
@@ -14,7 +14,7 @@ const router = Router();
 router.use(authenticateUser);
 
 
-router.post('/create', createPaymentForOrder);
+router.post('/create', createPaymentAttemptsForOrder);
 
 
 export default router;

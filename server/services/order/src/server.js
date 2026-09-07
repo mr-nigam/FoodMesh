@@ -6,7 +6,6 @@ import {
     connectProducer
 } from "@foodmesh/kafka";
 
-
 import bootstrapDB from 
 './bootstrap/db.bootstrap.js';
 

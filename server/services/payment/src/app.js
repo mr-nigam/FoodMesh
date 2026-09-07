@@ -10,7 +10,6 @@ import {
     errorHandler
  } from '@foodmesh/utils';
 
-import internalRouter from './routes/internal.js';
 import paymentRouter from './routes/payment.js';
 
 
@@ -39,7 +38,6 @@ app.use(cookieParser());
 
 
 // API Routes
-app.use("/api/v1/payment/internal", internalRouter);
 app.use("/api/v1/payment", paymentRouter);
 
 

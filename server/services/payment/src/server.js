@@ -5,6 +5,10 @@ import bootstrapDB from
 './bootstrap/db.bootstrap.js';
 
 import {
+    connectProducer
+} from "@foodmesh/kafka";
+
+import {
     startOrderConsumer
 } from './consumers/order.consumer.js';
 
@@ -12,6 +16,8 @@ import {
 const startServer = async()=>{
 
     await bootstrapDB();
+
+    await connectProducer();
 
     await startOrderConsumer();
 
