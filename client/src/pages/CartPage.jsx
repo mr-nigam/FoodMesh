@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useAppData from '../context/useAppData';
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -10,6 +10,7 @@ import { BiMapPin, BiChevronRight, BiHomeAlt, BiBriefcase, BiLoader } from "reac
 
 
 const CartPage = () => {
+    const navigate = useNavigate();
     const {
         cart,
         allTotalQty,
@@ -160,11 +161,24 @@ const CartPage = () => {
                 }
             );
 
+            const createdOrder = data?.data?.orderDetails || data?.orderDetails || data?.data;
+            const orderRestaurants = data?.data?.orderRestaurants || data?.orderRestaurants;
+            const deliveryAddress = data?.data?.deliveryAddress || data?.deliveryAddress;
+
             toast.success(
-                `Order created successfully for ${restaurantCart.restaurant.name}!`
+                `Order created! Redirecting to payment...`
             );
 
             if(refreshCart) await refreshCart();
+
+            navigate("/checkout", {
+                state: {
+                    order: createdOrder,
+                    orderRestaurants,
+                    deliveryAddress,
+                    restaurantName: restaurantCart.restaurant.name
+                }
+            });
 
         } catch (error) {
             console.error("Order creation failed:", error);
@@ -205,10 +219,10 @@ const CartPage = () => {
                     }
                 };
             
-            const {data } = await axios.post(
+            const { data } = await axios.post(
                 `${orderService}/create`,
                 {
-                    paymentMethod: "cash",
+                    paymentMethod: "online",
                     orderType: "checkoutAll",
                     ...addressPayload
                 },
@@ -219,11 +233,23 @@ const CartPage = () => {
                 }
             );
 
+            const createdOrder = data?.data?.orderDetails || data?.orderDetails || data?.data;
+            const orderRestaurants = data?.data?.orderRestaurants || data?.orderRestaurants;
+            const deliveryAddress = data?.data?.deliveryAddress || data?.deliveryAddress;
+
             toast.success(
-                `Successfully placed orders for ${validRestaurants.length} restaurant(s)!`
+                `Orders created! Redirecting to payment...`
             );
 
             if(refreshCart) await refreshCart();
+
+            navigate("/checkout", {
+                state: {
+                    order: createdOrder,
+                    orderRestaurants,
+                    deliveryAddress
+                }
+            });
 
         }catch(error){
             console.error(

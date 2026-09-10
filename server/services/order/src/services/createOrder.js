@@ -316,7 +316,6 @@ const createOrderService = async ({
         eventData: {
             orderId: createdOrder.id,
             userId,
-            restaurantId,
             totalAmount: createdOrder.total_amount
         }
     }); 

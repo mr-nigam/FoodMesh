@@ -174,7 +174,6 @@ const addRestaurant = asyncHandler(async (req, res)=>{
 const fetchMyRestaurant = asyncHandler(async (req, res) => {
     const user = req.user;
 
-
     const query = `
         SELECT
             id,

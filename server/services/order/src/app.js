@@ -11,6 +11,7 @@ import {
 } from '@foodmesh/utils';
 
 import userOrderRouter from './routes/order.user.js';
+import internalOrderRouter from './routes/internal.js';
 
 
 const app = express();
@@ -37,6 +38,7 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/order/internal", internalOrderRouter);
 app.use("/api/v1/order", userOrderRouter);
 
 
