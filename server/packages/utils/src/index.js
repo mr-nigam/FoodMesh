@@ -1,4 +1,4 @@
-export { ApiError } from './errors/ .js';
+export { ApiError } from './errors/apiError.js';
 export { errorHandler } from './errors/errorHandler.js';
 export { ApiResponse } from './responses/ApiResponse.js';
 export { asyncHandler } from './middlewares/asyncHandler.js';

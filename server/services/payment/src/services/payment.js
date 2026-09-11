@@ -26,7 +26,7 @@ import {
 } from '../clients/order.js';
 
 
-const ALLOWED_PAYMENT_VENDORS = ["razorpay", "stripe"];
+const ALLOWED_PAYMENT_VENDORS = ["razorpay", "stripe", "cod"];
 
 const paymentDataValidator = ({
     userId,
@@ -419,8 +419,84 @@ const verifyPaymentService = async ({
     };
 };
 
+const confirmCodService = async ({
+    userId,
+    body
+}) => {
+    const { orderId } = body || {};
+
+    if (!orderId) {
+        throw new ApiError(400, "Please provide order ID");
+    }
+
+    let paymentData = await fetchPaymentDetailsRepo({
+        userId,
+        orderId
+    });
+
+    if (!paymentData) {
+        paymentData = await createPayment({
+            userId,
+            orderId
+        });
+    }
+
+    const paymentAttempt = await CPIPaymentAttemptsTableRepo({
+        paymentId: paymentData.id,
+        providerName: "cod",
+        status: "success",
+        amount: paymentData.amount,
+        currency: paymentData.currency || "INR",
+        providerOrderId: `cod_${orderId}`
+    });
+
+    await updatePaymentStatusRepo({
+        paymentId: paymentData.id,
+        status: "cod_pending"
+    });
+
+    const paymentSuccessEvent = createPaymentEvent({
+        eventType: KAFKA_EVENTS.PAYMENT.SUCCESS,
+        eventData: {
+            orderId,
+            userId,
+            paymentId: paymentData.id,
+            paymentVendor: "cod",
+            providerPaymentId: `cod_${orderId}`,
+            amount: paymentData.amount
+        }
+    });
+
+    try {
+        await publishEvent({
+            topic: KAFKA_TOPICS.PAYMENT,
+            key: orderId,
+            event: paymentSuccessEvent
+        });
+    } catch (kafkaError) {
+        console.error("[Payment Service] Kafka publish error on COD confirm:", kafkaError);
+        try {
+            await CPIPaymentOutboxsTableRepo({
+                paymentId: paymentData.id,
+                eventType: KAFKA_EVENTS.PAYMENT.SUCCESS,
+                payload: paymentSuccessEvent
+            });
+        } catch (outboxErr) {
+            console.error("[Payment Service] Failed to save to outbox:", outboxErr);
+        }
+    }
+
+    return {
+        orderId,
+        status: "confirmed",
+        provider: "cod",
+        paymentId: paymentData.id,
+        paymentAttemptId: paymentAttempt?.id
+    };
+};
 
 export {
     createPaymentAttemptsService,
-    verifyPaymentService
+    verifyPaymentService,
+    confirmCodService
 };

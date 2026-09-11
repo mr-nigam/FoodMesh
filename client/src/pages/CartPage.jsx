@@ -133,7 +133,6 @@ const CartPage = () => {
             // Thin payload: Saved address (addressId) vs Custom Map Location (address)
             const payload = {
                 restaurantId: restaurantCart.restaurant.id,
-                paymentMethod: "cash",
                 orderType: "checkoutSingle",
                 ...(selectedAddress.id || selectedAddress._id
                     ? { addressId: selectedAddress.id || selectedAddress._id }
@@ -152,7 +151,7 @@ const CartPage = () => {
             };
 
             const { data } = await axios.post(
-                `${orderService}/create`,
+                orderService,
                 payload,
                 {
                     headers: {
@@ -161,9 +160,11 @@ const CartPage = () => {
                 }
             );
 
-            const createdOrder = data?.data?.orderDetails || data?.orderDetails || data?.data;
-            const orderRestaurants = data?.data?.orderRestaurants || data?.orderRestaurants;
-            const deliveryAddress = data?.data?.deliveryAddress || data?.deliveryAddress;
+            const createdOrder = 
+                data?.data?.orderDetails || 
+                data?.orderDetails || 
+                data?.data;
+
 
             toast.success(
                 `Order created! Redirecting to payment...`
@@ -171,12 +172,9 @@ const CartPage = () => {
 
             if(refreshCart) await refreshCart();
 
-            navigate("/checkout", {
+            navigate(`/checkout/${createdOrder.id}`, {
                 state: {
-                    order: createdOrder,
-                    orderRestaurants,
-                    deliveryAddress,
-                    restaurantName: restaurantCart.restaurant.name
+                    order: createdOrder
                 }
             });
 
@@ -220,7 +218,7 @@ const CartPage = () => {
                 };
             
             const { data } = await axios.post(
-                `${orderService}/create`,
+                orderService,
                 {
                     paymentMethod: "online",
                     orderType: "checkoutAll",
@@ -233,9 +231,10 @@ const CartPage = () => {
                 }
             );
 
-            const createdOrder = data?.data?.orderDetails || data?.orderDetails || data?.data;
-            const orderRestaurants = data?.data?.orderRestaurants || data?.orderRestaurants;
-            const deliveryAddress = data?.data?.deliveryAddress || data?.deliveryAddress;
+            const createdOrder = 
+                data?.data?.orderDetails || 
+                data?.orderDetails || 
+                data?.data;
 
             toast.success(
                 `Orders created! Redirecting to payment...`
@@ -243,11 +242,9 @@ const CartPage = () => {
 
             if(refreshCart) await refreshCart();
 
-            navigate("/checkout", {
+            navigate(`/checkout/${createdOrder.id}`, {
                 state: {
-                    order: createdOrder,
-                    orderRestaurants,
-                    deliveryAddress
+                    order: createdOrder
                 }
             });
 

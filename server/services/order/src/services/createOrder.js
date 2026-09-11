@@ -219,7 +219,7 @@ const createOrderService = async ({
         globalDelivery += deliveryFee;
     }
 
-    const platformFee = 1000; // ₹10.00
+    const platformFee = globalSubtotal > 0 ? 600 : 0; // ₹6.00
     const globalTotal = globalSubtotal + globalTax + globalDelivery + platformFee;
 
     // 5. Execute PostgreSQL Transaction
@@ -326,13 +326,9 @@ const createOrderService = async ({
         event: orderCreatedEvent
     });
 
-    console.log("create order");
+    console.log("order created");
     
-    return {
-        orderDetails: createdOrder,
-        orderRestaurants: createdOrderRestaurants,
-        deliveryAddress: deliveryAddress
-    };
+    return createdOrder;
 };
 
 

@@ -1,7 +1,7 @@
 import pool from '../config/postgre.js';
 
 
-const fetchMyOrdersRepo = async({
+const fetchOrdersRepo = async({
     userId,
     orderId = null
 }) => {
@@ -20,18 +20,18 @@ const fetchMyOrdersRepo = async({
             o.total_amount,
 
             jsonb_build_object(
-                'order_restaurant_id', or.id,
-                'id', or.restaurant_id,
-                'name', or.restaurant_name,
-                'phone', or.restaurant_phone,
-                'location', or.restaurant_location,
-                'address', or.restaurant_address,
-                'subtotal', or.subtotal,
-                'tax_amount', or.tax_amount,
-                'delivery_fee', or.delivery_fee,
-                'discount_amount', or.discount_amount,
-                'total_amount', or.total_amount,
-                'status', or.status
+                'order_restaurant_id', orr.id,
+                'id', orr.restaurant_id,
+                'name', orr.restaurant_name,
+                'phone', orr.restaurant_phone,
+                'location', orr.restaurant_location,
+                'address', orr.restaurant_address,
+                'subtotal', orr.subtotal,
+                'tax_amount', orr.tax_amount,
+                'delivery_fee', orr.delivery_fee,
+                'discount_amount', orr.discount_amount,
+                'total_amount', orr.total_amount,
+                'status', orr.status
             ) AS restaurant,
 
             jsonb_agg(
@@ -49,11 +49,11 @@ const fetchMyOrdersRepo = async({
 
         FROM orders AS o
 
-        JOIN order_restaurants or
-            ON o.id = or.order_id
+        JOIN order_restaurants orr
+            ON o.id = orr.order_id
 
         JOIN order_items oi
-            ON or.id = oi.order_restaurant_id
+            ON orr.id = oi.order_restaurant_id
 
         WHERE o.user_id = $1
     `;
@@ -80,18 +80,18 @@ const fetchMyOrdersRepo = async({
             o.discount_amount,
             o.total_amount,
 
-            or.id,
-            or.restaurant_id,
-            or.restaurant_name,
-            or.restaurant_phone,
-            or.restaurant_location,
-            or.restaurant_address,
-            or.subtotal,
-            or.tax_amount,
-            or.delivery_fee,
-            or.discount_amount,
-            or.total_amount,
-            or.status
+            orr.id,
+            orr.restaurant_id,
+            orr.restaurant_name,
+            orr.restaurant_phone,
+            orr.restaurant_location,
+            orr.restaurant_address,
+            orr.subtotal,
+            orr.tax_amount,
+            orr.delivery_fee,
+            orr.discount_amount,
+            orr.total_amount,
+            orr.status
         ORDER BY MIN(o.created_at) ASC;
     `;
 
@@ -106,5 +106,5 @@ const fetchMyOrdersRepo = async({
 
 
 export {
-    fetchMyOrdersRepo
+    fetchOrdersRepo
 };

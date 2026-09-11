@@ -38,14 +38,32 @@ const verifyPayment = asyncHandler( async(req, res) => {
         .json(
             new ApiResponse(
                 200,
-                result,
+                {result},
                 "Your payment was successfully verified and completed"
             )
         );
 });
 
 
+const confirmCod = asyncHandler( async(req, res) => {
+    const result = await confirmCodService({
+        userId: req.user.id,
+        body: req.body
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { result },
+                "Cash on delivery order confirmed successfully"
+            )
+        );
+});
+
 export {
     createPaymentAttempts,
-    verifyPayment
+    verifyPayment,
+    confirmCod
 };

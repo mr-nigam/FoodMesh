@@ -10,11 +10,10 @@ import Account from './pages/Account';
 import useAppData from './context/useAppData';
 import RestaurantPages from './pages/RestaurantPages';
 import Restaurant from './pages/Restaurant';
-import CartPage from './pages/CartPage';
+import CartPage from './pages/cart/CartPage';
 import AddressPage from './pages/AddressPage';
 import AddAddressPage from './pages/AddAddressPage';
-import Checkout from './pages/Checkout';
-
+import Checkout from "./pages/Checkout/Checkout";
 
 const App = () => {
     const {user} = useAppData();
@@ -43,7 +42,6 @@ const App = () => {
                     
                     <Route path="/account" element={<Account />} />
 
-                    <Route path="/checkout" element={<Checkout />} />
                     <Route path="/checkout/:orderId" element={<Checkout />} />
                     
                     <Route path="/address" element={<AddressPage />} />

@@ -67,8 +67,9 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
         const customAddress = {
             id: `temp_${Date.now()}`,
             label: 'Custom Map Location',
-            recipient_name: 'Delivery Contact',
-            phone: '',
+            recipient_name: locationDetails.recipientName || 'Delivery Contact',
+            phone: locationDetails.phone || '+919999999999',
+            recipient_phone: locationDetails.phone || '+919999999999',
             address_line_1: locationDetails.addressLine1 || locationDetails.formattedAddress || 'Selected Location',
             city: locationDetails.city || 'City',
             state: locationDetails.state || 'State',
