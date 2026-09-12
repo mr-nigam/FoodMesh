@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { authService, restaurantService } from "../config/constants";
 import axios from "axios";
-import AppContext from "./context";
+import {AppContext} from "./context";
 import { Toaster } from "react-hot-toast";
 
 
-const AppProvider = ({ children }) => {
+const AppProvider = ({ 
+    children
+}) => {
+    
     const [user, setUser] = useState(null);
     const [isAuth, setIsAuth] = useState(false);
     const [loading, setLoading] = useState(true);
