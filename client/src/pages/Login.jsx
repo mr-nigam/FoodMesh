@@ -16,12 +16,18 @@ const Login = () => {
 
     const responseGoogle = async (authResult)=>{
         setLoading(true);
-        try{
-            const {data} = await axios.post(`${authService}/login`,{
-                code : authResult["code"]
-            });
 
-            localStorage.setItem("token",data.data.token);
+        try{
+            const {data} = await axios.post(
+                `${authService}/login`,
+                {
+                    code : authResult["code"]
+                }
+            );
+
+            const token = data?.token || data?.data?.token; 
+            localStorage.setItem("token", token);
+
             toast.success(data.message);
             setLoading(false);
             

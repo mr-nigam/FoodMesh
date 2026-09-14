@@ -3,21 +3,26 @@ const KAFKA_EVENTS = Object.freeze({
         CREATED: "order.created",
         CONFIRMED: "order.confirmed",
         CANCELLED: "order.cancelled",
-        COMPLETED: "order.completed"
+        COMPLETED: "order.completed",
+
+        ACCEPTED: "order.accepted",
+        REJECTED: "order.rejected",
+        PREPARING: "order.preparing",
+        READY: "order.ready"
     },
+
+    // RESTAURANT: {
+    //     ACCEPTED: "order.accepted",
+    //     REJECTED: "order.rejected",
+    //     PREPARING: "order.preparing",
+    //     READY: "order.ready"
+    // },
 
     PAYMENT: {
         CREATED: "payment.created",
         SUCCESS: "payment.success",
         FAILED: "payment.failed",
         REFUNDED: "payment.refunded"
-    },
-
-    RESTAURANT: {
-        ORDER_ACCEPTED: "restaurant.order.accepted",
-        ORDER_REJECTED: "restaurant.order.rejected",
-        ORDER_PREPARING: "restaurant.order.preparing",
-        ORDER_READY: "restaurant.order.ready"
     },
 
     RIDER: {

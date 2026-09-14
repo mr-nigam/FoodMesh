@@ -82,8 +82,7 @@ const RestaurantCart = ({
             <div className="divide-y">
                 {visibleItems.map((item) => {
                     const itemId =
-                        item.cart_id ??
-                        item.cartId ??
+                        item.id ??
                         item.item_id ??
                         item.itemId;
 

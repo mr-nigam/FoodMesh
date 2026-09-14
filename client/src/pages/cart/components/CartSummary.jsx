@@ -1,7 +1,4 @@
-const formatPrice = (paise) => {
-    return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-};
-
+import formatCurrency from '../../../utils/formatCurrency.js';
 
 const CartSummary = ({
     fees,
@@ -37,7 +34,7 @@ const CartSummary = ({
                         Items ({fees.totalItemCount})
                     </span>
                     <span className="font-medium text-gray-800">
-                        {formatPrice(fees.totalItemSubtotal)}
+                        {formatCurrency(fees.totalItemSubtotal)}
                     </span>
                 </div>
 
@@ -50,25 +47,25 @@ const CartSummary = ({
                             : ""})
                     </span>
                     <span>
-                        {formatPrice(fees.totalDeliveryFee)}
+                        {formatCurrency(fees.totalDeliveryFee)}
                     </span>
                 </div>
 
                 <div className="flex justify-between">
                     <span>Taxes & GST</span>
-                    <span>{formatPrice(fees.totalTaxes)}</span>
+                    <span>{formatCurrency(fees.totalTaxes)}</span>
                 </div>
 
                 <div className="flex justify-between">
                     <span>Packaging Charges</span>
                     <span>
-                        {formatPrice(fees.totalPackagingFee)}
+                        {formatCurrency(fees.totalPackagingFee)}
                     </span>
                 </div>
 
                 <div className="flex justify-between">
                     <span>Platform Fee</span>
-                    <span>{formatPrice(fees.platformFee)}</span>
+                    <span>{formatCurrency(fees.platformFee)}</span>
                 </div>
             </div>
 
@@ -77,7 +74,7 @@ const CartSummary = ({
             <div className="flex justify-between text-lg font-bold">
                 <span>Grand Total</span>
                 <span className="text-red-600">
-                    {formatPrice(fees.grandTotal)}
+                    {formatCurrency(fees.grandTotal)}
                 </span>
             </div>
 
@@ -96,10 +93,10 @@ const CartSummary = ({
                     : !hasValidRestaurants
                     ? "No Open/Available Restaurants"
                     : hasBlockedRestaurants
-                    ? `Checkout Available (${validRestaurantCount} of ${totalRestaurantCount}) • ${formatPrice(
+                    ? `Checkout Available (${validRestaurantCount} of ${totalRestaurantCount}) • ${formatCurrency(
                           fees.grandTotal
                       )}`
-                    : `Checkout All • ${formatPrice(
+                    : `Checkout All • ${formatCurrency(
                           fees.grandTotal
                       )}`}
             </button>

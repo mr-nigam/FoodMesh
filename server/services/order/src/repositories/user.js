@@ -104,7 +104,37 @@ const fetchOrdersRepo = async({
     return rows;
 };
 
+// redo it
+const updateOrderStatusRepo = async({
+    orderId,
+    restaurantId,
+    status
+}) => {
+    
+    const values = [
+        status,
+        orderId,
+        restaurantId
+    ];
+
+    const updateQuery = `
+        UPDATE order_restaurants
+        SET
+            status = $1
+        WHERE id = $2
+            AND restaurant_id = $3
+        RETURNING id;
+    `;
+
+    const {rows} = await pool.query(
+        updateQuery,
+        values
+    );
+
+    return rows[0];
+};
 
 export {
-    fetchOrdersRepo
+    fetchOrdersRepo,
+    updateOrderStatusRepo
 };

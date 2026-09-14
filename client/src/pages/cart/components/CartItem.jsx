@@ -1,8 +1,6 @@
 import QuantityControl from "./QuantityControl";
+import formatCurrency from '../../../utils/formatCurrency.js';
 
-const formatPrice = (paise) => {
-    return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-};
 
 const CartItem = ({
     item,
@@ -11,6 +9,7 @@ const CartItem = ({
     onDecrease,
     onRemove,
 }) => {
+    
     const quantity = Number(item.quantity || 0);
     const itemTotal = Number(item.price || 0) * quantity;
 
@@ -52,7 +51,7 @@ const CartItem = ({
                     />
 
                     <span className="text-xs text-gray-500">
-                        {formatPrice(item.price)} each
+                        {formatCurrency(item.price)} each
                     </span>
                 </div>
 
@@ -65,7 +64,7 @@ const CartItem = ({
 
             <div className="flex flex-col items-end justify-between text-right">
                 <p className="font-semibold text-gray-900">
-                    {formatPrice(itemTotal)}
+                    {formatCurrency(itemTotal)}
                 </p>
 
                 <button

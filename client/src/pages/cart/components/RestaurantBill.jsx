@@ -1,6 +1,4 @@
-const formatPrice = (paise) => {
-    return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-};
+import formatCurrency from '../../../utils/formatCurrency.js';
 
 const RestaurantBill = ({
     restaurant,
@@ -15,7 +13,7 @@ const RestaurantBill = ({
                 <div className="flex justify-between">
                     <span>Item Subtotal</span>
                     <span className="font-medium text-gray-800">
-                        {formatPrice(fees.subtotal)}
+                        {formatCurrency(fees.subtotal)}
                     </span>
                 </div>
 
@@ -27,19 +25,19 @@ const RestaurantBill = ({
                                 FREE
                             </span>
                         ) : (
-                            formatPrice(fees.deliveryFee)
+                            formatCurrency(fees.deliveryFee)
                         )}
                     </span>
                 </div>
 
                 <div className="flex justify-between">
                     <span>Taxes & GST</span>
-                    <span>{formatPrice(fees.taxes)}</span>
+                    <span>{formatCurrency(fees.taxes)}</span>
                 </div>
 
                 <div className="flex justify-between">
                     <span>Packaging Charge</span>
-                    <span>{formatPrice(fees.packagingFee)}</span>
+                    <span>{formatCurrency(fees.packagingFee)}</span>
                 </div>
             </div>
 
@@ -50,7 +48,7 @@ const RestaurantBill = ({
                     </span>
 
                     <span className="text-lg font-bold text-gray-900">
-                        {formatPrice(fees.total)}
+                        {formatCurrency(fees.total)}
                     </span>
                 </div>
 
@@ -73,7 +71,7 @@ const RestaurantBill = ({
                     >
                         {isCheckingOut
                             ? "Creating Order..."
-                            : `Order from ${restaurant.name} • ${formatPrice(
+                            : `Order from ${restaurant.name} • ${formatCurrency(
                                   fees.total
                               )}`}
                     </button>

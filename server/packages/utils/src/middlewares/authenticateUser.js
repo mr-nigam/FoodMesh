@@ -11,7 +11,7 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
     const token =
         req?.cookies?.accessToken ||
         (authHeader?.startsWith("Bearer ")
-            ? authHeader.split(" ")[1]
+            ? authHeader.substring(7)
             : null
         );
 

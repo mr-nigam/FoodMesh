@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import { orderService } from "../../../config/constants";
+import { orderService } from 
+"../../../config/constants";
 
+import getAuthHeader from 
+'../../../config/getAuthHeader.js'
 
-const getAuthConfig = () => {
-    const token = localStorage.getItem("token");
-
-    if(!token) return {};
-
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-};
 
 const getErrorMessage = (error) => {
     return (
@@ -25,7 +17,7 @@ const getErrorMessage = (error) => {
 };
 
 const extractOrder = (data) => {
-    let raw = null;
+    let raw;
 
     if (data?.data?.order !== undefined) {
         raw = data.data.order;
@@ -41,7 +33,7 @@ const extractOrder = (data) => {
         raw = data;
     }
 
-    if (Array.isArray(raw)) {
+    if(Array.isArray(raw)){
         if (raw.length === 0) return null;
         const first = raw[0];
         const restaurants = raw.map(r => r.restaurant).filter(Boolean);
@@ -198,7 +190,7 @@ const useCheckoutOrder = ({
 
                 const { data } = await axios.get(
                     `${orderService}/${orderId}`,
-                    getAuthConfig()
+                    getAuthHeader()
                 );
 
                 console.log(

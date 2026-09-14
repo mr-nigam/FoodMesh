@@ -17,8 +17,7 @@ const createOrder = asyncHandler ( async (req, res) => {
         body: req.body
     });
 
-
-    console.log(orderDetails);
+    // console.log(orderDetails);
 
     return res
         .status(201)

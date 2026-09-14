@@ -23,6 +23,10 @@ import {
     COIItemsTableRepo
 } from '../repositories/createOrder.js';
 
+import { 
+    emitRealtimeEvent 
+} from '../clients/realtime.client.js';
+
 
 const getAddressService = async({
     userId,
@@ -256,6 +260,7 @@ const createOrderService = async ({
 
             const createdROrder = await COIRestarurantTableRepo({
                 client,
+                userId,
                 orderId: createdOrder.id,
                 restaurant: row.restaurant,
                 subtotal: Number(row.total_value || row.totalValue || 0),
@@ -320,13 +325,46 @@ const createOrderService = async ({
         }
     }); 
 
-    await publishEvent({
-        topic: KAFKA_TOPICS.ORDER,
-        key: createdOrder.id,
-        event: orderCreatedEvent
+    try {
+        await publishEvent({
+            topic: KAFKA_TOPICS.ORDER,
+            key: createdOrder.id,
+            event: orderCreatedEvent
+        });
+    } catch (kafkaErr) {
+        console.error("[Kafka] Failed to publish order.created event:", kafkaErr.message);
+    }
+
+    // Realtime notification to restaurants
+    for(const rOrder of createdOrderRestaurants){
+        if(rOrder?.restaurant_id){
+            emitRealtimeEvent({
+                event: "order:new",
+                room: `restaurant:${rOrder.restaurant_id}`,
+                payload: {
+                    orderId: createdOrder.id,
+                    orderRestaurantId: rOrder.id,
+                    restaurantId: rOrder.restaurant_id,
+                    totalAmount: rOrder.total_amount,
+                    recipientName: createdOrder.recipient_name,
+                    status: rOrder.status
+                }
+            });
+        }
+    }
+
+    // Realtime notification to user
+    emitRealtimeEvent({
+        event: "order:new",
+        room: `user:${userId}`,
+        payload: {
+            orderId: createdOrder.id,
+            status: createdOrder.status,
+            totalAmount: createdOrder.total_amount
+        }
     });
 
-    console.log("order created");
+    console.log("order created & realtime notifications dispatched");
     
     return createdOrder;
 };

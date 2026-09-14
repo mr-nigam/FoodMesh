@@ -4,6 +4,9 @@ import { restaurantService } from "../config/constants";
 import toast from "react-hot-toast";
 import { BiUpload } from "react-icons/bi";
 
+import getAuthHeader from 
+"../config/getAuthHeader.js";
+
 
 const AddMenuItem = ({ onItemAdded }) => {
     const [name, setName] = useState("");
@@ -95,11 +98,7 @@ const AddMenuItem = ({ onItemAdded }) => {
             const { data } = await axios.post(
                 `${restaurantService}/menu/add-item`,
                 formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                }
+                getAuthHeader()
             );
 
             toast.success(

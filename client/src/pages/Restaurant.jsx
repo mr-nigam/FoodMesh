@@ -8,6 +8,8 @@ import RestaurantProfile from "../components/RestaurantProfile.jsx";
 import MenuItems from "../components/MenuItems";
 import AddMenuItem from "../components/AddMenuItem.jsx";
 import toast from "react-hot-toast";
+import RestaurantOrders from '../components/RestaurantOrders.jsx';
+import getAuthHeader from '../config/getAuthHeader.js';
 
 
 const Restaurant = () => {
@@ -26,16 +28,11 @@ const Restaurant = () => {
    */
   useEffect(() => {
     const fetchMyRestaurant = async () => {
-      try {
-        const token = localStorage.getItem("token");
+      try{
 
         const { data } = await axios.get(
           `${restaurantService}/my`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          getAuthHeader()
         );
 
         setRestaurant(data?.data?.restaurant ?? null);
@@ -77,15 +74,9 @@ const Restaurant = () => {
   const fetchMenuItems = async (restaurantId) => {
     if (!restaurantId) return [];
 
-    const token = localStorage.getItem("token");
-
     const { data } = await axios.get(
       `${restaurantService}/menu/all/${restaurantId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      getAuthHeader()
     );
 
     return data?.data?.menuItems ?? data?.menuItems ?? [];
@@ -157,6 +148,11 @@ const Restaurant = () => {
         restaurant={restaurant}
         onUpdate={setRestaurant}
         isSeller={true}
+      />
+
+      <RestaurantOrders 
+        restaurantId={restaurant?.id}
+        
       />
 
       <div className="rounded-xl bg-white shadow-sm">

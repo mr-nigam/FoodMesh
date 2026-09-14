@@ -35,15 +35,20 @@ const createOrdersTable = async () => {
                     CHECK (
                         status IN (
                             'placed',
+                            'created',
                             'confirmed',
-                            'accepted_at_restaurant',
+                            'accepted',
                             'preparing',
+                            'ready',
                             'ready_for_rider',
                             'rider_assigned',
                             'picked_up',
                             'on_the_way',
                             'delivered',
-                            'cancelled'
+                            'cancelled',
+                            'rejected',
+                            'reject',
+                            'failed'
                         )
                     ),
 

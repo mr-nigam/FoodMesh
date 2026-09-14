@@ -5,6 +5,7 @@ import useAppData from "../../../context/useAppData";
 import cartApi from "../services/cartApi";
 import { getApiErrorMessage } from "../utils/error";
 
+
 const useCartActions = () => {
     const { updateQuantity, refreshCart } = useAppData();
 
@@ -13,7 +14,7 @@ const useCartActions = () => {
     const [isClearingCart, setIsClearingCart] = useState(false);
 
     const updateItemQuantity = async (itemId, action) => {
-        if (pendingAction || pendingItemId !== null || !itemId) {
+        if(pendingAction || pendingItemId !== null || !itemId){
             return;
         }
 
@@ -22,7 +23,7 @@ const useCartActions = () => {
 
         try {
             await updateQuantity(itemId, action);
-        } catch (error) {
+        }catch(error){
             console.error("Failed to update cart quantity:", error);
             toast.error(
                 getApiErrorMessage(error, "Failed to update item quantity")
@@ -148,5 +149,6 @@ const useCartActions = () => {
         clearCart,
     };
 };
+
 
 export default useCartActions;

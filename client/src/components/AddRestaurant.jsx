@@ -6,6 +6,8 @@ import toast from "react-hot-toast";
 import useAppData from "../context/useAppData";
 import { restaurantService } from "../config/constants";
 
+import getAuthHeader from "../config/getAuthHeader.js";
+
 
 const AddRestaurant = () => {
     const navigate = useNavigate();
@@ -52,11 +54,7 @@ const AddRestaurant = () => {
             await axios.post(
                 `${restaurantService}/add`,
                 formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                }
+                getAuthHeader()
             );
 
             toast.success("Restaurant added successfully.");

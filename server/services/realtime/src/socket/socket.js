@@ -83,6 +83,29 @@ const initializeSocket = (httpServer) => {
             socketId: socket.id,
         });
 
+        // Join restaurant room
+        socket.on('join:restaurant', (restaurantId) => {
+            if (restaurantId) {
+                const room = `restaurant:${restaurantId}`;
+                socket.join(room);
+                console.log(`🏪 Socket ${socket.id} joined restaurant room: ${room}`);
+                socket.emit('joined:restaurant', {
+                    success: true,
+                    restaurantId,
+                    room
+                });
+            }
+        });
+
+        // Leave restaurant room
+        socket.on('leave:restaurant', (restaurantId) => {
+            if (restaurantId) {
+                const room = `restaurant:${restaurantId}`;
+                socket.leave(room);
+                console.log(`🏪 Socket ${socket.id} left restaurant room: ${room}`);
+            }
+        });
+
         // Ping/Pong
         socket.on('ping', () => {
             socket.emit('pong', {

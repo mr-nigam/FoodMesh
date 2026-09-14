@@ -2,6 +2,7 @@ import axios from "axios";
 import { addressService, userService } from "../../../config/constants";
 import getAuthHeader from "../../../config/getAuthHeader.js";
 
+
 const getErrorMessage = (error, fallbackMessage) => {
     if (axios.isAxiosError(error)) {
         return (
@@ -17,10 +18,7 @@ const getDefaultAddress = async () => {
     try {
         const { data } = await axios.get(
             `${addressService}/default`,
-            {
-                headers: getAuthHeader(),
-                withCredentials: true
-            }
+            getAuthHeader(),
         );
         return data;
     } catch (error) {
@@ -37,10 +35,7 @@ const getAllAddresses = async () => {
     try {
         const { data } = await axios.get(
             `${userService}/address/all`,
-            {
-                headers: getAuthHeader(),
-                withCredentials: true
-            }
+            getAuthHeader(),
         );
         return data;
     } catch (error) {
@@ -53,6 +48,7 @@ const addressApi = {
     getDefault: getDefaultAddress,
     getAll: getAllAddresses,
 };
+
 
 export {
     getDefaultAddress,

@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BiEdit, BiMapPin, BiSave } from "react-icons/bi";
 import { restaurantService } from "../config/constants";
+import getAuthHeader from "../config/getAuthHeader.js";
 
 
 const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
@@ -25,12 +26,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
     const [loading, setLoading] = useState(false);
     const [statusLoading, setStatusLoading] = useState(false);
 
-    const getAuthConfig = () => ({
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-    });
-
     const toggleOpenStatus = async () => {
         if (statusLoading) return;
 
@@ -44,7 +39,7 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                 {
                     status: newStatus,
                 },
-                getAuthConfig()
+                getAuthHeader()
             );
 
             const updatedRestaurant =
@@ -102,7 +97,7 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                     name: trimmedName,
                     description: trimmedDescription,
                 },
-                getAuthConfig()
+                getAuthHeader()
             );
 
             const updatedRestaurant =

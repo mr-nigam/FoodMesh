@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { addressService } from '../config/constants.js'; 
 import { BiLoader, BiPlus, BiTrash, BiHome, BiBriefcase, BiMapPin, BiCheckCircle } from "react-icons/bi"; 
 import { LuArrowLeft } from "react-icons/lu"; 
+import getAuthHeader from '../config/getAuthHeader.js';
 
 
 const AddressPage = () => { 
@@ -17,26 +18,38 @@ const AddressPage = () => {
   const fetchAddresses = async () => { 
     try { 
       setLoading(true); 
-      const token = localStorage.getItem("token"); 
 
-      const { data } = await axios.get(`${addressService}/all`, { 
-        headers: { 
-          Authorization: `Bearer ${token}`, 
-        }, 
-      }); 
+      const { data } = await axios.get(
+        `${addressService}/all`,
+        getAuthHeader()  
+      ); 
 
       const list = data?.data?.addresses || data?.addresses || []; 
       setAddresses(list); 
-    } catch (error) { 
+
+    }catch(error){ 
       console.error("Failed to load addresses:", error);
       toast.error("Failed to load addresses"); 
-    } finally { 
+
+    }finally{ 
       setLoading(false); 
     } 
   }; 
 
-  useEffect(() => { 
-    fetchAddresses(); 
+  useEffect(() => {
+
+      const loadAddress = async()=>{
+        try{
+          await fetchAddresses();
+        }catch(error){
+          toast.error(
+            error.response?.data?.message ||
+              "Failed to fetch addresses"
+          );
+        }
+      };
+
+      loadAddress();
   }, []); 
 
   // Delete address 
@@ -46,11 +59,10 @@ const AddressPage = () => {
     try { 
       setDeletingId(id); 
 
-      await axios.delete(`${addressService}/${id}`, { 
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem("token")}`, 
-        }, 
-      }); 
+      await axios.delete(
+        `${addressService}/${id}`,
+        getAuthHeader()
+      ); 
 
       toast.success("Address deleted successfully"); 
       setAddresses((prev) => prev.filter((item) => item.id !== id && item._id !== id)); 

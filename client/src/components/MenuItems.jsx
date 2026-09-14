@@ -6,6 +6,7 @@ import { BiTrash } from "react-icons/bi";
 import { BsCartPlus, BsEye } from "react-icons/bs";
 import { FiEyeOff } from "react-icons/fi";
 import useAppData from "../context/useAppData.js";
+import getAuthHeader from "../config/getAuthHeader.js";
 
 
 const MenuItems = ({
@@ -22,9 +23,6 @@ const MenuItems = ({
 
   const { cart, refreshCart, updateQuantity } = useAppData();
 
-  const getAuthHeaders = () => ({
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  });
 
   const getCartQuantity = (itemId) => {
     if (!cart || !Array.isArray(cart)) return 0;
@@ -58,9 +56,7 @@ const MenuItems = ({
       const { data } = await axios.patch(
         `${restaurantService}/menu/${itemId}/availability`,
         {},
-        {
-          headers: getAuthHeaders(),
-        }
+        getAuthHeader()
       );
 
       toast.success(
@@ -111,11 +107,7 @@ const MenuItems = ({
         {
           restaurantId: targetRestaurantId, itemId, price
         },
-        {
-          headers: {
-            Authorization:`Bearer ${localStorage.getItem("token")}`
-          }
-        }
+        getAuthHeader()
       );
       
       toast.success(
@@ -167,9 +159,7 @@ const MenuItems = ({
 
         const { data } = await axios.delete(
             `${restaurantService}/menu/${itemId}`,
-            {
-                headers: getAuthHeaders(),
-            }
+            getAuthHeader()
         );
 
         toast.success(

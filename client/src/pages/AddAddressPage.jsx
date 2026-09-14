@@ -7,6 +7,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { LuLocateFixed, LuArrowLeft } from "react-icons/lu";
 import { BiLoader, BiCheck } from "react-icons/bi";
+import getAuthHeader from '../config/getAuthHeader.js';
+
 import { 
   MapContainer, 
   TileLayer, 
@@ -159,7 +161,6 @@ const AddAddressPage = () => {
 
     try {
       setSubmitting(true);
-      const token = localStorage.getItem("token");
 
       await axios.post(
         `${addressService}/add`,
@@ -179,11 +180,7 @@ const AddAddressPage = () => {
           formattedAddress: formattedAddress.trim() || addressLine1.trim(),
           isDefault,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        getAuthHeader()
       );
 
       toast.success("Address added successfully");
@@ -441,5 +438,6 @@ const AddAddressPage = () => {
     </div>
   );
 };
+
 
 export default AddAddressPage;

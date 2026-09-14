@@ -15,6 +15,7 @@ import AddressPage from './pages/AddressPage';
 import AddAddressPage from './pages/AddAddressPage';
 import Checkout from "./pages/Checkout/Checkout";
 
+
 const App = () => {
     const {user} = useAppData();
     

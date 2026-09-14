@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { restaurantService } from "../config/constants";
 import axios from "axios";
 import RestaurantCard from "../components/RestaurantCard";
+import getAuthHeader from '../config/getAuthHeader.js';
 
 
 const Home = () => {
@@ -38,10 +39,8 @@ const Home = () => {
               longitude: location.longitude,
               search,
             },
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+          },
+          getAuthHeader()
         );
 
         if (!isMounted) return;

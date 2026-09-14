@@ -2,6 +2,7 @@ import axios from "axios";
 import { addressService, userService } from "../../../config/constants";
 import getAuthHeader from "../../../config/getAuthHeader.js";
 
+
 const getErrorMessage = (error, fallbackMessage) => {
     if (axios.isAxiosError(error)) {
         return (
@@ -53,6 +54,7 @@ const addressApi = {
     getDefault: getDefaultAddress,
     getAll: getAllAddresses,
 };
+
 
 export {
     getDefaultAddress,

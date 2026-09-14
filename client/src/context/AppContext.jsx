@@ -4,6 +4,8 @@ import axios from "axios";
 import {AppContext} from "./context";
 import { Toaster } from "react-hot-toast";
 
+import getAuthHeader from '../config/getAuthHeader.js';
+
 
 const AppProvider = ({ 
     children
@@ -22,49 +24,19 @@ const AppProvider = ({
     const [allTotalValue, setAllTotalValue] = useState(0);
     const [loadingCart, setLoadingCart] = useState(false);
 
-
-    /*
-     * Fetch authenticated user
-     *
-     * Dependencies:
-     * []
-     *
-     * Correct because everything used by this effect is either:
-     * - defined inside the effect
-     * - a stable React state setter
-     * - localStorage
-     * - axios
-     */
     
     useEffect(() => {
         let ignore = false;
 
         const fetchUser = async () => {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                if (!ignore) {
-                    setUser(null);
-                    setIsAuth(false);
-                    setLoading(false);
-                }
-
-                return;
-            }
 
             try {
                 const { data: response } = await axios.get(
                     `${authService}/me`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
+                    getAuthHeader(),
                 );
 
-                if (ignore) {
-                    return;
-                }
+                if(ignore) return;
 
                 const currentUser =
                     response?.data?.user ??
@@ -79,10 +51,8 @@ const AppProvider = ({
                     setIsAuth(false);
                 }
 
-            } catch (error) {
-                if(ignore) {
-                    return;
-                }
+            }catch(error){
+                if(ignore) return;
 
                 console.error(
                     "Error while fetching user:",
@@ -123,9 +93,7 @@ const AppProvider = ({
 
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    if (ignore) {
-                        return;
-                    }
+                    if(ignore) return;
 
                     const {
                         latitude,
@@ -144,9 +112,7 @@ const AppProvider = ({
                             }
                         );
 
-                        if (ignore) {
-                            return;
-                        }
+                        if(ignore) return;
 
                         const address = data?.address ?? {};
 
@@ -166,10 +132,8 @@ const AppProvider = ({
                             "Unknown location"
                         );
 
-                    } catch (error) {
-                        if (ignore) {
-                            return;
-                        }
+                    } catch(error){
+                        if(ignore) return;
 
                         console.error(
                             "Error while fetching location:",
@@ -186,16 +150,14 @@ const AppProvider = ({
                         setCity("Unable to load");
 
                     } finally {
-                        if (!ignore) {
+                        if(!ignore){
                             setLoadingLocation(false);
                         }
                     }
                 },
 
                 (error) => {
-                    if (ignore) {
-                        return;
-                    }
+                    if(ignore) return;
 
                     console.error(
                         "Error while getting location:",
@@ -212,21 +174,14 @@ const AppProvider = ({
         fetchUser();
         fetchLocation();
 
-
         return () => {
             ignore = true;
         };
 
     }, []);
 
-
-    /*
-     * Fetch cart for authenticated customer user and update state.
-     */
     const fetchCart = async () => {
-        const token = localStorage.getItem("token");
-
-        if (!user || user.role !== "customer" || !token) {
+        if(!user || user.role !== "customer"){
             await Promise.resolve();
             setCart([]);
             setAllTotalQty(0);
@@ -238,11 +193,7 @@ const AppProvider = ({
         try {
             const { data: response } = await axios.get(
                 `${restaurantService}/cart/my`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
+                getAuthHeader()
             );
 
             const responseData = response?.data ?? response;
@@ -265,44 +216,32 @@ const AppProvider = ({
 
             return restaurantWiseCart;
 
-        } catch (error) {
+        }catch(error){
             console.error("Error while fetching cart:", error);
             setCart([]);
             setAllTotalQty(0);
             setAllTotalValue(0);
             return [];
 
-        } finally {
+        }finally{
             setLoadingCart(false);
         }
     };
 
     const refreshCart = fetchCart;
 
-    /*
-     * Update item quantity in cart (action: "inc" | "dec")
-    */
-
     const updateQuantity = async (itemId, action) => {
-        const token = localStorage.getItem("token");
-        if(!token) return;
-
         try {
             const { data } = await axios.put(
                 `${restaurantService}/cart/update`,
                 { itemId, action },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
+                getAuthHeader()
             );
 
             await fetchCart();
             return data;
 
         }catch(error){
-
             console.error("Error updating cart quantity:", error);
             throw error;
         }
@@ -315,7 +254,7 @@ const AppProvider = ({
         let isMounted = true;
 
         const loadCartData = async () => {
-            if (isMounted) {
+            if(isMounted){
                 await fetchCart();
             }
         };
@@ -326,7 +265,6 @@ const AppProvider = ({
             isMounted = false;
         };
     }, [user]);
-
 
     return (
         <AppContext.Provider

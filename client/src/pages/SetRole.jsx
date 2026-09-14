@@ -3,9 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import useAppData from "../context/useAppData"; // adjust path
 import { authService } from "../config/constants"; // adjust path
+import getAuthHeader from '../config/getAuthHeader.js';
+
 
 const allowedRoles = ["customer", "rider", "seller"];
-
 
 const SetRole = () => {
   const [role, setRole] = useState(null);
@@ -22,27 +23,23 @@ const SetRole = () => {
     try{
       console.log("Sending request...");
 
-      const { data } = await axios.put(`${authService}/set-role`,{role},{
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const { data } = await axios.put(
+        `${authService}/set-role`,
+        {role},
+        getAuthHeader()
+      );
       
-      console.log("Response:", data);
-      console.log(data.data.user);
-      console.log(data.data.token);
+      const token = data?.token || data?.data?.token; 
+      const user = data?.user || data?.data?.user;
 
-      localStorage.setItem("token", data.data.token);
-      setUser(data.data.user);
-      // setIsAuth(true);
-      
-      console.log("before");
+      localStorage.setItem("token", token);
+      setUser(user);
+
       navigate("/", { replace: true });
-      console.log("after");
+      
     }catch(error){
 
       alert("something went wrong");
-
       console.log(error);
       console.log(error.response);
     }

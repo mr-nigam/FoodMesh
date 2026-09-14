@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { userService } from '../config/constants';
 import LocationPickerModal from './LocationPickerModal';
 import { BiMapPin, BiHomeAlt, BiBriefcase, BiMap, BiX, BiCheck } from 'react-icons/bi';
+import getAuthHeader from "../config/getAuthHeader.js";
 
 
 const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddress }) => {
@@ -11,21 +12,13 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
     const [loading, setLoading] = useState(true);
     const [isMapOpen, setIsMapOpen] = useState(false);
 
-    const getAuthHeader = () => {
-        const token = localStorage.getItem('token');
-        return token ? { Authorization: `Bearer ${token}` } : {};
-    };
-
     const fetchAddresses = async () => {
         try {
             setLoading(true);
             
             const { data } = await axios.get(
                 `${userService}/address/all`, 
-                { 
-                    headers: getAuthHeader(),
-                    withCredentials: true
-                }
+                getAuthHeader()
             );
             
             const addresses = 
@@ -202,5 +195,6 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
         </div>
     );
 };
+
 
 export default AddressSelectorModal;

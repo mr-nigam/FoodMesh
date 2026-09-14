@@ -2,6 +2,7 @@ import axios from "axios";
 import { restaurantService } from "../../../config/constants";
 import getAuthHeader from "../../../config/getAuthHeader.js";
 
+
 const removeCartItem = async (itemId) => {
     try {
         const { data } = await axios.delete(
@@ -52,6 +53,7 @@ const cartApi = {
     removeRestaurant: removeRestaurantFromCart,
     clear: clearCart
 };
+
 
 export {
     removeCartItem,

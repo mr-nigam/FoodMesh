@@ -1,5 +1,5 @@
 
-// COI  = createOrderIn
+// COI  = Create Order In
 const COIOrdersTableRepo = async({
     client,
     userId,
@@ -12,27 +12,11 @@ const COIOrdersTableRepo = async({
     globalTotal
 }) => { 
     
-    let formattedAddressObj = null;
-    if (deliveryAddress) {
-        if (typeof deliveryAddress === 'object') {
-            formattedAddressObj = JSON.stringify(deliveryAddress);
-        } else if (typeof deliveryAddress === 'string') {
-            const str = deliveryAddress.trim();
-            if (str.startsWith('{') || str.startsWith('[') || str.startsWith('"')) {
-                formattedAddressObj = str;
-            } else {
-                formattedAddressObj = JSON.stringify(str);
-            }
-        }
-    } else {
-        formattedAddressObj = JSON.stringify({});
-    }
-
     const values = [
         userId,
         recipientName,
         recipientPhone,
-        formattedAddressObj,
+        JSON.stringify(deliveryAddress),
         Number(globalSubtotal),
         Number(globalDelivery),
         Number(globalTax),
@@ -79,6 +63,7 @@ const COIOrdersTableRepo = async({
 
 const COIRestarurantTableRepo = async({
     client,
+    userId,
     orderId,
     restaurant,
     subtotal,
@@ -86,60 +71,26 @@ const COIRestarurantTableRepo = async({
 }) => { 
     
     const deliveryFee = 4500; // ₹45.00
-    const numSubtotal = Number(subtotal || 0);
-    const numTaxAmount = Number(taxAmount || 0);
-    const totalAmount = numSubtotal + numTaxAmount + deliveryFee;
-
-    let lng = 0, lat = 0;
-    if (restaurant.location) {
-        if (typeof restaurant.location === 'object') {
-            lng = Number(restaurant.location.x ?? restaurant.location.longitude ?? restaurant.location.coordinates?.[0] ?? 0);
-            lat = Number(restaurant.location.y ?? restaurant.location.latitude ?? restaurant.location.coordinates?.[1] ?? 0);
-        } else if (typeof restaurant.location === 'string') {
-            const match = restaurant.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
-            if (match) {
-                lng = Number(match[1]);
-                lat = Number(match[2]);
-            }
-        }
-    }
-
-    let phone = restaurant.phone || null;
-    if (phone && !phone.startsWith('+')) {
-        phone = '+' + phone;
-    }
-
-    let formattedRestaurantAddress = JSON.stringify({});
-    if (restaurant.address) {
-        if (typeof restaurant.address === 'object') {
-            formattedRestaurantAddress = JSON.stringify(restaurant.address);
-        } else if (typeof restaurant.address === 'string') {
-            const str = restaurant.address.trim();
-            if (str.startsWith('{') || str.startsWith('[') || str.startsWith('"')) {
-                formattedRestaurantAddress = str;
-            } else {
-                formattedRestaurantAddress = JSON.stringify(str);
-            }
-        }
-    }
+    const totalAmount = subtotal + taxAmount + deliveryFee;
 
     const values = [
         orderId,
+        userId,
         restaurant.id,
         restaurant.name,
-        phone,
-        lng,
-        lat,
-        formattedRestaurantAddress,
-        numSubtotal,
-        numTaxAmount,
-        deliveryFee,
+        restaurant.phone,
+        restaurant.location,
+        JSON.stringify(restaurant.address),
+        Number(subtotal),
+        Number(taxAmount),
+        Number(deliveryFee),
         totalAmount
     ];
 
     const rOrderInsertQuery = `
         INSERT INTO order_restaurants (
             order_id,
+            user_id,
             restaurant_id,
             restaurant_name,
             restaurant_phone,
@@ -153,12 +104,11 @@ const COIRestarurantTableRepo = async({
         )
         VALUES (
             $1, $2, $3, $4,
-            ST_SetSRID(ST_MakePoint($5, $6), 4326)::GEOGRAPHY,
-            $7, $8, $9, $10, $11, 'placed'
+            $5, $6, $7, $8, 
+            $9, $10, $11, 'placed'
         )
         RETURNING 
             id,
-            order_id,
             restaurant_id,
             restaurant_name,
             subtotal,
@@ -183,7 +133,7 @@ const COIItemsTableRepo = async({
 }) => { 
 
     const itemId = item.item_id || item.id;
-    const cartId = item.cart_id || item.id || globalThis.crypto?.randomUUID?.() || '00000000-0000-0000-0000-000000000000';
+    const cartId = item.cart_id ?? null;
     const itemName = item.name || item.item_name || "";
     const unitPrice = Number(item.price ?? item.unit_price ?? 0);
     const quantity = Number(item.quantity || 1);

@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import RestaurantProfile from "../components/RestaurantProfile";
 import MenuItems from "../components/MenuItems";
+import getAuthHeader from '../config/getAuthHeader.js';
 
 
 const RestaurantPages = () => {
@@ -20,7 +21,6 @@ const RestaurantPages = () => {
         }
 
         const loadRestaurantPage = async () => {
-            const token = localStorage.getItem("token");
 
             try {
                 setLoading(true);
@@ -33,11 +33,7 @@ const RestaurantPages = () => {
 
                 const {data} = await axios.get(
                     `${restaurantService}/${restaurantId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
+                    getAuthHeader()
                 );
 
                 const restaurantData =
@@ -63,11 +59,7 @@ const RestaurantPages = () => {
                 try {
                     const {data} = await axios.get(
                         `${restaurantService}/menu/all/${restaurantId}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
+                        getAuthHeader()
                     );
 
                     const items =

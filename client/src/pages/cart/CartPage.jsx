@@ -16,6 +16,7 @@ import useCheckout from "./hooks/useCheckout";
 import { calculateCartFees } from "../../utils/feeCalculator";
 import { getValidRestaurants } from "./utils/cartValidation";
 
+
 const CartPage = () => {
     const {
         cart = [],
@@ -135,5 +136,6 @@ const CartPage = () => {
         </div>
     );
 };
+
 
 export default CartPage;

@@ -1,10 +1,12 @@
 import pool from '../config/postgre.js';
 
+
 const fetchOrderForPaymentRepo = async ({
     orderId,
     userId
 }) => {
-    const query = `
+
+    const searchQuery = `
         SELECT 
             id,
             user_id,
@@ -25,9 +27,14 @@ const fetchOrderForPaymentRepo = async ({
         LIMIT 1;
     `;
 
-    const { rows } = await pool.query(query, [orderId, userId]);
+    const { rows } = await pool.query(
+        searchQuery, 
+        [orderId, userId]
+    );
+    
     return rows[0] || null;
 };
+
 
 export {
     fetchOrderForPaymentRepo

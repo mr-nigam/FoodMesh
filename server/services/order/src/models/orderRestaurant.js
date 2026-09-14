@@ -6,8 +6,7 @@ import {
 
 
 const createOrderRestaurantTable = async () => {
-    try {
-
+    try{
         await pool.query(`
             CREATE TABLE IF NOT EXISTS order_restaurants (
                 id UUID PRIMARY KEY
@@ -17,6 +16,8 @@ const createOrderRestaurantTable = async () => {
                     REFERENCES orders(id)
                     ON DELETE CASCADE,
 
+                user_id UUID NOT NULL,
+                
                 restaurant_id UUID NOT NULL,
 
                 restaurant_name VARCHAR(255) NOT NULL,
@@ -32,7 +33,7 @@ const createOrderRestaurantTable = async () => {
 
                 subtotal NUMERIC(12,2) NOT NULL
                     CHECK (subtotal >= 0),
-
+                    
                 tax_amount NUMERIC(12,2) NOT NULL
                     DEFAULT 0
                     CHECK (tax_amount >= 0),
@@ -49,18 +50,23 @@ const createOrderRestaurantTable = async () => {
                     CHECK (total_amount >= 0),
 
                 status VARCHAR(30) NOT NULL
-                    DEFAULT 'pending'
+                    DEFAULT 'placed'
                     CHECK (
                         status IN (
                             'placed',
+                            'pending',
+                            'created',
+                            'confirmed',
                             'accepted',
                             'preparing',
-                            'ready_for_rider',
+                            'ready',
                             'rider_assigned',
                             'picked_up',
                             'on_the_way',
                             'delivered',
-                            'cancelled'
+                            'cancelled',
+                            'rejected',
+                            'failed'
                         )
                     ),
                     

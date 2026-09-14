@@ -2,6 +2,7 @@ import axios from "axios";
 import { orderService } from "../../../config/constants";
 import getAuthHeader from "../../../config/getAuthHeader.js";
 
+
 const getErrorMessage = (error, fallbackMessage) => {
     if (axios.isAxiosError(error)) {
         return (
@@ -18,9 +19,7 @@ const createSingleOrder = async (payload) => {
         const response = await axios.post(
             orderService,
             payload,
-            {
-                headers: getAuthHeader()
-            }
+            getAuthHeader()
         );
         return response;
     } catch (error) {
@@ -38,9 +37,7 @@ const createAllOrders = async (payload) => {
         const response = await axios.post(
             orderService,
             payload,
-            {
-                headers: getAuthHeader()
-            }
+            getAuthHeader()
         );
         return response;
     } catch (error) {
@@ -48,6 +45,7 @@ const createAllOrders = async (payload) => {
             error,
             "Unable to create your orders. Please try again."
         );
+
         console.error("Error creating all orders:", error);
         throw new Error(message, { cause: error });
     }
@@ -57,6 +55,7 @@ const orderApi = {
     createSingle: createSingleOrder,
     createAll: createAllOrders,
 };
+
 
 export {
     createSingleOrder,
