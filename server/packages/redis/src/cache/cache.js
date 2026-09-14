@@ -87,7 +87,7 @@ const cachePaginatedList = async({
         return;
     }
 
-    const serializedList = list.map(
+    const serializedList = items.map(
         item => JSON.stringify(item)
     );
 
@@ -130,20 +130,12 @@ const getPaginatedList = async({
     const results =  await pipeline.exec();
 
     const serializedItems = results[0][1] || [];
-    const total = results[1][1] || 0;
 
     const items = serializedItems.map(
         item => JSON.parse(item)
     );
 
-    return {
-        page,
-        limit,
-        totalPages: Math.ceil(
-            total / limit
-        ),
-        items
-    };
+    return items;
 };
 
 

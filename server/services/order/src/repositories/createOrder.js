@@ -1,5 +1,5 @@
-
 // COI  = Create Order In
+
 const COIOrdersTableRepo = async({
     client,
     userId,
@@ -37,7 +37,7 @@ const COIOrdersTableRepo = async({
         )
         VALUES (
             $1, $2, $3,
-            $4, 'placed', 
+            $4, 'created', 
             $5, $6, $7, $8
         )
         RETURNING 
@@ -105,7 +105,7 @@ const COIRestarurantTableRepo = async({
         VALUES (
             $1, $2, $3, $4,
             $5, $6, $7, $8, 
-            $9, $10, $11, 'placed'
+            $9, $10, $11, 'created'
         )
         RETURNING 
             id,
@@ -128,6 +128,7 @@ const COIRestarurantTableRepo = async({
 
 const COIItemsTableRepo = async({ 
     client,
+    orderId,
     orderRestaurantId,
     item
 }) => { 
@@ -146,7 +147,8 @@ const COIItemsTableRepo = async({
         itemName,
         unitPrice,
         quantity,
-        subtotal
+        subtotal,
+        orderId
     ];
     
     const IOrderInsertQuery = `
@@ -157,15 +159,17 @@ const COIItemsTableRepo = async({
             item_name,
             unit_price,
             quantity,
-            subtotal
+            subtotal,
+            order_id
         )
         VALUES (
             $1, $2, $3,
             $4, $5, $6,
-            $7
+            $7, $8
         )
         RETURNING
             id,
+            order_id,
             cart_id,
             item_id,
             order_restaurant_id,

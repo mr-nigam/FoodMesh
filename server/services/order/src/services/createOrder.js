@@ -15,7 +15,7 @@ import {
     getAddress,
     getCartData,
     deleteCartData
-} from '../clients/user.client.js';
+} from '../clients/user.js';
 
 import {
     COIOrdersTableRepo,
@@ -25,7 +25,7 @@ import {
 
 import { 
     emitRealtimeEvent 
-} from '../clients/realtime.client.js';
+} from '../clients/realtime.js';
 
 
 const getAddressService = async({
@@ -271,6 +271,7 @@ const createOrderService = async ({
             for(const item of row.items){
                 await COIItemsTableRepo({
                     client,
+                    orderId: createdOrder.id,
                     orderRestaurantId: createdROrder.id,
                     item
                 });
@@ -325,14 +326,18 @@ const createOrderService = async ({
         }
     }); 
 
-    try {
+    try{
         await publishEvent({
             topic: KAFKA_TOPICS.ORDER,
             key: createdOrder.id,
             event: orderCreatedEvent
         });
-    } catch (kafkaErr) {
-        console.error("[Kafka] Failed to publish order.created event:", kafkaErr.message);
+
+    }catch(kafkaErr){
+        console.error(
+            "[Kafka] Failed to publish order.created event:",
+            kafkaErr.message
+        );
     }
 
     // Realtime notification to restaurants

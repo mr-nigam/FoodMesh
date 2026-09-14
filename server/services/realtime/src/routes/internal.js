@@ -6,9 +6,10 @@ import {
     ApiResponse
 } from '@foodmesh/utils';
 
+
 const router = Router();
 
-// validate service
+
 router.post("/emit", authenticateService, (req, res) => {
     const {
         event,
@@ -16,7 +17,7 @@ router.post("/emit", authenticateService, (req, res) => {
         payload
     } = req.body;
 
-    if (!event || !room) {
+    if(!event || !room){
         throw new ApiError(
             400,
             "Event and room are required"
@@ -39,5 +40,6 @@ router.post("/emit", authenticateService, (req, res) => {
             )
         );
 });
+
 
 export default router;

@@ -7,7 +7,12 @@ import { BiMapPin, BiHomeAlt, BiBriefcase, BiMap, BiX, BiCheck } from 'react-ico
 import getAuthHeader from "../config/getAuthHeader.js";
 
 
-const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddress }) => {
+const AddressSelectorModal = ({ 
+    isOpen,
+    onClose,
+    selectedAddressId,
+    onSelectAddress 
+}) => {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isMapOpen, setIsMapOpen] = useState(false);
@@ -44,8 +49,13 @@ const AddressSelectorModal = ({ isOpen, onClose, selectedAddressId, onSelectAddr
 
     useEffect(() => {
         if(isOpen){
-            fetchAddresses();
+            const loadAddress = async ()=>{
+                await fetchAddresses();
+            }
+            
+            loadAddress();
         }
+
     }, [isOpen]);
 
     const getLabelIcon = (label) => {

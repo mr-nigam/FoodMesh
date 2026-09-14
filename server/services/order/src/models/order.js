@@ -17,7 +17,6 @@ const createOrdersTable = async () => {
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 
-                -- Reference to user-service user.
                 user_id UUID NOT NULL,
 
                 recipient_name VARCHAR(100) 
@@ -31,23 +30,20 @@ const createOrdersTable = async () => {
                 delivery_address JSONB NOT NULL,
 
                 status VARCHAR(30) NOT NULL
-                    DEFAULT 'placed'
+                    DEFAULT 'created'
                     CHECK (
                         status IN (
-                            'placed',
                             'created',
                             'confirmed',
                             'accepted',
                             'preparing',
                             'ready',
-                            'ready_for_rider',
                             'rider_assigned',
                             'picked_up',
                             'on_the_way',
                             'delivered',
                             'cancelled',
                             'rejected',
-                            'reject',
                             'failed'
                         )
                     ),

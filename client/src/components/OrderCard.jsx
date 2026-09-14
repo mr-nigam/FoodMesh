@@ -2,28 +2,24 @@ import { useState } from 'react';
 import ORDER_ACTIONS from '../utils/orderFlow.js';
 import axios from 'axios';
 import { orderService } from '../config/constants.js';
-import getAuthHeader from '../config/getAuthHeader.js';
 import toast from 'react-hot-toast';
+import formatCurrency from '../utils/formatCurrency.js';
+import getAuthHeader from '../config/getAuthHeader.js';
 
-const formatCurrency = (amountInPaise) => {
-    const num = Number(amountInPaise || 0);
-    return `₹${(num / 100).toFixed(2)}`;
-};
 
 const formatDate = (dateString) => {
-    if (!dateString) return "";
-    try {
+    if(!dateString) return "";
+
+    try{
         const date = new Date(dateString);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
-    } catch {
+    }catch{
         return dateString;
     }
 };
 
 const statusConfig = {
-    placed: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Placed" },
     created: { bg: "bg-yellow-100", text: "text-yellow-800", label: "New Order" },
-    pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Pending" },
     confirmed: { bg: "bg-orange-100", text: "text-orange-800", label: "Confirmed" },
     accepted: { bg: "bg-blue-100", text: "text-blue-800", label: "Accepted" },
     preparing: { bg: "bg-indigo-100", text: "text-indigo-800", label: "Preparing" },
@@ -34,15 +30,14 @@ const statusConfig = {
     delivered: { bg: "bg-green-100", text: "text-green-800", label: "Delivered" },
     cancelled: { bg: "bg-red-100", text: "text-red-800", label: "Cancelled" },
     rejected: { bg: "bg-rose-100", text: "text-rose-800", label: "Rejected" },
-    failed: { bg: "bg-red-100", text: "text-red-800", label: "Failed" },
+    failed: { bg: "bg-red-100", text: "text-red-800", label: "Failed" }
 };
 
 const actionLabels = {
     accepted: { text: "Accept Order", style: "bg-emerald-600 hover:bg-emerald-700 text-white" },
     preparing: { text: "Start Preparing", style: "bg-blue-600 hover:bg-blue-700 text-white" },
     ready: { text: "Mark Ready for Pickup", style: "bg-purple-600 hover:bg-purple-700 text-white" },
-    rejected: { text: "Reject", style: "bg-rose-600 hover:bg-rose-700 text-white" },
-    cancelled: { text: "Cancel", style: "bg-gray-600 hover:bg-gray-700 text-white" },
+    rejected: { text: "Reject", style: "bg-rose-600 hover:bg-rose-700 text-white" }
 };
 
 const OrderCard = ({
@@ -50,6 +45,7 @@ const OrderCard = ({
     restaurantId,
     onStatusUpdate
 }) => {
+
     const [loading, setLoading] = useState(false);
     const [expanded, setExpanded] = useState(false);
 
@@ -61,14 +57,14 @@ const OrderCard = ({
     const shortOrderId = orderId ? `${orderId.substring(0, 8)}...` : "Order";
 
     const updateStatus = async (nextStatus) => {
-        try {
+        try{
             setLoading(true);
 
             await axios.patch(
                 `${orderService}/restaurant/${orderId}`,
                 {
                     status: nextStatus,
-                    orderRestaurantId: order.order_restaurant_id || order.id,
+                    orderRestaurantId: order.order_restaurant_id,
                     restaurantId: restaurantId || order.restaurant_id
                 },
                 getAuthHeader()
@@ -76,11 +72,17 @@ const OrderCard = ({
 
             toast.success(`Order marked as ${nextStatus}`);
             onStatusUpdate?.();
-        } catch (error) {
+
+        }catch(error){
+
             console.error("Error while updating status:", error);
-            const msg = error?.response?.data?.message || "Failed to update order status";
+            const msg = 
+                error?.response?.data?.message || 
+                "Failed to update order status";
+
             toast.error(msg);
-        } finally {
+
+        }finally{
             setLoading(false);
         }
     };
@@ -179,5 +181,6 @@ const OrderCard = ({
         </div>
     );
 };
+
 
 export default OrderCard;

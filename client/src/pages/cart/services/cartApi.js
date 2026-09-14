@@ -7,9 +7,7 @@ const removeCartItem = async (itemId) => {
     try {
         const { data } = await axios.delete(
             `${restaurantService}/cart/remove/${itemId}`,
-            {
-                headers: getAuthHeader()
-            }
+            getAuthHeader()
         );
         return { data };
     } catch (error) {
@@ -22,9 +20,7 @@ const removeRestaurantFromCart = async (restaurantId) => {
     try {
         const { data } = await axios.delete(
             `${restaurantService}/cart/remove/r/${restaurantId}`,
-            {
-                headers: getAuthHeader()
-            }
+            getAuthHeader()
         );
         return { data };
     } catch (error) {
@@ -37,9 +33,7 @@ const clearCart = async () => {
     try {
         const { data } = await axios.delete(
             `${restaurantService}/cart/clear`,
-            {
-                headers: getAuthHeader()
-            }
+            getAuthHeader()
         );
         return { data };
     } catch (error) {

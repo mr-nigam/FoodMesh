@@ -1,12 +1,14 @@
 import axios from 'axios';
 
+
 const emitRealtimeEvent = async ({
     event,
     room,
     payload
 }) => {
-    try {
+    try{
         const realtimeUrl = process.env.REALTIME_SERVICE_URL || 'http://localhost:4009';
+
         await axios.post(
             `${realtimeUrl}/internal/emit`,
             {
@@ -22,15 +24,18 @@ const emitRealtimeEvent = async ({
                 timeout: 3000,
             }
         );
+
         return true;
-    } catch (error) {
+    }catch(error){
         console.error(
             `[Realtime Client] Failed to emit event "${event}" to room "${room}":`,
             error.message
         );
+
         return false;
     }
 };
+
 
 export {
     emitRealtimeEvent

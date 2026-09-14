@@ -5,13 +5,12 @@ import axios from 'axios';
 import { orderService } from "../config/constants";
 import OrderCard from './OrderCard';
 import toast from "react-hot-toast";
-import getAuthHeader from 
-'../config/getAuthHeader.js'
+import getAuthHeader from '../config/getAuthHeader.js'
 
 
 const ACTIVE_STATUSES = [
-    'placed',
     'created',
+    'confirmed',
     'accepted',
     'preparing',
     'ready',
@@ -51,8 +50,8 @@ const RestaurantOrders = ({
     };
 
     const fetchOrders = async () => {
-        if (!restaurantId) return;
-        try {
+        if(!restaurantId) return;
+        try{
             const { data } = await axios.get(
                 `${orderService}/restaurant/${restaurantId}`,
                 getAuthHeader()
@@ -77,7 +76,6 @@ const RestaurantOrders = ({
         const loadOrders = async()=>{
             try{
                 await fetchOrders();
-
             }catch(error){
                 toast.error(error.response?.data?.message ||
                     "Failed to fetch orders"
@@ -90,18 +88,21 @@ const RestaurantOrders = ({
     }, [restaurantId]);
 
     useEffect(() => {
-        if (!socket || !restaurantId) return;
+
+        if(!socket || !restaurantId) return;
 
         socket.emit("join:restaurant", restaurantId);
         
         const onNewOrder = (data) => {
             console.log("New Order received via socket:", data);
-            if (audioUnlocked && audioRef.current) {
+            
+            if(audioUnlocked && audioRef.current){
                 audioRef.current.currentTime = 0;
                 audioRef.current.play().catch((error) => {
                     console.log("onNewOrder audio play failed:", error);
                 });
             }
+
             fetchOrders();
         };
 
@@ -118,9 +119,10 @@ const RestaurantOrders = ({
             socket.off("order:status_updated", onStatusUpdated);
             socket.emit("leave:restaurant", restaurantId);
         };
+
     }, [socket, restaurantId, audioUnlocked]);
 
-    if (loading) {
+    if(loading){
         return (
             <div className="py-8 text-center">
                 <p className="text-gray-500">Loading orders...</p>

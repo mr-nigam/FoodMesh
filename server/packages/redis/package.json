@@ -11,6 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "ioredis": "^6.0.0",
     "redis": "^5.8.0"
   },
   "devDependencies": {

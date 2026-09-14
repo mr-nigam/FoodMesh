@@ -2,16 +2,13 @@ import {
     ApiError
 } from '@foodmesh/utils';
 
-
-// import {
-
-// } from '@foodmesh/redis';
-
-import{
-    fetchOrdersRepo,
-    fetchOrderRepo,
-    updateOrderStatusRepo
-} from '../repositories/restaurant.js';
+import {
+    setCache,
+    getCache,
+    deleteMultipleCache,
+    cachePaginatedList,
+    getPaginatedList
+} from '@foodmesh/redis';
 
 import {
     publishEvent,
@@ -20,22 +17,26 @@ import {
     createOrdersEvent
 } from "@foodmesh/kafka";
 
+import{
+    fetchOrdersRepo,
+    fetchOrderRepo,
+    updateOrderStatusRepo
+} from '../repositories/restaurant.js';
+
 import { 
     emitRealtimeEvent 
-} from '../clients/realtime.client.js';
+} from '../clients/realtime.js';
 
 
 const ALLOWED_ORDER_STATUS_FOR_UPDATE = [
     'accepted',
     'preparing',
     'ready',
-    'rejected',
-    'cancelled'
+    'rejected'
 ];
 
-
 const fetchOrdersService = async({
-    req,
+    req
 }) => {
 
     const restaurantId = 
@@ -58,10 +59,29 @@ const fetchOrdersService = async({
     
     const offset = (page - 1) * limit;
     
+    const cacheKey = `restaurant:orders:${restaurantId}`;
+
+    const cachedOrders = await getPaginatedList({
+        key: cacheKey,
+        page,
+        limit
+    });
+
+    if(cachedOrders && cachedOrders.length !== 0){
+        return cachedOrders;
+    }
+
     const orders = await fetchOrdersRepo({
         restaurantId,
         limit,
         offset
+    });
+
+    const ttl = 60*60;
+    await cachePaginatedList({
+        cacheKey,
+        items: orders,
+        ttl
     });
 
     return orders;
@@ -72,15 +92,15 @@ const fetchOrderService = async({
 }) => {
 
     const restaurantId = 
-        req?.params?.restaurantId ??
-        req?.user?.restaurantId ??
         req?.body?.restaurantId ??
+        req?.user?.restaurantId ??
         null;
     
-    let orderId = req.params?.orderId ?? req.params?.id ?? null;
-    if (orderId && typeof orderId === 'string') {
-        orderId = orderId.replace(/^:/, '');
-    }
+    const orderId = 
+        req.params?.orderId ?? 
+        req.params?.id ?? 
+        null;
+
     const orderRestaurantId = 
         req.params?.orderRestaurantId ?? 
         req.body?.orderRestaurantId ?? 
@@ -91,6 +111,16 @@ const fetchOrderService = async({
             400,
             "Please provide order and restaurant id"
         );
+    }
+
+    const cacheKey = `restaurant:order:${restaurantId}:${orderId}`;
+
+    const cachedOrder = await getCache({
+        key: cacheKey
+    });
+
+    if(!cachedOrder){
+        return cachedOrder;
     }
 
     const order = await fetchOrderRepo({
@@ -106,26 +136,30 @@ const fetchOrderService = async({
         );
     }
 
+    const ttl = 60*60;
+    await setCache({
+        key: cacheKey,
+        value: order,
+        ttl
+    });
+
     return order;
 };
 
-// check it again
 const updateOrderStatusService = async({
     req
 }) => {
 
-    const rawStatus = 
-        req.body?.status?.trim() 
-        ?? req.body?.orderStatus?.trim();
+    const status = 
+        req.body?.status?.trim()?.toLowerCase()
+        ?? null;
 
-    if(!rawStatus){
+    if(!status){
         throw new ApiError(
             400,
             "Status is required"
         );
     }
-
-    const status = rawStatus.toLowerCase();
 
     if(!ALLOWED_ORDER_STATUS_FOR_UPDATE.includes(status)){
         throw new ApiError(
@@ -134,19 +168,16 @@ const updateOrderStatusService = async({
         );
     }
 
-    let orderId = req.params?.orderId ?? req.params?.id ?? req.body?.orderId ?? null;
-    if(orderId && typeof orderId === 'string'){
-        orderId = orderId.replace(/^:/, '');
-    }
-
+    const orderId = 
+        req.params?.orderId ??
+        null;
+  
     const orderRestaurantId = 
-        req.params?.orderRestaurantId ?? 
         req.body?.orderRestaurantId ?? 
         null;
     
     const restaurantId = 
         req.body?.restaurantId ?? 
-        req.params?.restaurantId ?? 
         req.user?.restaurantId ?? 
         null;
 
@@ -171,9 +202,11 @@ const updateOrderStatusService = async({
         );
     }
 
-    const targetOrderId = order.order_id || orderId;
-    const targetOrderRestaurantId = order.id || orderRestaurantId;
-    const targetRestaurantId = order.restaurant_id || restaurantId;
+    const orderCacheKey = `restaurant:order:${restaurantId}:${orderId}`;
+    const ordersCacheKey = `restaurant:orders:${restaurantId}`;
+    await deleteMultipleCache({
+        keys: [orderCacheKey, ordersCacheKey]
+    });
 
     let eventType = null;
     const upperStatus = status.toUpperCase();
@@ -185,8 +218,6 @@ const updateOrderStatusService = async({
         eventType = KAFKA_EVENTS.ORDER.PREPARING;
     }else if(upperStatus === 'READY'){
         eventType = KAFKA_EVENTS.ORDER.READY;
-    }else if(upperStatus === 'CANCELLED'){
-        eventType = KAFKA_EVENTS.ORDER.CANCELLED;
     }
 
     if(eventType){
@@ -194,18 +225,18 @@ const updateOrderStatusService = async({
             const orderStatusUpdateEvent = createOrdersEvent({
                 eventType,
                 eventData: {
-                    orderId: targetOrderId,
-                    orderRestaurantId: targetOrderRestaurantId,
-                    restaurantId: targetRestaurantId,
+                    orderId,
+                    orderRestaurantId,
+                    restaurantId,
                     status,
                     totalAmount: order.total_amount,
-                    userId: order.user_id
+                    userId: order?.user_id ?? null
                 }
             });
 
             await publishEvent({
                 topic: KAFKA_TOPICS.ORDER,
-                key: targetOrderId,
+                key: orderId,
                 event: orderStatusUpdateEvent
             });
         }catch(kafkaError){
@@ -214,13 +245,13 @@ const updateOrderStatusService = async({
     }
 
     // Realtime notification to restaurant and user
-    if(targetRestaurantId){
+    if(restaurantId){
         emitRealtimeEvent({
             event: "order:status_updated",
-            room: `restaurant:${targetRestaurantId}`,
+            room: `restaurant:${restaurantId}`,
             payload: {
-                orderId: targetOrderId,
-                orderRestaurantId: targetOrderRestaurantId,
+                orderId,
+                orderRestaurantId,
                 status,
                 order
             }
@@ -232,8 +263,8 @@ const updateOrderStatusService = async({
             event: "order:status_updated",
             room: `user:${order.user_id}`,
             payload: {
-                orderId: targetOrderId,
-                orderRestaurantId: targetOrderRestaurantId,
+                orderId,
+                orderRestaurantId,
                 status,
                 order
             }

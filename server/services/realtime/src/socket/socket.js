@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 
+
 let io = null;
 
 // Initialize Socket.IO
@@ -131,13 +132,15 @@ const initializeSocket = (httpServer) => {
 
 // Get Socket.IO Instance
 const getIO = () => {
-    if (!io) {
+    if(!io){
         throw new Error(
             'Socket.IO has not been initialized. Call initializeSocket(server) first.'
         );
     }
+
     return io;
 };
+
 
 export {
     initializeSocket,

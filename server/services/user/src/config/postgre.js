@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@foodmesh/utils/config/env';
 import pkg from 'pg';
 
 

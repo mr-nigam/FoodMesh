@@ -43,16 +43,9 @@ const fetchOrdersRepo = async({
         WHERE ort.restaurant_id = $1
             AND o.deleted_at IS NULL
             AND o.expire_at IS NULL
-            AND ort.status IN(
-                'placed',
-                'created',
-                'confirmed',
-                'accepted',
-                'preparing',
-                'ready',
-                'rider_assigned'
-            )
-        
+            AND o.created_at >= CURRENT_DATE
+            AND o.created_at < CURRENT_DATE + INTERVAL '1 day'
+
         GROUP BY
             o.id,
             ort.id,
@@ -65,7 +58,9 @@ const fetchOrdersRepo = async({
             ort.status,
             o.created_at
 
-        ORDER BY o.created_at DESC, ort.id DESC
+        ORDER BY 
+            o.created_at DESC,
+            ort.id DESC
 
         LIMIT $2
         OFFSET $3;
@@ -94,18 +89,18 @@ const fetchOrderRepo = async({
     const searchQuery = `
         SELECT
             o.id AS order_id,
-            or.id AS order_restaurant_id,
+            ort.id AS order_restaurant_id,
 
             o.recipient_name,
-            or.restaurant_id,
+            ort.restaurant_id,
 
-            or.subtotal,
-            or.total_amount,
-            or.discount_amount,
-            or.delivery_fee,
-            or.tax_amount,
+            ort.subtotal,
+            ort.total_amount,
+            ort.discount_amount,
+            ort.delivery_fee,
+            ort.tax_amount,
             
-            or.status,
+            ort.status,
             o.created_at,
             
             jsonb_agg(
@@ -117,31 +112,31 @@ const fetchOrderRepo = async({
                 )
             ) AS items
 
-        FROM order_restaurants or
+        FROM order_restaurants ort
 
         INNER JOIN orders o
-            ON o.id = or.order_id
+            ON o.id = ort.order_id
 
         INNER JOIN order_items oi
             ON  or.id = oi.order_restaurant_id
         
         WHERE o.id = $1
-            AND or.id = $2
-            AND or.restaurant_id = $3
+            AND ort.id = $2
+            AND ort.restaurant_id = $3
             AND o.deleted_at IS NULL
             AND o.expire_at IS NULL
 
         GROUP BY
             o.id,
-            or.id,
+            ort.id,
             o.recipient_name,
-            or.restaurant_id,
-            or.subtotal,
-            or.discount_amount,
-            or.delivery_fee,
-            or.tax_amount,
-            or.total_amount,
-            or.status,
+            ort.restaurant_id,
+            ort.subtotal,
+            ort.discount_amount,
+            ort.delivery_fee,
+            ort.tax_amount,
+            ort.total_amount,
+            ort.status,
             o.created_at;
     `;
 
@@ -153,63 +148,44 @@ const fetchOrderRepo = async({
     return rows[0];
 };
 
-// check it
 const updateOrderStatusRepo = async({
     status,
     orderRestaurantId,
     orderId,
     restaurantId
 }) => {
-    let updateQuery;
-    let params;
+    
+    const params = [
+        status,
+        orderRestaurantId,
+        orderId,
+        restaurantId
+    ];
 
-    if(orderRestaurantId){
-        params = [status, orderRestaurantId];
-        let whereExtra = '';
-        if(orderId){
-            params.push(orderId);
-            whereExtra += ` AND order_id = $${params.length}`;
-        }
-        if (restaurantId) {
-            params.push(restaurantId);
-            whereExtra += ` AND restaurant_id = $${params.length}`;
-        }
+    const updateQuery = `
+        UPDATE order_restaurants
+        SET 
+            status = $1
+        WHERE id = $2
+            AND order_id = $3
+            AND restaurant_id = $4
+            AND status 
+                NOT IN (
+                    'delivered',
+                    'cancelled',
+                    'rejected',
+                    'failed'
+                )
+        RETURNING 
+            id,
+            order_id;
+    `;
+    
+    const { rows } = await pool.query(
+        updateQuery,
+        params
+    );
 
-        updateQuery = `
-            UPDATE order_restaurants
-            SET status = $1
-            WHERE id = $2
-                ${whereExtra}
-                AND status NOT IN ('delivered', 'cancelled', 'rejected', 'failed')
-            RETURNING 
-                id,
-                order_id,
-                restaurant_id,
-                status,
-                user_id,
-                total_amount,
-                subtotal;
-        `;
-    } else {
-        params = [status, orderId, restaurantId];
-        updateQuery = `
-            UPDATE order_restaurants
-            SET status = $1
-            WHERE order_id = $2
-                AND restaurant_id = $3
-                AND status NOT IN ('delivered', 'cancelled', 'rejected', 'failed')
-            RETURNING 
-                id,
-                order_id,
-                restaurant_id,
-                status,
-                user_id,
-                total_amount,
-                subtotal;
-        `;
-    }
-
-    const { rows } = await pool.query(updateQuery, params);
     return rows[0];
 };
 

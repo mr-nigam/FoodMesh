@@ -1,7 +1,5 @@
 import '@foodmesh/utils/config/env';
-
 import http from 'http';
-
 import app from './app.js';
 import bootstrapDB from './bootstrap/db.bootstrap.js';
 import { initializeSocket } from './socket/socket.js';
@@ -10,45 +8,17 @@ import { initializeSocket } from './socket/socket.js';
 const startServer = async () => {
 
     try {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Database
-        |--------------------------------------------------------------------------
-        */
-
         await bootstrapDB();
 
-        /*
-        |--------------------------------------------------------------------------
-        | HTTP Server
-        |--------------------------------------------------------------------------
-        */
-
         const PORT = Number(process.env.REALTIME_PORT) || 4009;
-
         const server = http.createServer(app);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Socket.IO
-        |--------------------------------------------------------------------------
-        */
 
         initializeSocket(server);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Start Server
-        |--------------------------------------------------------------------------
-        */
-
         server.listen(PORT, () => {
-
             console.log(
                 `🚀 Realtime Server running on port ${PORT}`
             );
-
         });
 
         server.on('error', (err) => {
@@ -59,12 +29,6 @@ const startServer = async () => {
             }
             process.exit(1);
         });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Graceful Shutdown
-        |--------------------------------------------------------------------------
-        */
 
         const shutdown = async (signal) => {
             console.log(
@@ -87,8 +51,7 @@ const startServer = async () => {
             });
         });
 
-    } catch (error) {
-
+    }catch(error){
         console.error(
             '❌ Failed to start Realtime Server:',
             error

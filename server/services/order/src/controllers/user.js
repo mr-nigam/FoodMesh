@@ -11,41 +11,19 @@ import {
 
 
 const createOrder = asyncHandler ( async (req, res) => { 
-        
+
     const orderDetails = await createOrderService({
         userId: req.user.id,
         body: req.body
     });
-
-    // console.log(orderDetails);
 
     return res
         .status(201)
         .json(
             new ApiResponse(
                 201,
-                {
-                    orderDetails
-                },
+                { orderDetails },
                 "Order created successfully"
-            )
-        );
-});
-
-const fetchOrder = asyncHandler ( async (req, res) => {
-    
-    const order = await fetchOrdersService({
-        userId: req.user.id,
-        orderId: req.params?.orderId ||  req.params?.id
-    });
-
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {order},
-                "Order Detailes fecthed successfully"
             )
         );
 });
@@ -67,6 +45,23 @@ const fetchOrders = asyncHandler ( async (req, res) => {
         );
 });
 
+const fetchOrder = asyncHandler ( async (req, res) => {
+    
+    const order = await fetchOrdersService({
+        userId: req.user.id,
+        orderId: req.params?.orderId ||  req.params?.id
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {order},
+                "Order Detailes fecthed successfully"
+            )
+        );
+});
 
 export {
     createOrder,

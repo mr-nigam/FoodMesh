@@ -50,11 +50,9 @@ const createOrderRestaurantTable = async () => {
                     CHECK (total_amount >= 0),
 
                 status VARCHAR(30) NOT NULL
-                    DEFAULT 'placed'
+                    DEFAULT 'created'
                     CHECK (
                         status IN (
-                            'placed',
-                            'pending',
                             'created',
                             'confirmed',
                             'accepted',

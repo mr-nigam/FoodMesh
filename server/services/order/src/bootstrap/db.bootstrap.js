@@ -1,5 +1,8 @@
 import pool, { conectDB } from '../config/postgre.js';
 
+// import createOrdersTable from '../models/order.js';
+// import createOrderRestaurantTable from '../models/orderRestaurant.js';
+// import createOrderItemsTable from '../models/orderItem.js';
 
 const bootstrapDB = async () => {
     try{

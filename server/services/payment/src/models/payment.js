@@ -16,11 +16,9 @@ const createPaymentsTable = async () => {
             CREATE TABLE IF NOT EXISTS payments (
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
-
-                -- Reference to user-service.
+                    
                 user_id UUID NOT NULL,
 
-                -- Reference to order-service.
                 order_id UUID NOT NULL UNIQUE,
 
                 status VARCHAR(30)
