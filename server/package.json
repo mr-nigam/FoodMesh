@@ -1,13 +1,14 @@
 {
     "name": "foodmesh",
     "private": true,
-
     "workspaces": [
         "services/*",
         "packages/*"
     ],
-
     "scripts": {
         "kafka:topics": "npm run setup --workspace=@foodmesh/kafka"
+    },
+    "dependencies": {
+        "pg": "^8.23.0"
     }
 }

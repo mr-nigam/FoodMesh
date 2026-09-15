@@ -8,6 +8,8 @@ const orderService = "http://localhost:4006/api/v1/order";
 const riderService = "http://localhost:4007/api/v1/rider";
 const paymentService = "http://localhost:4008/api/v1/payment";
 const realtimeService = "http://localhost:4009";
+const analyticsService = "http://localhost:4010/api/v1/analytics";
+
 
 export {
     authService,
@@ -19,5 +21,6 @@ export {
     riderService,
     cartService,
     paymentService,
-    realtimeService
+    realtimeService,
+    analyticsService
 };

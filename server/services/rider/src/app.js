@@ -1,4 +1,3 @@
-// Central env loader
 import '@foodmesh/utils/config/env';
 
 import express from 'express';
@@ -9,10 +8,6 @@ import {
     ApiError,
     errorHandler
 } from '@foodmesh/utils';
-
-import userOrderRouter from './routes/user.js';
-import restaurantOrderRouter from './routes/restaurant.js';
-import internalOrderRouter from './routes/internal.js';
 
 
 const app = express();
@@ -39,9 +34,6 @@ app.use(cookieParser());
 
 
 // API Routes
-app.use("/api/v1/order/internal", internalOrderRouter);
-app.use("/api/v1/order/restaurant", restaurantOrderRouter);
-app.use("/api/v1/order", userOrderRouter);
 
 
 app.use((req,res,next)=>{
