@@ -1,12 +1,18 @@
 import '@foodmesh/utils/config/env';
 import app from './app.js';
 
-import bootstrapDB from 
-'./bootstrap/db.bootstrap.js';
-
 import {
     connectProducer
 } from "@foodmesh/kafka";
+
+import{
+    bootstrapDB
+} from '@foodmesh/utils';
+
+import {
+    connectDB,
+    closeDB
+} from './config/postgre.js';
 
 import {
     startOrderConsumer
@@ -15,7 +21,10 @@ import {
 
 const startServer = async()=>{
 
-    await bootstrapDB();
+    await bootstrapDB({
+        connectDB,
+        closeDB
+    });
 
     await connectProducer();
 

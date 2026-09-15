@@ -10,13 +10,13 @@ router.post("/upload", uploadFile, async (req, res) => {
     try {
         let fileBuffer = req.file?.buffer;
 
-        if (!fileBuffer && req.body?.buffer) {
+        if(!fileBuffer && req.body?.buffer){
             fileBuffer = Buffer.isBuffer(req.body.buffer)
                 ? req.body.buffer
                 : Buffer.from(req.body.buffer, 'base64');
         }
 
-        if (!fileBuffer) {
+        if(!fileBuffer){
             return res.status(400).json({ message: "No file or buffer provided" });
         }
 

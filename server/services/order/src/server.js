@@ -1,4 +1,3 @@
-// Central env loader
 import '@foodmesh/utils/config/env';
 import app from './app.js';
 
@@ -6,13 +5,22 @@ import {
     connectProducer
 } from "@foodmesh/kafka";
 
-import bootstrapDB from 
-'./bootstrap/db.bootstrap.js';
+import{
+    bootstrapDB
+} from '@foodmesh/utils';
+
+import {
+    connectDB,
+    closeDB
+} from './config/postgre.js';
 
 
 const startServer = async()=>{
 
-    await bootstrapDB();
+    await bootstrapDB({
+        connectDB,
+        closeDB
+    });
 
     await connectProducer();
 

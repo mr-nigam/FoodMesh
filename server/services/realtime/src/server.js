@@ -1,14 +1,26 @@
 import '@foodmesh/utils/config/env';
-import http from 'http';
 import app from './app.js';
-import bootstrapDB from './bootstrap/db.bootstrap.js';
+
+import{
+    bootstrapDB
+} from '@foodmesh/utils';
+
+import {
+    connectDB,
+    closeDB
+} from './config/postgre.js';
+
+import http from 'http';
 import { initializeSocket } from './socket/socket.js';
 
 
 const startServer = async () => {
 
-    try {
-        await bootstrapDB();
+    try{
+        await bootstrapDB({
+            connectDB,
+            closeDB
+        });
 
         const PORT = Number(process.env.REALTIME_PORT) || 4009;
         const server = http.createServer(app);

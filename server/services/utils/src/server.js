@@ -1,8 +1,6 @@
-import 'dotenv/config';
-import express from 'express';
-import { v2 as cloudinary } from 'cloudinary';
-import cors from 'cors';
+import '@foodmesh/utils/config/env';
 import app from './app.js';
+import { v2 as cloudinary } from 'cloudinary';
 
 
 const { 
@@ -30,6 +28,3 @@ const PORT = process.env.PORT || 4002;
 app.listen(PORT,()=>{
     console.log(`🚀 Utils Server running on port: ${PORT}`);
 });
-
-
-//export default cloudinary;
