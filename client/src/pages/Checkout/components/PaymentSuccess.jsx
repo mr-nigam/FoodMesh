@@ -6,10 +6,9 @@ import {
     BiCheckCircle
 } from "react-icons/bi";
 
+import formatCurrency from 
+'../../../utils/formatCurrency.js';
 
-const formatPrice = (paise) => {
-    return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-};
 
 const PaymentSuccess = ({
     order,
@@ -104,7 +103,7 @@ const PaymentSuccess = ({
                         </span>
 
                         <span className="font-bold text-red-600">
-                            {formatPrice(
+                            {formatCurrency(
                                 order?.total_amount
                             )}
                         </span>

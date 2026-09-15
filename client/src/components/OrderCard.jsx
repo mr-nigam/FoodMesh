@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ORDER_ACTIONS from '../utils/orderFlow.js';
 import axios from 'axios';
 import { orderService } from '../config/constants.js';
 import toast from 'react-hot-toast';
 import formatCurrency from '../utils/formatCurrency.js';
 import getAuthHeader from '../config/getAuthHeader.js';
+import { BiFile } from 'react-icons/bi';
 
 
 const formatDate = (dateString) => {
@@ -46,6 +48,7 @@ const OrderCard = ({
     onStatusUpdate
 }) => {
 
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [expanded, setExpanded] = useState(false);
 
@@ -156,27 +159,37 @@ const OrderCard = ({
             </div>
 
             {/* Card Actions Footer */}
-            <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center gap-2 justify-end">
-                {availableActions.length === 0 ? (
-                    <span className="text-xs text-gray-500 italic py-1">
-                        {rawStatus === "ready" ? "Awaiting Rider Pickup" : "No further actions"}
-                    </span>
-                ) : (
-                    availableActions.map((act) => {
-                        const btnMeta = actionLabels[act] || { text: act, style: "bg-gray-800 hover:bg-gray-900 text-white" };
-                        return (
-                            <button
-                                key={act}
-                                type="button"
-                                disabled={loading}
-                                onClick={() => updateStatus(act)}
-                                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed ${btnMeta.style}`}
-                            >
-                                {loading ? "Updating..." : btnMeta.text}
-                            </button>
-                        );
-                    })
-                )}
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center gap-2 justify-between">
+                <button
+                    type="button"
+                    onClick={() => navigate(`/restaurant/orders/${orderId}`)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-blue-600 transition"
+                >
+                    <BiFile className="text-sm" /> Full Details
+                </button>
+
+                <div className="flex items-center gap-2">
+                    {availableActions.length === 0 ? (
+                        <span className="text-xs text-gray-500 italic py-1">
+                            {rawStatus === "ready" ? "Awaiting Rider Pickup" : "No further actions"}
+                        </span>
+                    ) : (
+                        availableActions.map((act) => {
+                            const btnMeta = actionLabels[act] || { text: act, style: "bg-gray-800 hover:bg-gray-900 text-white" };
+                            return (
+                                <button
+                                    key={act}
+                                    type="button"
+                                    disabled={loading}
+                                    onClick={() => updateStatus(act)}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed ${btnMeta.style}`}
+                                >
+                                    {loading ? "Updating..." : btnMeta.text}
+                                </button>
+                            );
+                        })
+                    )}
+                </div>
             </div>
         </div>
     );

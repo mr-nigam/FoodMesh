@@ -10,15 +10,14 @@ import {
     updateOrderStatus
 } from '../controllers/restaurant.js';
 
-const router = Router();
 
+const router = Router();
 
 
 router.use(authenticateUser);
 
-
+router.get('/:restaurantId/orders/:orderId', fetchOrder);
 router.get('/:restaurantId', fetchOrders);
-//router.get("/:orderId", fetchOrder);
 router.patch("/:orderId", updateOrderStatus);
 
 

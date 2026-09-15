@@ -1,17 +1,11 @@
-const formatPrice = (paise) => {
-    return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-};
+import formatCurrency from '../../../utils/formatCurrency.js';
 
 
 const OrderSummary = ({
     order
 }) => {
 
-    if(!order){
-        return null;
-    }
-
-    console.log("Order Summary:", order);
+    if(!order) return null;
 
     return (
         <div className="space-y-6">
@@ -58,7 +52,7 @@ const OrderSummary = ({
                         <span>Subtotal</span>
 
                         <span className="font-medium text-gray-800">
-                            {formatPrice(order.subtotal)}
+                            {formatCurrency(order.subtotal)}
                         </span>
                     </div>
 
@@ -66,7 +60,7 @@ const OrderSummary = ({
                         <span>Delivery Fee</span>
 
                         <span className="font-medium text-gray-800">
-                            {formatPrice(order.delivery_fee)}
+                            {formatCurrency(order.delivery_fee)}
                         </span>
                     </div>
 
@@ -74,7 +68,7 @@ const OrderSummary = ({
                         <span>Taxes & GST</span>
 
                         <span className="font-medium text-gray-800">
-                            {formatPrice(order.tax_amount)}
+                            {formatCurrency(order.tax_amount)}
                         </span>
                     </div>
 
@@ -84,7 +78,7 @@ const OrderSummary = ({
                         </span>
 
                         <span className="text-red-600">
-                            {formatPrice(order.total_amount)}
+                            {formatCurrency(order.total_amount)}
                         </span>
                     </div>
 

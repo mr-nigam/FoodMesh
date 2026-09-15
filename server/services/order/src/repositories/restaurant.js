@@ -108,8 +108,10 @@ const fetchOrderRepo = async({
                     'item_id', oi.item_id,
                     'item_name', oi.item_name,
                     'unit_price', oi.unit_price,
-                    'quantity',oi.quantity
+                    'quantity', oi.quantity,
+                    'subtotal', oi.subtotal
                 )
+                ORDER BY oi.id ASC
             ) AS items
 
         FROM order_restaurants ort
@@ -118,7 +120,7 @@ const fetchOrderRepo = async({
             ON o.id = ort.order_id
 
         INNER JOIN order_items oi
-            ON  or.id = oi.order_restaurant_id
+            ON ort.id = oi.order_restaurant_id
         
         WHERE o.id = $1
             AND ort.id = $2
@@ -157,28 +159,57 @@ const updateOrderStatusRepo = async({
     
     const params = [
         status,
-        orderRestaurantId,
-        orderId,
-        restaurantId
+        orderRestaurantId || null,
+        orderId || null,
+        restaurantId || null
     ];
 
     const updateQuery = `
-        UPDATE order_restaurants
-        SET 
-            status = $1
-        WHERE id = $2
-            AND order_id = $3
-            AND restaurant_id = $4
-            AND status 
-                NOT IN (
-                    'delivered',
-                    'cancelled',
-                    'rejected',
-                    'failed'
-                )
-        RETURNING 
-            id,
-            order_id;
+        WITH updated_order_restaurant AS (
+            UPDATE order_restaurants
+            SET status = $1
+            WHERE (
+                ($2::uuid IS NOT NULL AND id = $2::uuid)
+                OR
+                ($3::uuid IS NOT NULL AND $4::uuid IS NOT NULL AND order_id = $3::uuid AND restaurant_id = $4::uuid)
+                OR
+                ($3::uuid IS NOT NULL AND $2::uuid IS NULL AND $4::uuid IS NULL AND order_id = $3::uuid)
+            )
+            AND status NOT IN (
+                'delivered',
+                'cancelled',
+                'rejected',
+                'failed'
+            )
+            RETURNING 
+                id,
+                order_id,
+                restaurant_id,
+                user_id,
+                total_amount,
+                status
+        ),
+        updated_order AS (
+            UPDATE orders
+            SET status = $1
+            WHERE id IN (SELECT order_id FROM updated_order_restaurant)
+            AND status NOT IN (
+                'delivered',
+                'cancelled',
+                'rejected',
+                'failed'
+            )
+            RETURNING id
+        )
+        SELECT 
+            uor.id,
+            uor.id AS order_restaurant_id,
+            uor.order_id,
+            uor.restaurant_id,
+            uor.user_id,
+            uor.total_amount,
+            uor.status
+        FROM updated_order_restaurant uor;
     `;
     
     const { rows } = await pool.query(

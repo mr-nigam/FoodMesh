@@ -79,7 +79,7 @@ const fetchOrdersService = async({
 
     const ttl = 60*60;
     await cachePaginatedList({
-        cacheKey,
+        key: cacheKey,
         items: orders,
         ttl
     });
@@ -92,6 +92,7 @@ const fetchOrderService = async({
 }) => {
 
     const restaurantId = 
+        req?.params?.restaurantId ??
         req?.body?.restaurantId ??
         req?.user?.restaurantId ??
         null;
@@ -113,13 +114,13 @@ const fetchOrderService = async({
         );
     }
 
-    const cacheKey = `restaurant:order:${restaurantId}:${orderId}`;
+    const cacheKey = `restaurant:${restaurantId}:order:${orderId}`;
 
     const cachedOrder = await getCache({
         key: cacheKey
     });
 
-    if(!cachedOrder){
+    if(cachedOrder){
         return cachedOrder;
     }
 
@@ -164,20 +165,24 @@ const updateOrderStatusService = async({
     if(!ALLOWED_ORDER_STATUS_FOR_UPDATE.includes(status)){
         throw new ApiError(
             400,
-            `Invalid status "${rawStatus}". Allowed statuses: ${ALLOWED_ORDER_STATUS_FOR_UPDATE.join(", ")}`
+            `Invalid status "${status}". Allowed statuses: ${ALLOWED_ORDER_STATUS_FOR_UPDATE.join(", ")}`
         );
     }
 
     const orderId = 
         req.params?.orderId ??
+        req.params?.id ??
+        req.body?.orderId ??
         null;
   
     const orderRestaurantId = 
         req.body?.orderRestaurantId ?? 
+        req.params?.orderRestaurantId ??
         null;
     
     const restaurantId = 
         req.body?.restaurantId ?? 
+        req.params?.restaurantId ??
         req.user?.restaurantId ?? 
         null;
 
@@ -202,11 +207,24 @@ const updateOrderStatusService = async({
         );
     }
 
-    const orderCacheKey = `restaurant:order:${restaurantId}:${orderId}`;
-    const ordersCacheKey = `restaurant:orders:${restaurantId}`;
-    await deleteMultipleCache({
-        keys: [orderCacheKey, ordersCacheKey]
-    });
+    const targetOrderId = orderId || order.order_id;
+    const targetRestaurantId = restaurantId || order.restaurant_id;
+    const targetOrderRestaurantId = orderRestaurantId || order.order_restaurant_id || order.id;
+
+    const keysToDelete = [];
+    if (targetRestaurantId) {
+        keysToDelete.push(`restaurant:${targetRestaurantId}:order:${targetOrderId}`);
+        keysToDelete.push(`restaurant:orders:${targetRestaurantId}`);
+    }
+    if (order.user_id) {
+        keysToDelete.push(`user:${order.user_id}:order:${targetOrderId}`);
+        keysToDelete.push(`user:orders:${order.user_id}`);
+    }
+    if (keysToDelete.length > 0) {
+        await deleteMultipleCache({
+            keys: keysToDelete
+        });
+    }
 
     let eventType = null;
     const upperStatus = status.toUpperCase();
@@ -225,9 +243,9 @@ const updateOrderStatusService = async({
             const orderStatusUpdateEvent = createOrdersEvent({
                 eventType,
                 eventData: {
-                    orderId,
-                    orderRestaurantId,
-                    restaurantId,
+                    orderId: targetOrderId,
+                    orderRestaurantId: targetOrderRestaurantId,
+                    restaurantId: targetRestaurantId,
                     status,
                     totalAmount: order.total_amount,
                     userId: order?.user_id ?? null
@@ -236,7 +254,7 @@ const updateOrderStatusService = async({
 
             await publishEvent({
                 topic: KAFKA_TOPICS.ORDER,
-                key: orderId,
+                key: targetOrderId,
                 event: orderStatusUpdateEvent
             });
         }catch(kafkaError){
@@ -245,13 +263,13 @@ const updateOrderStatusService = async({
     }
 
     // Realtime notification to restaurant and user
-    if(restaurantId){
+    if(targetRestaurantId){
         emitRealtimeEvent({
             event: "order:status_updated",
-            room: `restaurant:${restaurantId}`,
+            room: `restaurant:${targetRestaurantId}`,
             payload: {
-                orderId,
-                orderRestaurantId,
+                orderId: targetOrderId,
+                orderRestaurantId: targetOrderRestaurantId,
                 status,
                 order
             }
@@ -263,8 +281,8 @@ const updateOrderStatusService = async({
             event: "order:status_updated",
             room: `user:${order.user_id}`,
             payload: {
-                orderId,
-                orderRestaurantId,
+                orderId: targetOrderId,
+                orderRestaurantId: targetOrderRestaurantId,
                 status,
                 order
             }

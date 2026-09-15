@@ -42,7 +42,7 @@ const RestaurantOrders = ({
                     audioRef.current.pause();
                     audioRef.current.currentTime = 0;
                     setAudioUnlocked(true);
-                    console.log("Audio unlocked successfully");
+                    
                 }).catch((error) => {
                     console.error("Failed to unlock audio:", error);
                 });
@@ -93,8 +93,7 @@ const RestaurantOrders = ({
 
         socket.emit("join:restaurant", restaurantId);
         
-        const onNewOrder = (data) => {
-            console.log("New Order received via socket:", data);
+        const onNewOrder = () => {
             
             if(audioUnlocked && audioRef.current){
                 audioRef.current.currentTime = 0;
@@ -106,8 +105,7 @@ const RestaurantOrders = ({
             fetchOrders();
         };
 
-        const onStatusUpdated = (data) => {
-            console.log("Order status update received via socket:", data);
+        const onStatusUpdated = () => {
             fetchOrders();
         };
 

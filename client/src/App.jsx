@@ -14,6 +14,9 @@ import CartPage from './pages/cart/CartPage';
 import AddressPage from './pages/AddressPage';
 import AddAddressPage from './pages/AddAddressPage';
 import Checkout from "./pages/Checkout/Checkout";
+import Orders from './pages/Orders';
+import UserOrderDetail from './pages/UserOrderDetail';
+import RestaurantOrderDetail from './pages/RestaurantOrderDetail';
 
 
 const App = () => {
@@ -42,15 +45,29 @@ const App = () => {
                     <Route path="/set-role" element={<SetRole />} />
                     
                     <Route path="/account" element={<Account />} />
+                    
+                    <Route path="/orders" element={<Orders />}/>
+                    
+                    <Route path="/orders/:orderId" element={<UserOrderDetail />}/>
 
                     <Route path="/checkout/:orderId" element={<Checkout />} />
                     
                     <Route path="/address" element={<AddressPage />} />
+                    
                     <Route path="/add-address" element={<AddAddressPage />} />
 
                     <Route path="/cart" element={<CartPage/>}/>
                     
                     <Route path="/restaurant/:restaurantId" element={<RestaurantPages />}/>
+
+                    <Route
+                        path="/restaurant/orders/:orderId"
+                        element={
+                            user?.role === "seller"
+                                ? <RestaurantOrderDetail />
+                                : <Navigate to="/" replace />
+                        }
+                    />
 
                     <Route
                         path="/restaurant"

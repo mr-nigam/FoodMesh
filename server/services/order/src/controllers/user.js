@@ -6,7 +6,9 @@ import {
 import createOrderService from '../services/createOrder.js';
 
 import {
-    fetchOrdersService
+    fetchOrdersService,
+    fetchOrderService,
+    cancelOrderService
 } from '../services/user.js';
 
 
@@ -29,9 +31,9 @@ const createOrder = asyncHandler ( async (req, res) => {
 });
 
 const fetchOrders = asyncHandler ( async (req, res) => {
-    
     const orders = await fetchOrdersService({
-        userId: req.user.id
+        userId: req.user.id,
+        query: req.query
     });
 
     return res
@@ -40,14 +42,14 @@ const fetchOrders = asyncHandler ( async (req, res) => {
             new ApiResponse(
                 200,
                 {orders},
-                "Order History fecthed successfully"
+                "Order History fetched successfully"
             )
         );
 });
 
 const fetchOrder = asyncHandler ( async (req, res) => {
     
-    const order = await fetchOrdersService({
+    const order = await fetchOrderService({
         userId: req.user.id,
         orderId: req.params?.orderId ||  req.params?.id
     });
@@ -63,8 +65,28 @@ const fetchOrder = asyncHandler ( async (req, res) => {
         );
 });
 
+const cancelOrder = asyncHandler(async (req, res)=>{
+    
+    const order = await cancelOrderService({
+        userId: req.user.id,
+        orderId: req.params?.id ?? req.params?.orderId
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {order},
+                "Order cancelled successfully"
+            )
+        );
+});
+
+
 export {
     createOrder,
     fetchOrder,
-    fetchOrders
+    fetchOrders,
+    cancelOrder
 };

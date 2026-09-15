@@ -61,8 +61,6 @@ const Checkout = () => {
             orderId,
             initialOrder
         });
-
-    console.log(order);
     
     const [
         selectedVendor,

@@ -193,35 +193,16 @@ const useCheckoutOrder = ({
                     getAuthHeader()
                 );
 
-                console.log(
-                    "Checkout API response:",
-                    data
-                );
-
                 const rawOrder =
                     extractOrder(data);
-
-                console.log(
-                    "Extracted order:",
-                    rawOrder
-                );
-
 
                 const normalizedOrder =
                     normalizeOrder(rawOrder);
 
-
-                console.log(
-                    "Normalized checkout order:",
-                    normalizedOrder
-                );
-
                 const validOrder =
                     validateOrder(normalizedOrder);
 
-                if(cancelled){
-                    return;
-                }
+                if(cancelled) return;
 
                 setOrder(validOrder);
 

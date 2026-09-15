@@ -12,6 +12,10 @@ import {
 } from "@foodmesh/kafka";
 
 import {
+    deleteMultipleCache
+} from '@foodmesh/redis';
+
+import {
     getAddress,
     getCartData,
     deleteCartData
@@ -340,6 +344,10 @@ const createOrderService = async ({
         );
     }
 
+    const keysToDelete = [
+        `user:orders:${userId}`
+    ];
+
     // Realtime notification to restaurants
     for(const rOrder of createdOrderRestaurants){
         if(rOrder?.restaurant_id){
@@ -355,8 +363,15 @@ const createOrderService = async ({
                     status: rOrder.status
                 }
             });
+            
+            keysToDelete.push(`restaurant:orders:${rOrder?.restaurant_id}`);
         }
     }
+
+    // Remove all the existing caches from redis
+    await deleteMultipleCache({
+        keys: keysToDelete
+    });
 
     // Realtime notification to user
     emitRealtimeEvent({

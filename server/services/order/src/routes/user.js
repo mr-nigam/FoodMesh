@@ -7,7 +7,8 @@ import {
 import { 
     createOrder,
     fetchOrder,
-    fetchOrders
+    fetchOrders,
+    cancelOrder
 } from '../controllers/user.js';
 
 const router = Router();
@@ -19,6 +20,7 @@ router.use(authenticateUser);
 router.post('/', createOrder);
 router.get("/", fetchOrders);
 router.get("/:orderId", fetchOrder);
+router.patch("/:orderId/cancel", cancelOrder);
 
 
 export default router;
