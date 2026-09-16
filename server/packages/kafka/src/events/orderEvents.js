@@ -8,7 +8,7 @@ const createOrdersEvent = ({
 
     if(!eventType){
         throw new Error(
-            "eventType is required to build an order event"
+            "eventType is required to build an order service event"
         );
     }
 

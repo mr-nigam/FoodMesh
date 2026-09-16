@@ -1,10 +1,9 @@
 import { Router } from "express";
 
-import uploadFile from "../middlewares/multer.middleware.js";
-
 import {
     authenticateUser,
-    isSeller
+    isSeller,
+    uploadFile
 } from "@foodmesh/utils";
 
 import {
@@ -14,6 +13,7 @@ import {
     deleteMenuItem,
     toggleItemAvailability
 } from "../controllers/menuItem.controller.js";
+
 
 const router = Router();
 

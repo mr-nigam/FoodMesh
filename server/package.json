@@ -9,6 +9,7 @@
         "kafka:topics": "npm run setup --workspace=@foodmesh/kafka"
     },
     "dependencies": {
+        "multer": "^2.4.0",
         "pg": "^8.23.0"
     }
 }

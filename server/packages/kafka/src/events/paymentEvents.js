@@ -7,7 +7,7 @@ const createPaymentEvent = ({
 })=>{
     if(!eventType){
         throw new Error(
-            "eventType is required to build an payment event"
+            "eventType is required to build an payment service event"
         );
     }
 

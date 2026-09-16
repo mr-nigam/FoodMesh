@@ -2,11 +2,9 @@ import { Router } from 'express';
 
 import {
     authenticateUser,
-    isSeller
+    isSeller,
+    uploadFile
 } from '@foodmesh/utils';
-
-import uploadFile from 
-'../middlewares/multer.middleware.js';
 
 import {
     addRestaurant,

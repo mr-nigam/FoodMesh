@@ -10,9 +10,9 @@ import {
     errorHandler
 } from '@foodmesh/utils';
 
-import userOrderRouter from './routes/user.js';
-import restaurantOrderRouter from './routes/restaurant.js';
-import internalOrderRouter from './routes/internal.js';
+import userRouter from './routes/user.js';
+import restaurantRouter from './routes/restaurant.js';
+import internalRouter from './routes/internal.js';
 
 
 const app = express();
@@ -39,9 +39,9 @@ app.use(cookieParser());
 
 
 // API Routes
-app.use("/api/v1/order/internal", internalOrderRouter);
-app.use("/api/v1/order/restaurant", restaurantOrderRouter);
-app.use("/api/v1/order", userOrderRouter);
+app.use("/api/v1/order/internal", internalRouter);
+app.use("/api/v1/order/restaurant", restaurantRouter);
+app.use("/api/v1/order", userRouter);
 
 
 app.use((req,res,next)=>{

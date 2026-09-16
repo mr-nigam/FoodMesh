@@ -54,23 +54,25 @@ const createVehicleTable = async()=>{
 
                 verified_at TIMESTAMPTZ,
 
+                deleted_at TIMESTAMPTZ,
+                
                 created_at TIMESTAMPTZ 
                     DEFAULT CURRENT_TIMESTAMP,
 
                 updated_at TIMESTAMPTZ 
-                    DEFAULT CURRENT_TIMESTAMP;
+                    DEFAULT CURRENT_TIMESTAMP
             );    
         `);
         
         await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_rider_vehicles_rider
-                ON rider_vehicles(rider_id);
+            CREATE INDEX IF NOT EXISTS idx_vehicles_rider_id
+                ON vehicles(rider_id)
+                WHERE deleted_at IS NULL;
                 
-            CREATE UNIQUE INDEX IF NOT EXISTS
-                idx_one_primary_vehicle_per_rider
-            ON rider_vehicles(rider_id)
-            WHERE is_primary = TRUE
-              AND is_active = TRUE;
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_one_primary_vehicle_per_rider
+                ON vehicles(rider_id)
+                WHERE is_primary = TRUE
+                  AND deleted_at IS NULL;
         `);
 
         await createUpdatedAtTrigger(pool, 'vehicles');

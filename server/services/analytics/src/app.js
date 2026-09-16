@@ -9,6 +9,8 @@ import {
     errorHandler
 } from '@foodmesh/utils';
 
+import riderRouter from './routes/rider.js';
+
 
 const app = express();
 
@@ -34,6 +36,7 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/analytics/rider", riderRouter);
 
 
 app.use((req,res,next)=>{

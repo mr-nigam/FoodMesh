@@ -17,15 +17,22 @@ import Checkout from "./pages/Checkout/Checkout";
 import Orders from './pages/Orders';
 import UserOrderDetail from './pages/UserOrderDetail';
 import RestaurantOrderDetail from './pages/RestaurantOrderDetail';
+import RiderDashboard from './features/rider/pages/RiderDashboard';
 
 
 const App = () => {
-    const {user} = useAppData();
+    const {user, loading} = useAppData();
     
+    if(loading){
+        return <h1 className='text-2xl font-bold text-red-500 text-center mt-56'>
+            Loading...
+        </h1>
+    }
+
     return <>
         <BrowserRouter>
             <Toaster />
-            <NavBar />
+            {user?.role !== "rider" && <NavBar />}
             <Routes>
                
                 <Route element={<PublicRoute />}>
@@ -38,7 +45,27 @@ const App = () => {
                         element={
                             user?.role === "seller"
                                 ? <Navigate to="/restaurant" replace />
-                                : <Home />
+                                : user?.role === "rider"
+                                    ? <Navigate to="/rider" replace />
+                                    : <Home />
+                        }
+                    />
+                    
+                    <Route
+                        path="/rider"
+                        element={
+                            user?.role === "rider"
+                                ? <RiderDashboard />
+                                : <Navigate to="/" replace />
+                        }
+                    />
+
+                    <Route
+                        path="/rider/dashboard"
+                        element={
+                            user?.role === "rider"
+                                ? <RiderDashboard />
+                                : <Navigate to="/" replace />
                         }
                     />
 

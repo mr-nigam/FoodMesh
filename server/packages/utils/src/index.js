@@ -6,9 +6,11 @@ export { authenticateService } from './middlewares/authenticateService.js';
 export { createUpdatedAtTrigger } from './db/triggers.js';
 export { bootstrapDB } from './db/bootstrapDB.js';
 export { createPostgres } from './config/postgre.js';
-
+export { verifyCoordinates } from './validators/coordinates.js';
+export { uploadFile } from './middlewares/uploadFile.js';
 export { 
     authenticateUser,
     requireRole,
     isSeller,
- } from './middlewares/authenticateUser.js';
+    isRider
+} from './middlewares/authenticateUser.js';

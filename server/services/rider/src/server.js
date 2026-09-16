@@ -21,7 +21,7 @@ const startServer = async()=>{
         connectDB,
         closeDB
     });
-
+    
     await connectProducer();
 
     const PORT = process.env.PORT || 4007;

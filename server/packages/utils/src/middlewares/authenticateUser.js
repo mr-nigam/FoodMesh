@@ -56,10 +56,23 @@ const requireRole = (...allowedRoles) => {
 const isSeller = asyncHandler(async(req,_,next)=>{
     const user = req.user;
 
-    if(user && user.role !== "seller"){
+    if(!user || user?.role !== "seller"){
         throw new ApiError(
-            401,
+            403,
             "You are not authorized seller"
+        );
+    }
+
+    next();
+});
+
+const isRider = asyncHandler(async(req,_,next)=>{
+    const user = req.user;
+
+    if(!user || user?.role !== "rider"){
+        throw new ApiError(
+            403,
+            "You are not authorized rider"
         );
     }
 
@@ -70,5 +83,6 @@ const isSeller = asyncHandler(async(req,_,next)=>{
 export {
     authenticateUser,
     requireRole,
-    isSeller
+    isSeller,
+    isRider
 };

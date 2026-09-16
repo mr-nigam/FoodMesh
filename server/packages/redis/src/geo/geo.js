@@ -7,17 +7,20 @@ const setGeoCache = async({
     key,
     longitude,
     latitude,
-    restaurantId
+    memberValue
 })=>{
 
-    const member = `${restaurantId}`;
+    if(!memberValue){
+        console.error("setGeoCache: Missing member identifier (id/memberId/riderId/restaurantId)");
+        return false;
+    }
 
     try{
         await redis.geoadd(
             key,
             Number(longitude),
             Number(latitude),
-            String(member)
+            String(memberValue)
         );
 
         return true;
@@ -64,8 +67,27 @@ const geoSearch = async({
     }
 };
 
+const deleteGeoCache = async({
+    key,
+    memberValue
+})=>{
+    
+    if(!memberValue){
+        return false;
+    }
+
+    try{
+        await redis.zrem(key, String(memberValue));
+        return true;
+
+    }catch(error){
+        console.log(`Failed to remove id: ${memberValue}`);
+        return false;
+    }
+}
 
 export {
     setGeoCache,
-    geoSearch
+    geoSearch,
+    deleteGeoCache
 }

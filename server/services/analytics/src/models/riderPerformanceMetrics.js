@@ -1,4 +1,5 @@
-import pool from '../config/postgre.js';
+import pool from 
+'../config/postgre.js';
 
 import {
     createUpdatedAtTrigger
@@ -13,14 +14,9 @@ const createRiderPerformanceMetricsTable = async()=>{
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
                 
-                rider_id UNIQUE UUID NOT NULL
-                    REFERENCES riders(id)
-                    ON DELETE CASCADE,
+                rider_id UUID UNIQUE NOT NULL,
 
-                /*
-                 * Delivery statistics
-                 */
-            
+                /* Delivery statistics */
                 total_deliveries INTEGER NOT NULL
                     DEFAULT 0
                     CHECK (total_deliveries >= 0),
@@ -31,14 +27,13 @@ const createRiderPerformanceMetricsTable = async()=>{
 
                 rider_cancelled_deliveries INTEGER NOT NULL
                     DEFAULT 0
-                    CHECK (cancelled_deliveries >= 0),
+                    CHECK (rider_cancelled_deliveries >= 0),
 
                 customer_cancelled_deliveries INTEGER NOT NULL
                     DEFAULT 0
-                    CHECK (rejected_deliveries >= 0),
-\
-                 * Completion
-                 */
+                    CHECK (customer_cancelled_deliveries >= 0),
+
+                /* Completion */
                 completion_rate NUMERIC(5,2) NOT NULL
                     DEFAULT 0
                     CHECK (
@@ -46,8 +41,7 @@ const createRiderPerformanceMetricsTable = async()=>{
                         AND completion_rate <= 100
                     ),
                 
-                 * Rating
-                 */
+                /* Rating */
                 average_rating NUMERIC(3,2) NOT NULL
                     DEFAULT 5.00
                     CHECK (
@@ -59,9 +53,7 @@ const createRiderPerformanceMetricsTable = async()=>{
                     DEFAULT 0
                     CHECK (total_ratings >= 0),
 
-                 /*
-                 * Timing
-                 */
+                /* Timing */
                 total_delivery_time_seconds BIGINT NOT NULL
                     DEFAULT 0
                     CHECK (total_delivery_time_seconds >= 0),
@@ -69,16 +61,12 @@ const createRiderPerformanceMetricsTable = async()=>{
                 average_delivery_time_seconds INTEGER
                     CHECK (average_delivery_time_seconds >= 0),
 
-                 /*
-                 * Earnings
-                 */
+                /* Earnings */
                 total_earnings NUMERIC(12,2) NOT NULL
                     DEFAULT 0
                     CHECK (total_earnings >= 0),
 
-                /*
-                 * Reliability
-                 */
+                /* Reliability */
                 late_deliveries INTEGER NOT NULL
                     DEFAULT 0
                     CHECK (late_deliveries >= 0),
@@ -94,20 +82,26 @@ const createRiderPerformanceMetricsTable = async()=>{
                         AND on_time_rate <= 100
                     ),
                 
-                  /*
-                 * Last activity
-                 */
+                /* Last activity */
                 last_delivery_at TIMESTAMPTZ,
 
                 created_at TIMESTAMPTZ 
                     DEFAULT CURRENT_TIMESTAMP,
 
                 updated_at TIMESTAMPTZ 
-                    DEFAULT CURRENT_TIMESTAMP;
+                    DEFAULT CURRENT_TIMESTAMP
             );    
         `);
 
-        await createUpdatedAtTrigger(pool, 'rider_performance_metrics');
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_rider_perf_rider_id
+                ON rider_performance_metrics(rider_id);
+        `);
+
+        await createUpdatedAtTrigger(
+            pool, 
+            'rider_performance_metrics'
+        );
 
         console.log("✅ Rider Performance Metrics table created successfully.");
 

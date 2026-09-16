@@ -46,12 +46,12 @@ const createRedisConnection = ({
 
 
     redis.on("connect", () => {
-        console.log(`🔌 ${name} Connecting`);
+        //console.log(`🔌 ${name} Connecting`);
     });
 
 
     redis.on("ready", () => {
-        console.log(`✅ ${name} Ready`);
+        //console.log(`✅ ${name} Ready`);
     });
 
 

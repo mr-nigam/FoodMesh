@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { BiEdit, BiMapPin, BiSave } from "react-icons/bi";
 import { restaurantService } from "../config/constants";
 import getAuthHeader from "../config/getAuthHeader.js";
+import useAppData from '../context/useAppData.js';
 
 
 const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
@@ -159,7 +160,21 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
         setEditMode(false);
     };
 
-    if (!restaurant) {
+    const {setIsAuth, setUser} = useAppData();
+
+    const logoutHandler = async ()=>{
+        try {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+        } catch (e) {
+            console.error(e);
+        }
+        setIsAuth(false);
+        setUser(null);
+        toast.success("Logged out successfully");
+    };
+
+    if(!restaurant){
         return (
             <div className="mx-auto max-w-xl rounded-xl bg-white p-5 text-center shadow-sm">
                 <p className="text-sm text-gray-500">
@@ -276,15 +291,6 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                             <span>
                                 {restaurant?.address || "Location is not available"}
                             </span>
-
-                            {/* <span>
-                                {restaurant?.autoLocation?.formattedAddress ||
-                                    restaurant?.auto_location?.formatted_address ||
-                                    restaurant?.formattedAddress ||
-                                    restaurant?.formatted_address ||
-                                    restaurant?.address ||
-                                    "Location is not available"}
-                            </span> */}
                         </div>
                     </div>
 
@@ -312,6 +318,22 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                                     : isOpen
                                     ? "Open"
                                     : "Closed"}
+                            </button>
+                            
+                            {/* logout */}
+                            <button
+                                type="button"
+                                onClick={
+                                    logoutHandler
+                                }
+                                disabled={
+                                    statusLoading
+                                }
+                                className={`rounded px-2 py-1 text-xs text-white transition 
+                                    bg-red-600 hover:bg-red-700`
+                                }
+                            >
+                                Logout
                             </button>
 
                             {/* Edit */}

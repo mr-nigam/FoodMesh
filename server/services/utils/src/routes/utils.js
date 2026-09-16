@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { v2 as cloudinary } from 'cloudinary';
-import uploadFile from '../middlewares/multer.js';
+
+import{
+    uploadFile
+} from '@foodmesh/utils';
 
 
 const router = Router();

@@ -35,3 +35,7 @@ export {
 export {
     createPaymentEvent
 } from './events/paymentEvents.js';
+
+export{
+    createRiderEvent
+} from './events/riderEvents.js';

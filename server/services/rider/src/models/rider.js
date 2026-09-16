@@ -7,9 +7,8 @@ import {
 
 const createRiderTable = async()=>{
     try{
-        
         await pool.query(`
-             CREATE EXTENSION IF NOT EXISTS postgis;
+            CREATE EXTENSION IF NOT EXISTS postgis;
             CREATE EXTENSION IF NOT EXISTS citext;
             CREATE EXTENSION IF NOT EXISTS pgcrypto;    
         `);
@@ -33,6 +32,9 @@ const createRiderTable = async()=>{
                         phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
 
+                aadhar_number VARCHAR(12) UNIQUE NOT NULL,
+                driving_license_number VARCHAR(16) UNIQUE NOT NULL,
+
                 profile_picture_url TEXT,
                 
                 gender VARCHAR(20) DEFAULT 'not_shared'
@@ -44,10 +46,10 @@ const createRiderTable = async()=>{
                     )),
 
                 date_of_birth DATE
-                CHECK (
-                    date_of_birth <= CURRENT_DATE
-                    AND date_of_birth >= CURRENT_DATE - INTERVAL '120 years'
-                ),
+                    CHECK (
+                        date_of_birth <= CURRENT_DATE
+                        AND date_of_birth >= CURRENT_DATE - INTERVAL '120 years'
+                    ),
 
                 status VARCHAR(30) NOT NULL
                     DEFAULT 'pending'
@@ -77,25 +79,24 @@ const createRiderTable = async()=>{
 
                 last_seen_at TIMESTAMPTZ,
 
-                deleted_at TIMESTAMPTZ,
-                deactivated_at TIMESTAMPTZ,
-                
                 is_verified BOOLEAN NOT NULL
                     DEFAULT FALSE,
 
                 verified_at TIMESTAMPTZ,
 
+                deleted_at TIMESTAMPTZ,
+
                 created_at TIMESTAMPTZ 
                     DEFAULT CURRENT_TIMESTAMP,
 
                 updated_at TIMESTAMPTZ 
-                    DEFAULT CURRENT_TIMESTAMP;
+                    DEFAULT CURRENT_TIMESTAMP
             );    
         `);
         
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_rider_location
-                ON rider
+                ON riders
                 USING GIST(location);
 
             CREATE INDEX IF NOT EXISTS idx_riders_availability

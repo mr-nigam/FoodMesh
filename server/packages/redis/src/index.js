@@ -15,7 +15,8 @@ export {
 
 export {
     setGeoCache,
-    geoSearch
+    geoSearch,
+    deleteGeoCache
 } from "./geo/geo.js";
 
 
