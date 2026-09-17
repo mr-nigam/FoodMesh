@@ -21,10 +21,10 @@ const Home = () => {
     let isMounted = true;
 
     const fetchRestaurants = async () => {
-      if (
+      if(
         location?.latitude === undefined ||
         location?.longitude === undefined
-      ) {
+      ){
         return;
       }
 

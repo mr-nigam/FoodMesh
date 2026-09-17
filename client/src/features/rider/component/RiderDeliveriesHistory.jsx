@@ -1,16 +1,15 @@
-﻿import React, { useState } from "react";
+﻿import { useState } from "react";
 import {
-    BiPackage,
     BiStore,
     BiUser,
     BiRupee,
     BiCheckCircle,
-    BiXCircle,
     BiSearch,
     BiCalendar,
     BiChevronDown,
     BiChevronUp
 } from "react-icons/bi";
+
 
 const sampleDeliveries = [
     {
@@ -56,6 +55,7 @@ const sampleDeliveries = [
         status: "delivered"
     }
 ];
+
 
 const RiderDeliveriesHistory = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -209,5 +209,6 @@ const RiderDeliveriesHistory = () => {
         </div>
     );
 };
+
 
 export default RiderDeliveriesHistory;

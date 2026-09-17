@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
     BiUser,
-    BiEnvelope,
-    BiPhone,
-    BiCalendar,
-    BiCheckShield,
     BiCreditCard,
     BiBell,
-    BiSave,
-    BiHelpCircle
+    BiSave
 } from "react-icons/bi";
 
-const RiderProfile = ({ rider }) => {
+
+const RiderProfile = ({ 
+    rider 
+}) => {
     const [soundAlerts, setSoundAlerts] = useState(true);
     const [autoAccept, setAutoAccept] = useState(false);
     const [emergencyPhone, setEmergencyPhone] = useState("+919876543210");
@@ -34,7 +32,7 @@ const RiderProfile = ({ rider }) => {
                         className="w-20 h-20 rounded-full object-cover border-2 border-orange-400 shadow-sm"
                     />
                 ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-2xl shadow-sm">
+                    <div className="w-20 h-20 rounded-full bg-linear-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-2xl shadow-sm">
                         {rider?.name?.charAt(0) || "R"}
                     </div>
                 )}
@@ -155,5 +153,6 @@ const RiderProfile = ({ rider }) => {
         </div>
     );
 };
+
 
 export default RiderProfile;

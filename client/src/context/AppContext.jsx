@@ -170,7 +170,6 @@ const AppProvider = ({
             );
         };
 
-
         fetchUser();
         fetchLocation();
 

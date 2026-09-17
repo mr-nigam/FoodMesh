@@ -50,10 +50,9 @@ const RestaurantOrders = ({
     };
 
     const fetchOrders = async () => {
-        if(!restaurantId) return;
         try{
             const { data } = await axios.get(
-                `${orderService}/restaurant/${restaurantId}`,
+                `${orderService}/restaurant`,
                 getAuthHeader()
             );
 

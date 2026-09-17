@@ -12,7 +12,7 @@ import {
 
 const addVehicle = asyncHandler(async(req, res)=>{
     const vehicle = await addVehicleService({
-        userId: req.user?.id,
+        riderId: req.user?.riderId,
         data: req.body
     });
 
@@ -29,8 +29,7 @@ const addVehicle = asyncHandler(async(req, res)=>{
 
 const fetchVehicles = asyncHandler(async(req, res)=>{
     const vehicles = await fetchVehiclesService({
-        userId: req.user?.id,
-        riderId: req?.params?.riderId ?? null
+        riderId: req.user?.riderId
     });
 
     return res
@@ -47,8 +46,7 @@ const fetchVehicles = asyncHandler(async(req, res)=>{
 const setPrimaryVehicle = asyncHandler(async(req, res)=>{
 
     const vehicle = await setPrimaryVehicleService({
-        userId: req.user?.id,
-        riderId: req?.params?.riderId ?? null,
+        riderId: req.user?.riderId,
         vehicleId: req.params.vehicleId
     });
 

@@ -1,18 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
     BiStore,
     BiUser,
     BiPhone,
     BiNavigation,
-    BiCheck,
-    BiCheckDouble,
-    BiInfoCircle,
-    BiTime,
     BiRupee,
-    BiCheckShield,
-    BiErrorCircle
+    BiCheckShield
 } from "react-icons/bi";
+
 
 const ActiveDeliveryCard = ({
     task,
@@ -23,7 +19,6 @@ const ActiveDeliveryCard = ({
     const [checkedItems, setCheckedItems] = useState({});
     const [otp, setOtp] = useState("");
     const [otpError, setOtpError] = useState(false);
-    const [rejectModal, setRejectModal] = useState(false);
 
     if (!task) return null;
 
@@ -215,7 +210,7 @@ const ActiveDeliveryCard = ({
 
             {/* OTP Verification on Delivery Step */}
             {taskStep === "arrived_customer" && (
-                <div className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-orange-400 space-y-3">
+                <div className="p-5 bg-linear-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-orange-400 space-y-3">
                     <div className="flex items-center gap-2 text-orange-800 font-bold text-sm">
                         <BiCheckShield className="text-lg" /> Customer Delivery OTP Verification
                     </div>
@@ -258,5 +253,6 @@ const ActiveDeliveryCard = ({
         </div>
     );
 };
+
 
 export default ActiveDeliveryCard;

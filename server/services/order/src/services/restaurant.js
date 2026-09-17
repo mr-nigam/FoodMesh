@@ -40,7 +40,6 @@ const fetchOrdersService = async({
 }) => {
 
     const restaurantId = 
-        req?.params?.restaurantId ??
         req?.user?.restaurantId ??
         null;
 
@@ -77,11 +76,9 @@ const fetchOrdersService = async({
         offset
     });
 
-    const ttl = 60*60;
     await cachePaginatedList({
         key: cacheKey,
-        items: orders,
-        ttl
+        items: orders
     });
 
     return orders;
@@ -92,22 +89,14 @@ const fetchOrderService = async({
 }) => {
 
     const restaurantId = 
-        req?.params?.restaurantId ??
-        req?.body?.restaurantId ??
         req?.user?.restaurantId ??
         null;
     
     const orderId = 
         req.params?.orderId ?? 
-        req.params?.id ?? 
         null;
 
-    const orderRestaurantId = 
-        req.params?.orderRestaurantId ?? 
-        req.body?.orderRestaurantId ?? 
-        null;
-
-    if(!orderId || (!restaurantId && !orderRestaurantId)){
+    if(!orderId || (!restaurantId)){
         throw new ApiError(
             400,
             "Please provide order and restaurant id"
@@ -126,7 +115,6 @@ const fetchOrderService = async({
 
     const order = await fetchOrderRepo({
         orderId,
-        orderRestaurantId,
         restaurantId
     });
 
@@ -137,7 +125,7 @@ const fetchOrderService = async({
         );
     }
 
-    const ttl = 60*60;
+    const ttl = 600;
     await setCache({
         key: cacheKey,
         value: order,
@@ -171,8 +159,6 @@ const updateOrderStatusService = async({
 
     const orderId = 
         req.params?.orderId ??
-        req.params?.id ??
-        req.body?.orderId ??
         null;
   
     const orderRestaurantId = 
@@ -181,8 +167,6 @@ const updateOrderStatusService = async({
         null;
     
     const restaurantId = 
-        req.body?.restaurantId ?? 
-        req.params?.restaurantId ??
         req.user?.restaurantId ?? 
         null;
 

@@ -3,7 +3,8 @@ import pool from
 
 import { 
     createUpdatedAtTrigger
- } from '@foodmesh/utils';
+} from '@foodmesh/utils';
+
 
 const createUsersTable = async() => {
     try{
@@ -60,6 +61,8 @@ const createUsersTable = async() => {
                 password_changed_at TIMESTAMPTZ,
                 refresh_token TEXT,
 
+                professional_id UUID,
+                
                 deleted_at TIMESTAMPTZ,
                 deactivated_at TIMESTAMPTZ,
                 

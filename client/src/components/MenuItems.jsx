@@ -226,6 +226,10 @@ const MenuItems = ({
                 <img
                   src={imageUrl}
                   alt={item.name || "Menu item"}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=60";
+                  }}
                   className={`h-20 w-20 rounded object-cover ${
                     !item.is_available
                       ? "grayscale brightness-75"

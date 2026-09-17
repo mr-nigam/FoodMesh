@@ -13,7 +13,6 @@ import {
 
 
 const createOrder = asyncHandler ( async (req, res) => { 
-
     const orderDetails = await createOrderService({
         userId: req.user.id,
         body: req.body

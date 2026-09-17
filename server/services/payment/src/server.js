@@ -16,7 +16,7 @@ import {
 
 import {
     startOrderConsumer
-} from './consumers/order.consumer.js';
+} from './consumers/order.js';
 
 
 const startServer = async()=>{

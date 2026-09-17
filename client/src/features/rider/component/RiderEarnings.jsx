@@ -1,8 +1,7 @@
-﻿import React, { useState } from "react";
+﻿import { useState } from "react";
 import {
     BiRupee,
     BiTrendingUp,
-    BiCalendar,
     BiStar,
     BiCheckCircle,
     BiTimeFive,
@@ -10,6 +9,7 @@ import {
     BiCreditCard,
     BiAward
 } from "react-icons/bi";
+
 
 const RiderEarnings = ({ metrics, rider }) => {
     const [period, setPeriod] = useState("today");
@@ -53,7 +53,7 @@ const RiderEarnings = ({ metrics, rider }) => {
 
             {/* Top Key Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white p-5 rounded-2xl shadow-md">
+                <div className="bg-linear-to-br from-orange-500 to-amber-600 text-white p-5 rounded-2xl shadow-md">
                     <div className="flex items-center justify-between opacity-90 text-xs font-semibold">
                         <span>Total Payout</span>
                         <BiWallet className="text-xl" />
@@ -133,7 +133,7 @@ const RiderEarnings = ({ metrics, rider }) => {
                         <BiCreditCard className="text-orange-500 text-xl" /> Bank & Settlement
                     </h3>
 
-                    <div className="p-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl space-y-3 shadow-md">
+                    <div className="p-4 bg-linear-to-r from-gray-900 to-gray-800 text-white rounded-2xl space-y-3 shadow-md">
                         <div className="flex justify-between text-xs opacity-75">
                             <span>FoodMesh Partner Card</span>
                             <span>UPI Linked</span>
@@ -162,5 +162,6 @@ const RiderEarnings = ({ metrics, rider }) => {
         </div>
     );
 };
+
 
 export default RiderEarnings;

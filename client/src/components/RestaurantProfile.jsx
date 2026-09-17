@@ -193,6 +193,10 @@ const RestaurantProfile = ({ restaurant, onUpdate, isSeller }) => {
                         restaurant.name ||
                         "Restaurant"
                     }
+                    onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop&q=60";
+                    }}
                     className="h-60 w-full object-cover"
                 />
             )}

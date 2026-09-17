@@ -24,6 +24,7 @@ const oauth2client = new OAuth2Client(
 
 const allowedRoles = ["customer","rider","seller"];
 
+
 const loginUser = asyncHandler(async (req,res) => {
     const code = req.body?.code || null;
 
@@ -56,7 +57,8 @@ const loginUser = asyncHandler(async (req,res) => {
             name,
             email,
             role,
-            profile_picture_url
+            profile_picture_url,
+            professional_id
         FROM users
             WHERE email = $1
             AND deleted_at IS NULL
@@ -80,12 +82,13 @@ const loginUser = asyncHandler(async (req,res) => {
                 name,
                 email,
                 role,
-                profile_picture_url;
+                profile_picture_url,
+                professional_id;
         `;
 
         const result = await pool.query(
             query,
-            [email,name,picture]
+            [email, name, picture]
         );
 
         user = result.rows[0];
@@ -135,7 +138,8 @@ const updateRole = asyncHandler(async (req, res)=>{
             name,
             email,
             role,
-            profile_picture_url;
+            profile_picture_url,
+            professional_id;
     `;
     
     const result = await pool.query(
@@ -163,8 +167,7 @@ const updateRole = asyncHandler(async (req, res)=>{
                 },
                 "Role updated successfully"
             )
-        );
-        
+        );     
 });
 
 const myProfile = asyncHandler(async (req, res) => {
@@ -180,8 +183,11 @@ const myProfile = asyncHandler(async (req, res) => {
 
     const result = await pool.query(query, [user.id]);
 
-    if (result.rowCount === 0) {
-        throw new ApiError(404, "User not found");
+    if(result.rowCount === 0){
+        throw new ApiError(
+            404, 
+            "User not found"
+        );
     }
 
     return res.status(200).json(

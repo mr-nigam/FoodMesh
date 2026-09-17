@@ -15,9 +15,8 @@ const router = Router();
 
 
 router.use(authenticateUser);
-
-router.get('/:restaurantId/orders/:orderId', fetchOrder);
-router.get('/:restaurantId', fetchOrders);
+router.get('/', fetchOrders);
+router.get('/:orderId', fetchOrder);
 router.patch("/:orderId", updateOrderStatus);
 
 

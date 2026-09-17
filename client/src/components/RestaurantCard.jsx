@@ -65,10 +65,14 @@ const RestaurantCard = ({ restaurant }) => {
       {/* Image */}
       <div className="relative h-48 w-full overflow-hidden bg-gray-100">
 
-        {restaurant.pictures_urls ? (
+        {restaurant.pictures_urls?.[0] ? (
           <img
             src={restaurant.pictures_urls[0]}
             alt={restaurant.name}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=60";
+            }}
             className={`h-full w-full object-cover transition duration-300 hover:scale-105
                 ${!restaurant.is_open?"grayscale":""}`}
             loading="lazy"

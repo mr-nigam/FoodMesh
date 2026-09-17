@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -78,27 +78,34 @@ const RestaurantOrderDetail = () => {
     const { user } = useAppData();
 
     const restaurantId = user?.restaurantId || user?.restaurant?.id;
-
+    console.log("restaurantId: ",restaurantId);
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
 
     const fetchOrderDetail = useCallback(async () => {
-        if (!orderId) return;
-        try {
-            const url = restaurantId
-                ? `${orderService}/restaurant/${restaurantId}/orders/${orderId}`
-                : `${orderService}/restaurant/${orderId}`;
+        if(!orderId) return;
+        try{
 
-            const { data } = await axios.get(url, getAuthHeader());
-            const orderData = data?.data?.order ?? data?.order ?? data?.data ?? null;
+            const { data } = await axios.get(
+                `${orderService}/restaurant/${orderId}`,
+                getAuthHeader()
+            );
+
+            const orderData = 
+                data?.data?.order ?? 
+                data?.order ?? 
+                data?.data ?? null;
+                
             setOrder(orderData);
-        } catch (error) {
+
+        }catch(error){
             console.error("Failed to load restaurant order detail:", error);
             toast.error(error.response?.data?.message || "Failed to load order details");
         } finally {
             setLoading(false);
         }
+        
     }, [orderId, restaurantId]);
 
     useEffect(() => {
@@ -424,5 +431,6 @@ const RestaurantOrderDetail = () => {
         </div>
     );
 };
+
 
 export default RestaurantOrderDetail;

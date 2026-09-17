@@ -1,5 +1,4 @@
-﻿import React from "react";
-import {
+﻿import {
     BiCycling,
     BiPowerOff,
     BiMapPin,
@@ -11,6 +10,7 @@ import {
     BiRefresh
 } from "react-icons/bi";
 
+
 const RiderNavbar = ({
     rider,
     activeTab,
@@ -21,6 +21,7 @@ const RiderNavbar = ({
     onRefreshLocation,
     onLogout
 }) => {
+
     const isOnline = rider?.availability_status === "online";
 
     const navItems = [
@@ -38,7 +39,7 @@ const RiderNavbar = ({
                 <div className="flex items-center justify-between h-16">
                     {/* Left: Branding & Rider Info */}
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-tr from-orange-500 to-amber-500 text-white rounded-2xl shadow-sm">
+                        <div className="p-2.5 bg-linear-to-tr from-orange-500 to-amber-500 text-white rounded-2xl shadow-sm">
                             <BiCycling className="text-2xl" />
                         </div>
                         <div>
@@ -54,7 +55,7 @@ const RiderNavbar = ({
                                 <span className="flex items-center gap-1 font-mono text-[11px]">
                                     <BiMapPin className="text-orange-500 text-xs" />
                                     {currentCoords
-                                        ? `${currentCoords.latitude.toFixed(3)}, ${currentCoords.longitude.toFixed(3)}`
+                                        ? `${currentCoords.latitude?.toFixed(3)}, ${currentCoords.longitude?.toFixed(3)}`
                                         : "Acquiring GPS..."}
                                 </span>
                                 {onRefreshLocation && (
@@ -125,5 +126,6 @@ const RiderNavbar = ({
         </header>
     );
 };
+
 
 export default RiderNavbar;

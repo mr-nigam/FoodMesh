@@ -14,21 +14,27 @@ import {
 
 
 const addVehicleService = async({
-    userId,
+    riderId,
     data
 })=>{
-    const rider = await fetchProfileRepo({ userId, riderId: null });
-    if(!rider){
-        throw new ApiError(404, "Rider profile not found");
+
+    if(!riderId){
+        throw new ApiError(
+            400, 
+            "Rider id is missing"
+        );
     }
 
     const vehicleType = data?.vehicleType?.trim();
     if(!vehicleType){
-        throw new ApiError(400, "Vehicle type is required");
+        throw new ApiError(
+            400,
+            "Vehicle type is required"
+        );
     }
 
     return await addVehicleRepo({
-        riderId: rider.id,
+        riderId,
         vehicleType,
         manufacturer: data?.manufacturer?.trim(),
         model: data?.model?.trim(),
@@ -40,27 +46,35 @@ const addVehicleService = async({
 };
 
 const fetchVehiclesService = async({
-    userId
+    riderId
 })=>{
-    const rider = await fetchProfileRepo({ userId, riderId: null });
-    if(!rider){
-        throw new ApiError(404, "Rider profile not found");
+    
+    if(!riderId){
+        throw new ApiError(
+            400, 
+            "Rider id is missing"
+        );
     }
 
-    return await fetchVehiclesRepo({ riderId: rider.id });
+    return await fetchVehiclesRepo({ 
+        riderId
+    });
 };
 
 const setPrimaryVehicleService = async({
-    userId,
+    riderId,
     vehicleId
 })=>{
-    const rider = await fetchProfileRepo({ userId, riderId: null });
-    if(!rider){
-        throw new ApiError(404, "Rider profile not found");
+    
+    if(!riderId){
+        throw new ApiError(
+            400, 
+            "Rider id is missing"
+        );
     }
 
     return await setPrimaryVehicleRepo({
-        riderId: rider.id,
+        riderId,
         vehicleId
     });
 };

@@ -60,7 +60,6 @@ const registerRepo = async({
 };
 
 const fetchProfileRepo = async({
-    userId,
     riderId
 })=>{
 
@@ -96,13 +95,12 @@ const fetchProfileRepo = async({
 
         FROM riders r
         WHERE r.id = $1
-            AND r.user_id = $2
             AND r.deleted_at IS NULL;
     `;
 
     const {rows} = await pool.query(
         searchQuery,
-        [riderId, userId]
+        [riderId]
     );
 
     return rows[0];
@@ -130,6 +128,7 @@ const updateAvailabilityStatusRepo = async({
             AND deleted_at IS NULL
             AND status != 'blocked'
             AND status != 'deactivated'
+            AND availability_status != 'busy'
         RETURNING
             id AS rider_id,
             id,
@@ -149,7 +148,6 @@ const updateAvailabilityStatusRepo = async({
 };
 
 const updateLocationRepo = async({
-    userId,
     riderId,
     longitude,
     latitude
@@ -158,8 +156,7 @@ const updateLocationRepo = async({
     const params = [
         longitude,
         latitude,
-        riderId,
-        userId
+        riderId
     ];
 
     const updateQuery = `
@@ -169,13 +166,9 @@ const updateLocationRepo = async({
             location_updated_at = CURRENT_TIMESTAMP,
             last_seen_at = CURRENT_TIMESTAMP
         WHERE id = $3
-            AND user_id = $4
             AND deleted_at IS NULL
         RETURNING
             id AS rider_id,
-            id,
-            user_id,
-            availability_status,
             ST_X(location::geometry) AS longitude,
             ST_Y(location::geometry) AS latitude,
             location_updated_at;

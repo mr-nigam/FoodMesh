@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { BiUser, BiIdCard, BiMapPin, BiCar, BiUpload, BiCheckCircle } from "react-icons/bi";
+import { BiUser, BiIdCard, BiMapPin, BiCar, BiUpload } from "react-icons/bi";
 import useAppData from "../../../context/useAppData.js";
 import { registerRider } from "../service/riderService.js";
 
@@ -15,7 +15,7 @@ const RiderOnboarding = ({ onCompleted }) => {
     const [phone, setPhone] = useState(user?.phone || "");
     const [aadharNumber, setAadharNumber] = useState("");
     const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
-    const [gender, setGender] = useState("not_shared");
+    const [gender, setGender] = useState(user?.gender ?? "not_shared");
     const [dateOfBirth, setDateOfBirth] = useState("");
     const [vehicleType, setVehicleType] = useState("motorcycle");
     const [registrationNumber, setRegistrationNumber] = useState("");
@@ -26,12 +26,9 @@ const RiderOnboarding = ({ onCompleted }) => {
     const [loading, setLoading] = useState(false);
     const [gettingLocation, setGettingLocation] = useState(false);
 
-    useEffect(() => {
-        acquireLocation();
-    }, []);
 
     const acquireLocation = () => {
-        if (!navigator.geolocation) {
+        if(!navigator.geolocation){
             toast.error("Geolocation is not supported by your browser");
             return;
         }
@@ -62,9 +59,17 @@ const RiderOnboarding = ({ onCompleted }) => {
         );
     };
 
+    useEffect(() => {        
+        const loadLocation = async ()=>{
+            acquireLocation();
+        }
+
+        loadLocation();
+    }, []);
+
     const handleFileChange = (e) => {
         const selected = e.target.files?.[0];
-        if (selected) {
+        if(selected){
             setFile(selected);
             setPreviewUrl(URL.createObjectURL(selected));
         }
@@ -73,19 +78,19 @@ const RiderOnboarding = ({ onCompleted }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!name.trim()) return toast.error("Please enter your name");
-        if (!email.trim()) return toast.error("Please enter your email");
-        if (!aadharNumber.trim() || !/^\d{12}$/.test(aadharNumber.trim())) {
+        if(!name.trim()) return toast.error("Please enter your name");
+        if(!email.trim()) return toast.error("Please enter your email");
+        if(!aadharNumber.trim() || !/^\d{12}$/.test(aadharNumber.trim())){
             return toast.error("Aadhar number must be exactly 12 digits");
         }
-        if (!drivingLicenseNumber.trim()) {
+        if(!drivingLicenseNumber.trim()){
             return toast.error("Please enter your driving license number");
         }
-        if (location.longitude === null || location.latitude === null) {
+        if(location.longitude === null || location.latitude === null){
             return toast.error("Please allow GPS location access to continue");
         }
 
-        try {
+        try{
             setLoading(true);
             const formData = new FormData();
             formData.append("name", name.trim());
@@ -102,17 +107,25 @@ const RiderOnboarding = ({ onCompleted }) => {
             if (model.trim()) formData.append("model", model.trim());
             if (file) formData.append("file", file);
 
-            await registerRider(formData);
+            await registerRider({
+                formData
+            });
+
             toast.success("Rider profile registered successfully!");
-            if (onCompleted) {
+            if(onCompleted){
                 onCompleted();
-            } else {
+            }else{
                 navigate("/rider");
             }
-        } catch (err) {
-            const msg = err.response?.data?.message || err.response?.data?.errors || err.message;
+
+        }catch (err){
+            const msg = 
+                err.response?.data?.message || 
+                err.response?.data?.errors || 
+                err.message;
+                
             toast.error(typeof msg === "object" ? JSON.stringify(msg) : String(msg));
-        } finally {
+        }finally{
             setLoading(false);
         }
     };
@@ -120,7 +133,7 @@ const RiderOnboarding = ({ onCompleted }) => {
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-6 text-white">
+                <div className="bg-linear-to-r from-orange-500 to-amber-500 px-6 py-6 text-white">
                     <h1 className="text-2xl font-bold">Rider Partner Onboarding</h1>
                     <p className="text-orange-100 text-sm mt-1">
                         Register your details to start accepting deliveries and earning with FoodMesh.
@@ -331,5 +344,6 @@ const RiderOnboarding = ({ onCompleted }) => {
         </div>
     );
 };
+
 
 export default RiderOnboarding;

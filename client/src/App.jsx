@@ -18,6 +18,9 @@ import Orders from './pages/Orders';
 import UserOrderDetail from './pages/UserOrderDetail';
 import RestaurantOrderDetail from './pages/RestaurantOrderDetail';
 import RiderDashboard from './features/rider/pages/RiderDashboard';
+import RiderOnboarding from './features/rider/pages/RiderOnboarding';
+import RiderVehiclesPage from './features/rider/pages/RiderVehiclesPage';
+import RiderAddVehiclePage from './features/rider/pages/RiderAddVehiclePage';
 
 
 const App = () => {
@@ -32,7 +35,7 @@ const App = () => {
     return <>
         <BrowserRouter>
             <Toaster />
-            {user?.role !== "rider" && <NavBar />}
+            <NavBar />
             <Routes>
                
                 <Route element={<PublicRoute />}>
@@ -59,12 +62,35 @@ const App = () => {
                                 : <Navigate to="/" replace />
                         }
                     />
+                    
+                    <Route 
+                        path="/rider-registration"
+                        element={<RiderOnboarding />}
+                    />
 
                     <Route
                         path="/rider/dashboard"
                         element={
                             user?.role === "rider"
                                 ? <RiderDashboard />
+                                : <Navigate to="/" replace />
+                        }
+                    />
+
+                    <Route
+                        path="/rider/vehicles"
+                        element={
+                            user?.role === "rider"
+                                ? <RiderVehiclesPage />
+                                : <Navigate to="/" replace />
+                        }
+                    />
+
+                    <Route
+                        path="/rider/vehicles/add"
+                        element={
+                            user?.role === "rider"
+                                ? <RiderAddVehiclePage />
                                 : <Navigate to="/" replace />
                         }
                     />

@@ -77,7 +77,7 @@ const fetchOrderRepo = async({
             o.recipient_name,
             o.recipient_phone,
             o.delivery_address,
-            
+
             o.status,
 
             o.subtotal,
@@ -88,45 +88,52 @@ const fetchOrderRepo = async({
 
             o.created_at,
 
-            jsonb_build_object(
-                'order_restaurant_id', orr.id,
-
-                'id', orr.restaurant_id,
-                'name', orr.restaurant_name,
-                
-                'phone', orr.restaurant_phone,
-                'location', orr.restaurant_location,
-                'address', orr.restaurant_address,
-                
-                'subtotal', orr.subtotal,
-                'tax_amount', orr.tax_amount,
-                'delivery_fee', orr.delivery_fee,
-                'discount_amount', orr.discount_amount,
-                'total_amount', orr.total_amount,
-                
-                'status', orr.status
-            ) AS restaurant,
-
             jsonb_agg(
                 jsonb_build_object(
-                    'order_item_id', oi.id,
-                    'id', oi.item_id,
-                    'cart_id', oi.cart_id,
-                    'item_name', oi.item_name,
-                    'unit_price', oi.unit_price,
-                    'quantity', oi.quantity,
-                    'subtotal', oi.subtotal
+                    'order_restaurant_id', orr.id,
+
+                    'restaurant_id', orr.restaurant_id,
+                    'name', orr.restaurant_name,
+                    'phone', orr.restaurant_phone,
+
+                    'longitude', ST_X(orr.restaurant_location::geometry),
+                    'latitude', ST_Y(orr.restaurant_location::geometry),
+                    'address', orr.restaurant_address,
+
+                    'subtotal', orr.subtotal,
+                    'tax_amount', orr.tax_amount,
+                    'delivery_fee', orr.delivery_fee,
+                    'discount_amount', orr.discount_amount,
+                    'total_amount', orr.total_amount,
+
+                    'status', orr.status,
+
+                    'ordered_items',
+                    (
+                        SELECT
+                            jsonb_agg(
+                                jsonb_build_object(
+                                    'order_item_id', oi.id,
+                                    'id', oi.item_id,
+                                    'cart_id', oi.cart_id,
+                                    'item_name', oi.item_name,
+                                    'unit_price', oi.unit_price,
+                                    'quantity', oi.quantity,
+                                    'subtotal', oi.subtotal
+                                )
+                                ORDER BY oi.id ASC
+                            )
+                        FROM order_items AS oi
+                        WHERE oi.order_restaurant_id = orr.id
+                    )
                 )
-                ORDER BY oi.id ASC
-            ) as ordered_items
+                ORDER BY orr.id ASC
+            ) AS restaurants
 
         FROM orders AS o
 
-        INNER JOIN order_restaurants orr
+        JOIN order_restaurants AS orr
             ON o.id = orr.order_id
-
-        INNER JOIN order_items oi
-            ON orr.id = oi.order_restaurant_id
 
         WHERE o.id = $1
             AND o.user_id = $2
@@ -143,26 +150,14 @@ const fetchOrderRepo = async({
             o.tax_amount,
             o.discount_amount,
             o.total_amount,
-
-            orr.id,
-            orr.restaurant_id,
-            orr.restaurant_name,
-            orr.restaurant_phone,
-            orr.restaurant_location,
-            orr.restaurant_address,
-            orr.subtotal,
-            orr.tax_amount,
-            orr.delivery_fee,
-            orr.discount_amount,
-            orr.total_amount,
-            orr.status;
+            o.created_at;
     `;
 
     const {rows} = await pool.query(
         searchQuery,
         params
     );
-
+    
     return rows[0];
 };
 

@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
     BiCar,
     BiPlus,
     BiCheckCircle,
-    BiIdCard,
     BiCheckShield,
-    BiX,
-    BiCalendar
+    BiCalendar,
+    BiStar,
+    BiLinkExternal
 } from "react-icons/bi";
-import { addRiderVehicle } from "../service/riderService.js";
+import { addRiderVehicle, setPrimaryVehicle } from "../service/riderService.js";
+
 
 const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
+    const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [vehicleType, setVehicleType] = useState("motorcycle");
     const [manufacturer, setManufacturer] = useState("");
@@ -20,6 +23,7 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
     const [registrationNumber, setRegistrationNumber] = useState("");
     const [registrationExpiryDate, setRegistrationExpiryDate] = useState("");
     const [loading, setLoading] = useState(false);
+    const [settingPrimaryId, setSettingPrimaryId] = useState(null);
 
     const handleAddVehicle = async (e) => {
         e.preventDefault();
@@ -28,7 +32,11 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
             return toast.error("Please enter the registration number");
         }
 
-        try {
+        try{
+            if(loading){
+                return;
+            }
+            
             setLoading(true);
             await addRiderVehicle({
                 vehicleType,
@@ -56,6 +64,20 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
         }
     };
 
+    const handleSetPrimary = async (vehicleId) => {
+        try {
+            setSettingPrimaryId(vehicleId);
+            await setPrimaryVehicle(vehicleId);
+            toast.success("Primary vehicle updated successfully!");
+            if (onRefresh) onRefresh();
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message;
+            toast.error(`Failed to set primary vehicle: ${msg}`);
+        } finally {
+            setSettingPrimaryId(null);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -65,13 +87,20 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
                     <p className="text-xs text-gray-500 mt-0.5">Manage your active delivery rides, number plates, and driving licenses.</p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => setModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
-                >
-                    <BiPlus className="text-base" /> Add New Ride
-                </button>
+                <div className="flex items-center gap-2">
+                    <Link
+                        to="/rider/vehicles"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition cursor-pointer"
+                    >
+                        <BiLinkExternal className="text-sm" /> Full Vehicles Page
+                    </Link>
+                    <Link
+                        to="/rider/vehicles/add"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                    >
+                        <BiPlus className="text-base" /> Add New Ride
+                    </Link>
+                </div>
             </div>
 
             {/* Vehicle List */}
@@ -80,53 +109,76 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
                     vehicles.map((v) => (
                         <div
                             key={v.id}
-                            className={`p-5 rounded-2xl border transition shadow-xs space-y-4 ${
+                            className={`p-5 rounded-2xl border transition shadow-xs space-y-4 flex flex-col justify-between ${
                                 v.is_primary ? "bg-white border-orange-300 ring-2 ring-orange-100" : "bg-white border-gray-100"
                             }`}
                         >
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-orange-50 text-orange-600 rounded-xl text-2xl">
-                                        <BiCar />
+                            <div className="space-y-3">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-orange-50 text-orange-600 rounded-xl text-2xl">
+                                            <BiCar />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-gray-900 text-sm capitalize">
+                                                    {v.manufacturer ? `${v.manufacturer} ${v.model}` : `${v.vehicle_type} Ride`}
+                                                </h3>
+                                                {v.is_primary && (
+                                                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase flex items-center gap-1">
+                                                        <BiCheckCircle /> Primary
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500 font-mono mt-0.5">
+                                                {v.registration_number || "No Plate / Bicycle"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-gray-100 text-xs text-gray-600 grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span className="text-gray-400">Type:</span>{" "}
+                                        <strong className="capitalize text-gray-800">{v.vehicle_type}</strong>
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-gray-900 text-sm capitalize">
-                                                {v.manufacturer ? `${v.manufacturer} ${v.model}` : `${v.vehicle_type} Ride`}
-                                            </h3>
-                                            {v.is_primary && (
-                                                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 uppercase">
-                                                    Primary
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-gray-500 font-mono mt-0.5">
-                                            {v.registration_number || "No Plate / Bicycle"}
-                                        </p>
+                                        <span className="text-gray-400">Color:</span>{" "}
+                                        <strong className="capitalize text-gray-800">{v.color || "Standard"}</strong>
                                     </div>
+                                    {v.registration_expiry_date && (
+                                        <div className="col-span-2 text-[11px] text-gray-500 flex items-center gap-1">
+                                            <BiCalendar className="text-xs" /> Fitness Expiry: {new Date(v.registration_expiry_date).toLocaleDateString()}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="pt-3 border-t border-gray-100 text-xs text-gray-600 grid grid-cols-2 gap-2">
-                                <div>
-                                    <span className="text-gray-400">Type:</span>{" "}
-                                    <strong className="capitalize text-gray-800">{v.vehicle_type}</strong>
+                            {/* Set as Primary Button */}
+                            {!v.is_primary && (
+                                <div className="pt-2 border-t border-gray-100">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSetPrimary(v.id)}
+                                        disabled={settingPrimaryId === v.id}
+                                        className="w-full py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs rounded-xl border border-orange-200 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                    >
+                                        <BiStar className="text-sm" />
+                                        {settingPrimaryId === v.id ? "Updating..." : "Set as Primary"}
+                                    </button>
                                 </div>
-                                <div>
-                                    <span className="text-gray-400">Color:</span>{" "}
-                                    <strong className="capitalize text-gray-800">{v.color || "Standard"}</strong>
-                                </div>
-                                {v.registration_expiry_date && (
-                                    <div className="col-span-2 text-[11px] text-gray-500 flex items-center gap-1">
-                                        <BiCalendar className="text-xs" /> Fitness Expiry: {new Date(v.registration_expiry_date).toLocaleDateString()}
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
                     ))
                 ) : (
-                    <div className="col-span-2 p-8 bg-white rounded-2xl border border-gray-100 text-center text-xs text-gray-400">
-                        No registered vehicles found. Add your motorcycle or scooter to get started.
+                    <div className="col-span-2 p-8 bg-white rounded-2xl border border-gray-100 text-center text-xs text-gray-400 space-y-3">
+                        <p>No registered vehicles found. Add your motorcycle or scooter to get started.</p>
+                        <Link
+                            to="/rider/vehicles/add"
+                            className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-orange-600 text-white rounded-xl text-xs font-bold"
+                        >
+                            <BiPlus /> Add Vehicle
+                        </Link>
                     </div>
                 )}
             </div>
@@ -163,106 +215,9 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
                     </div>
                 </div>
             </div>
-
-            {/* Add Vehicle Modal */}
-            {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150">
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                            <h3 className="font-bold text-gray-900 text-base">Add New Delivery Ride</h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalOpen(false)}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <BiX className="text-2xl" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleAddVehicle} className="space-y-4 text-xs">
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">Vehicle Type *</label>
-                                <select
-                                    value={vehicleType}
-                                    onChange={(e) => setVehicleType(e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                >
-                                    <option value="motorcycle">Motorcycle / Bike</option>
-                                    <option value="scooter">Scooter / EV</option>
-                                    <option value="bicycle">Bicycle</option>
-                                    <option value="car">Car</option>
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-medium text-gray-700 mb-1">Brand / Maker</label>
-                                    <input
-                                        type="text"
-                                        value={manufacturer}
-                                        onChange={(e) => setManufacturer(e.target.value)}
-                                        placeholder="Honda / Hero / Bajaj"
-                                        className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-medium text-gray-700 mb-1">Model Name</label>
-                                    <input
-                                        type="text"
-                                        value={model}
-                                        onChange={(e) => setModel(e.target.value)}
-                                        placeholder="Activa 6G / Splendor"
-                                        className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-medium text-gray-700 mb-1">License Plate Number</label>
-                                    <input
-                                        type="text"
-                                        value={registrationNumber}
-                                        onChange={(e) => setRegistrationNumber(e.target.value.toUpperCase())}
-                                        placeholder="DL01AB1234"
-                                        className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-medium text-gray-700 mb-1">Color</label>
-                                    <input
-                                        type="text"
-                                        value={color}
-                                        onChange={(e) => setColor(e.target.value)}
-                                        placeholder="Black / Red / Grey"
-                                        className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block font-medium text-gray-700 mb-1">RC / Insurance Expiry Date</label>
-                                <input
-                                    type="date"
-                                    value={registrationExpiryDate}
-                                    onChange={(e) => setRegistrationExpiryDate(e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50"
-                            >
-                                {loading ? "Saving Vehicle..." : "Save & Register Ride"}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
+
 
 export default RiderVehicles;

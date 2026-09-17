@@ -131,9 +131,9 @@ const registerService = async ({
 };
 
 const fetchProfileService = async({
-    userId,
     riderId
 })=>{
+
     const cacheKey = `rider:profile:id:${riderId}`;
 
     const cachedRider = await getCache({
@@ -145,7 +145,6 @@ const fetchProfileService = async({
     }
 
     const rider = await fetchProfileRepo({
-        userId,
         riderId
     });
 
@@ -164,7 +163,6 @@ const fetchProfileService = async({
 };
 
 const updateAvailabilityStatusService = async({
-    userId,
     riderId,
     rawAvailabilityStatus
 })=>{
@@ -190,7 +188,6 @@ const updateAvailabilityStatusService = async({
             "Failed to update availability status. Please ensure your profile is active."
         );
     }
-
     
     const cacheKey = `riders:active`;
 
@@ -226,11 +223,17 @@ const updateAvailabilityStatusService = async({
 };
 
 const updateLocationService = async({
-    userId,
     riderId,
     longitude,
     latitude
 })=>{
+
+    if(!riderId){
+        throw new ApiError(
+            400,
+            "Rider id is required for location update"
+        );
+    }
 
     const numLon = Number(longitude);
     const numLat = Number(latitude);
@@ -248,7 +251,6 @@ const updateLocationService = async({
     }
 
     const rider = await updateLocationRepo({
-        userId,
         riderId,
         longitude: numLon,
         latitude: numLat

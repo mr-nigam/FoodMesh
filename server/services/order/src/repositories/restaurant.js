@@ -42,9 +42,6 @@ const fetchOrdersRepo = async({
         
         WHERE ort.restaurant_id = $1
             AND o.deleted_at IS NULL
-            AND o.expire_at IS NULL
-            AND o.created_at >= CURRENT_DATE
-            AND o.created_at < CURRENT_DATE + INTERVAL '1 day'
 
         GROUP BY
             o.id,
@@ -76,13 +73,11 @@ const fetchOrdersRepo = async({
 
 const fetchOrderRepo = async({
     orderId,
-    orderRestaurantId,
     restaurantId
 }) => {
 
     const params = [
         orderId,
-        orderRestaurantId,
         restaurantId
     ];
 
@@ -123,10 +118,8 @@ const fetchOrderRepo = async({
             ON ort.id = oi.order_restaurant_id
         
         WHERE o.id = $1
-            AND ort.id = $2
-            AND ort.restaurant_id = $3
-            AND o.deleted_at IS NULL
-            AND o.expire_at IS NULL
+            AND ort.restaurant_id = $2
+        AND o.deleted_at IS NULL
 
         GROUP BY
             o.id,

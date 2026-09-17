@@ -1,6 +1,14 @@
-﻿import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+﻿import { useEffect } from "react";
+import { 
+    MapContainer, 
+    TileLayer, 
+    Marker, 
+    Popup, 
+    Polyline, 
+    useMap 
+} from "react-leaflet";
 import L from "leaflet";
+
 
 // Custom HTML Markers using Tailwind classes for clean rendering without external asset loading issues
 const createCustomIcon = (emoji, bgColor = "bg-orange-500", ringColor = "ring-orange-200") => {
@@ -126,5 +134,6 @@ const RiderLiveMap = ({
         </div>
     );
 };
+
 
 export default RiderLiveMap;

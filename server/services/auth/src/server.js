@@ -14,6 +14,10 @@ import {
     closeDB
 } from './config/postgre.js';
 
+import {
+    startAuthConsumer
+} from './consumers/auth.js';
+
 
 const startServer = async()=>{
 
@@ -22,7 +26,9 @@ const startServer = async()=>{
         closeDB
     });
 
-    //await connectProducer();
+    await connectProducer();
+
+    await startAuthConsumer();
 
     const PORT = process.env.PORT || 4000;
     

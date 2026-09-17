@@ -32,8 +32,7 @@ const register = asyncHandler( async(req, res)=>{
 const fetchProfile = asyncHandler(async(req, res)=>{
     
     const profile = await fetchProfileService({
-        userId: req.user?.id,
-        riderId: req.params?.riderId
+        riderId: req.user?.riderId?.trim()
     });
 
     return res
@@ -50,8 +49,7 @@ const fetchProfile = asyncHandler(async(req, res)=>{
 const updateAvailabilityStatus = asyncHandler(async(req, res)=>{
 
     const rider = await updateAvailabilityStatusService({
-        userId: req.user?.id,
-        riderId: req?.params?.riderId?.trim() ?? null,
+        riderId: req.user?.riderId?.trim(),
         rawAvailabilityStatus: req.body?.availabilityStatus ?? req.query?.availabilityStatus
     });
 
@@ -69,8 +67,7 @@ const updateAvailabilityStatus = asyncHandler(async(req, res)=>{
 const updateLocation = asyncHandler(async(req, res)=>{
 
     const rider = await updateLocationService({
-        userId: req.user?.id,
-        riderId: req?.params?.riderId?.trim() ?? null,
+        riderId: req?.user?.riderId?.trim() ?? null,
         longitude: req.body?.longitude,
         latitude: req.body?.latitude
     });
