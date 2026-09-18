@@ -176,6 +176,7 @@ const cancelOrderRepo = async({
             AND user_id = $2
             AND deleted_at IS NULL
             AND status NOT IN (
+                'partially_delivered',
                 'cancelled',
                 'delivered',
                 'rejected',

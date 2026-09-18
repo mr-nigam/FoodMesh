@@ -12,6 +12,7 @@ import {
 } from "@foodmesh/kafka";
 
 import {
+    setCache,
     deleteMultipleCache
 } from '@foodmesh/redis';
 
@@ -21,15 +22,15 @@ import {
     deleteCartData
 } from '../clients/user.js';
 
+import { 
+    emitRealtimeEvent 
+} from '../clients/realtime.js';
+
 import {
     COIOrdersTableRepo,
     COIRestarurantTableRepo,
     COIItemsTableRepo
 } from '../repositories/createOrder.js';
-
-import { 
-    emitRealtimeEvent 
-} from '../clients/realtime.js';
 
 
 const getAddressService = async({
@@ -125,14 +126,14 @@ const getAddressService = async({
 
 const createOrderService = async ({ 
     userId,
-    body 
+    data
 }) => {
 
     const {
         address,
         addressId,
         restaurantId = null
-    } = body || {};
+    } = data || {};
 
     // 1. Resolve Delivery Address
     const {
@@ -305,53 +306,31 @@ const createOrderService = async ({
         client.release();
     }
 
-    // 6. Cart cleanup AFTER successful commit
-    try{
-        await deleteCartData({
-            userId,
-            restaurantId: targetRestId,
-            requestType: targetRestId ? "single" : "all"
-        });
-    }catch(error){
-        console.error("Cart deletion failed after order creation", {
-            userId,
-            restaurantId: targetRestId,
-            orderId: createdOrder.id,
-            error: error.message
-        });
-    }
-
     const orderCreatedEvent = createOrdersEvent({
         eventType: KAFKA_EVENTS.ORDER.CREATED,
         eventData: {
             orderId: createdOrder.id,
             userId,
-            totalAmount: createdOrder.total_amount
+            totalAmount: createdOrder.total_amount,
+            requestType: targetRestId ? "single" : "all"
         }
     }); 
 
-    try{
-        await publishEvent({
-            topic: KAFKA_TOPICS.ORDER,
-            key: createdOrder.id,
-            event: orderCreatedEvent
-        });
-
-    }catch(kafkaErr){
-        console.error(
-            "[Kafka] Failed to publish order.created event:",
-            kafkaErr.message
-        );
-    }
+    const orderStatusCacheKey = `orderId:${createdOrder.id}:status`;
 
     const keysToDelete = [
-        `user:orders:${userId}`
+        `user:${userId}:orders`
     ];
 
-    // Realtime notification to restaurants
-    for(const rOrder of createdOrderRestaurants){
-        if(rOrder?.restaurant_id){
-            emitRealtimeEvent({
+    const restaurantRealtimeTasks = createdOrderRestaurants
+        .filter(rOrder => rOrder?.restaurant_id)
+        .map(rOrder => {
+
+            keysToDelete.push(
+                `restaurant:${rOrder.restaurant_id}:orders`
+            );
+
+            return emitRealtimeEvent({
                 event: "order:new",
                 room: `restaurant:${rOrder.restaurant_id}`,
                 payload: {
@@ -363,26 +342,45 @@ const createOrderService = async ({
                     status: rOrder.status
                 }
             });
-            
-            keysToDelete.push(`restaurant:orders:${rOrder?.restaurant_id}`);
-        }
-    }
-
-    // Remove all the existing caches from redis
-    await deleteMultipleCache({
-        keys: keysToDelete
-    });
-
+        });
+    
+    // Cart cleanup AFTER successful commit
+    // create and publish event in kafka
+    // Remove existing caches from redis related to this event
     // Realtime notification to user
-    emitRealtimeEvent({
-        event: "order:new",
-        room: `user:${userId}`,
-        payload: {
-            orderId: createdOrder.id,
-            status: createdOrder.status,
-            totalAmount: createdOrder.total_amount
-        }
-    });
+    // store order state in redis
+    const postCommitTasks = [
+        deleteCartData({
+            userId,
+            restaurantId: targetRestId,
+            requestType: targetRestId ? "single" : "all"
+        }),
+        publishEvent({
+            topic: KAFKA_TOPICS.ORDER,
+            key: createdOrder.id,
+            event: orderCreatedEvent
+        }),
+        emitRealtimeEvent({
+            event: "order:new",
+            room: `user:${userId}`,
+            payload: {
+                orderId: createdOrder.id,
+                status: createdOrder.status,
+                totalAmount: createdOrder.total_amount
+            }
+        }),
+        deleteMultipleCache({
+            keys: keysToDelete
+        }),
+        setCache({
+            key: orderStatusCacheKey,
+            value: "created",
+            ttl: 1200
+        })
+    ];
+
+    await Promise.allSettled(postCommitTasks);
+    await Promise.allSettled(restaurantRealtimeTasks);
 
     console.log("order created & realtime notifications dispatched");
     

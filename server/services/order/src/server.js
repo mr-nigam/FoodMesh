@@ -14,9 +14,11 @@ import {
     closeDB
 } from './config/postgre.js';
 
+//import createOrdersTable from './models/order.js';
+
 
 const startServer = async()=>{
-
+    
     await bootstrapDB({
         connectDB,
         closeDB

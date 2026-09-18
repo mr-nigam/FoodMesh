@@ -328,10 +328,10 @@ const MenuItems = ({
                         title="Decrease quantity"
                         className="flex h-7 w-7 items-center justify-center rounded bg-white text-sm font-bold text-red-500 shadow-sm transition hover:bg-red-100 disabled:opacity-50"
                       >
-                        -
+                      -
                       </button>
 
-                      <span className="min-w-[1.25rem] text-center text-sm font-bold text-gray-800">
+                      <span className="min-w-5 text-center text-sm font-bold text-gray-800">
                         {isLoading ? (
                           <LoaderIcon size={14} className="animate-spin inline" />
                         ) : (

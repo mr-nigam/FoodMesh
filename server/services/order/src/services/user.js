@@ -41,7 +41,7 @@ const fetchOrdersService = async({
 
     const offset = (page - 1) * limit;
 
-    const cacheKey = `user:orders:${userId}`;
+    const cacheKey = `user:${userId}:orders`;
 
     const cachedOrders = await getPaginatedList({
         key: cacheKey,
@@ -59,7 +59,7 @@ const fetchOrdersService = async({
         offset
     });
 
-    const ttl = 60*60;
+    const ttl = 900;
     await cachePaginatedList({
         key: cacheKey,
         items: orders,
@@ -103,7 +103,7 @@ const fetchOrderService = async({
         );
     }
 
-    const ttl = 60*60;
+    const ttl = 900;
     await setCache({
         key: cacheKey,
         value: order,
@@ -125,6 +125,26 @@ const cancelOrderService = async({
         );
     }
 
+    const orderStatusCacheKey = `orderId:${orderId}:status`;
+
+    const cachedStatus = await getCache(orderStatusCacheKey);
+    if(
+        cachedStatus && 
+        (
+            cachedStatus === "partially_delivered" ||
+            cachedStatus === "delivered" ||
+            cachedStatus === "cancelled" ||
+            cachedStatus === "rejected" ||
+            cachedStatus === "failed"
+        )
+    ){
+
+        throw new ApiError(
+            404,
+            `Sorry you can't cancel the order as order status is already ${cachedStatus}`
+        );
+    }
+
     const restaurantIds  = await cancelOrderRepo({
         orderId,
         userId
@@ -133,65 +153,77 @@ const cancelOrderService = async({
     if(!restaurantIds || restaurantIds.length === 0){
         throw new ApiError(
             400,
-            "fail to cancel the order"
+            "fail to cancel the order or already delivered/cancelled/failed/rejected"
         );
     }
+
+    const createOrderCancelEvent = createOrdersEvent({
+        eventType: KAFKA_EVENTS.ORDER.CANCELLED,
+        eventData:{
+            orderId,
+            userId
+        }
+    });
 
     // Invalidate caches
     const keysToDelete = [
         `user:${userId}:order:${orderId}`,
-        `user:orders:${userId}`
+        `user:${userId}:orders`
     ];
 
-    for(const id of restaurantIds) {
-        keysToDelete.push(`restaurant:${id}:order:${orderId}`);
-        keysToDelete.push(`restaurant:orders:${id}`);
-    }
+    const restaurantRealtimeTasks = [];
 
-    await deleteMultipleCache({ 
-        keys: keysToDelete 
-    });
+    for(const id of restaurantIds){
+        keysToDelete.push(
+            `restaurant:${id}:order:${orderId}`,
+            `restaurant:${id}:orders`
+        );
 
-    // put cancel order event in kafka
-    try{
-        const createOrderCancelEvent = createOrdersEvent({
-            eventType: KAFKA_EVENTS.ORDER.CANCELLED,
-            eventData:{
-                orderId,
-                userId
-            }
-        });
-
-        await publishEvent({
-            topic: KAFKA_TOPICS.ORDER,
-            key: orderId,
-            event: createOrderCancelEvent
-        });
-    }catch(kafkaError){
-        console.error("[Kafka] Failed to publish order cancelled event:", kafkaError.message);
+        restaurantRealtimeTasks.push(
+            emitRealtimeEvent({
+                event: "order:status_updated",
+                room: `restaurant:${id}`,
+                payload: {
+                    orderId,
+                    status: "cancelled"
+                }
+            })
+        );
     }
 
     // emit this to user
-    emitRealtimeEvent({
-        event: "order:status_updated",
-        room: `user:${userId}`,
-        payload:{
-            orderId,
-            status: "cancelled"
-        }
-    });
-
-    // emit cancel order to all restaurants
-    for(const id of restaurantIds){
+    // put cancel order event in kafka
+    // Remove existing caches from redis related to this event
+    // store order state in redis
+    const postCommitTasks = [
         emitRealtimeEvent({
             event: "order:status_updated",
-            room: `restaurant:${id}`,
-            payload:{
+            room: `user:${userId}`,
+            payload: {
                 orderId,
                 status: "cancelled"
             }
-        });
-    }
+        }),
+
+        publishEvent({
+            topic: KAFKA_TOPICS.ORDER,
+            key: orderId,
+            event: createOrderCancelEvent
+        }),
+
+        deleteMultipleCache({
+            keys: keysToDelete
+        }),
+
+        setCache({
+            key: orderStatusCacheKey,
+            value: "cancelled",
+            ttl: 900
+        })
+    ];
+
+    await Promise.allSettled(postCommitTasks);
+    await Promise.allSettled(restaurantRealtimeTasks);
 
     return orderId;
 };

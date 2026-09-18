@@ -38,9 +38,9 @@ const createOrdersTable = async () => {
                             'accepted',
                             'preparing',
                             'ready',
-                            'rider_assigned',
                             'picked_up',
                             'on_the_way',
+                            'partially_delivered',
                             'delivered',
                             'cancelled',
                             'rejected',
@@ -65,6 +65,17 @@ const createOrdersTable = async () => {
 
                 total_amount NUMERIC(12,2) NOT NULL
                     CHECK (total_amount >= 0),
+
+                total_restaurants INTEGER NOT NULL
+                    DEFAULT 1
+                    CHECK (total_restaurants >= 1),
+                
+                total_delivered_restaurants INTEGER NOT NULL
+                    DEFAULT 0
+                    CHECK (
+                        total_delivered_restaurants >= 0
+                        AND total_delivered_restaurants <= total_restaurants
+                    ),
 
                 expire_at TIMESTAMPTZ,
 

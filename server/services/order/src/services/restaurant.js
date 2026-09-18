@@ -58,7 +58,7 @@ const fetchOrdersService = async({
     
     const offset = (page - 1) * limit;
     
-    const cacheKey = `restaurant:orders:${restaurantId}`;
+    const cacheKey = `restaurant:${restaurantId}:orders`;
 
     const cachedOrders = await getPaginatedList({
         key: cacheKey,
