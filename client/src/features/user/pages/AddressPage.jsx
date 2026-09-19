@@ -110,7 +110,7 @@ const AddressPage = () => {
               <p className="text-sm font-medium text-gray-500">Loading your addresses...</p> 
             </div> 
           ) : addresses.length === 0 ? ( 
-            <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-white shadow-sm text-center px-4 py-10 space-y-3"> 
+            <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-white shadow-sm text-center px-4 space-y-3"> 
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-[#E23744]"> 
                 <BiMapPin size={28} /> 
               </div> 

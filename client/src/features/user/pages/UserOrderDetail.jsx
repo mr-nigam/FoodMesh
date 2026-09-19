@@ -316,10 +316,10 @@ const UserOrderDetail = () => {
 
                         <div className="relative flex items-center justify-between max-w-2xl mx-auto px-4">
 
-                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-gray-100 -z-0"></div>
+                            <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-gray-100 z-0"></div>
 
                             <div
-                                className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 transition-all duration-500 -z-0"
+                                className="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 transition-all duration-500 z-0"
                                 style={{
                                     width:
                                         activeStepIndex >= 0
@@ -370,7 +370,7 @@ const UserOrderDetail = () => {
                                             </div>
 
                                             <span
-                                                className={`text-[11px] font-semibold mt-2 text-center max-w-[80px] ${
+                                                className={`text-[11px] font-semibold mt-2 text-center max-w-20 ${
                                                     isCurrent
                                                         ? "text-gray-900 font-bold"
                                                         : "text-gray-500"
