@@ -15,7 +15,6 @@ const fetchOrders = asyncHandler( async(req, res)=>{
        req
     });
     
-    console.log("orders: ",orders);
     return res
         .status(200)
         .json(
@@ -31,8 +30,6 @@ const fetchOrder = asyncHandler( async(req, res)=>{
     const order = await fetchOrderService({
         req
     });
-
-    console.log("order: ",order);
 
     return res
         .status(200)

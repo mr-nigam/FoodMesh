@@ -9,16 +9,16 @@ import {
     updateRiderLocation,
     getRiderVehicles,
     getRiderMetrics
-} from "../service/riderService.js";
+} from "../services/riderService.js";
 import { getCurrentRiderCoords, startRiderLocationWatch } from "../utils/riderLocation.js";
 
-import RiderNavbar from "../component/RiderNavbar.jsx";
-import RiderLiveMap from "../component/RiderLiveMap.jsx";
-import ActiveDeliveryCard from "../component/ActiveDeliveryCard.jsx";
-import RiderEarnings from "../component/RiderEarnings.jsx";
-import RiderVehicles from "../component/RiderVehicles.jsx";
-import RiderDeliveriesHistory from "../component/RiderDeliveriesHistory.jsx";
-import RiderProfile from "../component/RiderProfile.jsx";
+import RiderNavbar from "../components/RiderNavbar.jsx";
+import RiderLiveMap from "../components/RiderLiveMap.jsx";
+import ActiveDeliveryCard from "../components/ActiveDeliveryCard.jsx";
+import RiderEarnings from "../components/RiderEarnings.jsx";
+import RiderVehicles from "../components/RiderVehicles.jsx";
+import RiderDeliveriesHistory from "../components/RiderDeliveriesHistory.jsx";
+import RiderProfile from "../components/RiderProfile.jsx";
 
 import {
     BiCycling,

@@ -7,7 +7,7 @@ import {
     BiPlus
 } from "react-icons/bi";
 import useAppData from "../../../context/useAppData.js";
-import { addRiderVehicle } from "../service/riderService.js";
+import { addRiderVehicle } from "../services/riderService.js";
 
 
 const RiderAddVehiclePage = () => {

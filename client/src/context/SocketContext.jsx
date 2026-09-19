@@ -32,7 +32,7 @@ const SocketProvider = ({ children }) => {
             auth: {
                 token: token
             },
-            transports: ['websocket', 'polling'],
+            transports: ['websocket'],
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: Infinity,
@@ -82,7 +82,7 @@ const SocketProvider = ({ children }) => {
             }
             setSocket(null);
         };
-    }, [isAuth, user?.id]);
+    }, [isAuth, user?.id, user?._id]);
 
     return (
         <SocketContext.Provider value={socket}>

@@ -15,18 +15,9 @@ import {
 } from '../utils/token.js';
 
 
-const oauth2client = new OAuth2Client(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    "postmessage"
-    // process.env.GOOGLE_REDIRECT_URI
-);
-
-const allowedRoles = ["customer","rider","seller"];
-
-
 const loginUser = asyncHandler(async (req,res) => {
     const code = req.body?.code || null;
+    const redirectUri = req.body?.redirect_uri || "postmessage";
 
     if(!code){
         throw new ApiError(
@@ -35,9 +26,15 @@ const loginUser = asyncHandler(async (req,res) => {
         );
     }
 
-    const googleRes = await oauth2client.getToken(code);
+    const client = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
+    );
 
-    oauth2client.setCredentials(googleRes.tokens);
+    const googleRes = await client.getToken(code);
+
+    client.setCredentials(googleRes.tokens);
 
     const userRes = 
         await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`);

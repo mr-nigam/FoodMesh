@@ -16,7 +16,7 @@ import {
     getRiderProfile,
     getRiderVehicles,
     setPrimaryVehicle
-} from "../service/riderService.js";
+} from "../services/riderService.js";
 
 
 const RiderVehiclesPage = () => {

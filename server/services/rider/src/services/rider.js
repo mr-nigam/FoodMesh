@@ -163,6 +163,7 @@ const fetchProfileService = async({
 };
 
 const updateAvailabilityStatusService = async({
+    userId,
     riderId,
     rawAvailabilityStatus
 })=>{
@@ -177,7 +178,6 @@ const updateAvailabilityStatusService = async({
     }
 
     const rider = await updateAvailabilityStatusRepo({
-        userId,
         riderId,
         availabilityStatus
     });

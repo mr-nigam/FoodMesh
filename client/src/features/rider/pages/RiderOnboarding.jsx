@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { BiUser, BiIdCard, BiMapPin, BiCar, BiUpload } from "react-icons/bi";
 import useAppData from "../../../context/useAppData.js";
-import { registerRider } from "../service/riderService.js";
+import { registerRider } from "../services/riderService.js";
 
 
 const RiderOnboarding = ({ onCompleted }) => {

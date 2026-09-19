@@ -107,15 +107,13 @@ const fetchProfileRepo = async({
 };
 
 const updateAvailabilityStatusRepo = async({
-    userId,
     riderId,
     availabilityStatus
 })=>{
 
     const params = [
         availabilityStatus,
-        riderId,
-        userId
+        riderId
     ];
 
     const updateQuery = `
@@ -124,7 +122,6 @@ const updateAvailabilityStatusRepo = async({
             availability_status = $1,
             last_seen_at = CURRENT_TIMESTAMP
         WHERE id = $2
-            AND user_id = $3
             AND deleted_at IS NULL
             AND status != 'blocked'
             AND status != 'deactivated'

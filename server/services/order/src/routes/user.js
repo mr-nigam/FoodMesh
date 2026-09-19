@@ -20,7 +20,7 @@ router.use(authenticateUser);
 router.post('/', createOrder);
 router.get("/", fetchOrders);
 router.get("/:orderId", fetchOrder);
-router.patch("/:orderId/cancel", cancelOrder);
+router.patch("/:orderId", cancelOrder);
 
 
 export default router;

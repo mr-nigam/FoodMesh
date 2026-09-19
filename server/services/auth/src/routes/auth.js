@@ -1,15 +1,15 @@
-import { Router } from 'express';
+import { Router } from "express";
 
-import { 
+import {
     authenticateUser
-} from '@foodmesh/utils';
+} from "@foodmesh/utils";
 
 import {
     loginUser,
     myProfile,
     Home,
     updateRole
-} from '../controllers/auth.js'
+} from "../controllers/auth.js";
 
 
 const router = Router();
@@ -18,10 +18,15 @@ const router = Router();
 router.post("/login", loginUser);
 
 
+/*
+ * Everything below this line requires authentication.
+ */
+
 router.use(authenticateUser);
 
-//router.post("/",Home);
+
 router.get("/me", myProfile);
+
 router.put("/set-role", updateRole);
 
 

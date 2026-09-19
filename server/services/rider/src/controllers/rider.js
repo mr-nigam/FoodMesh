@@ -49,6 +49,7 @@ const fetchProfile = asyncHandler(async(req, res)=>{
 const updateAvailabilityStatus = asyncHandler(async(req, res)=>{
 
     const rider = await updateAvailabilityStatusService({
+        userId: req.user.id,
         riderId: req.user?.riderId?.trim(),
         rawAvailabilityStatus: req.body?.availabilityStatus ?? req.query?.availabilityStatus
     });

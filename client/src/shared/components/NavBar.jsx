@@ -1,0 +1,96 @@
+import { useEffect, useState } from "react";
+import { BiMapPin, BiSearch } from "react-icons/bi";
+import { CgShoppingCart } from "react-icons/cg";
+import { 
+    Link, 
+    useLocation, 
+    useSearchParams 
+} from "react-router-dom";
+
+import useAppData from "../../context/useAppData.js";
+
+
+const NavBar = () => {
+    const { isAuth, city, allTotalQty} = useAppData();
+    const currentLocation = useLocation();
+    
+    const isHomePage = currentLocation.pathname === "/";
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [search, setSearch] = useState(searchParams.get("search") || "");
+
+    useEffect(() => {
+        if (!isHomePage) return;
+
+        const currentParam = searchParams.get("search") || "";
+        const trimmedSearch = search.trim();
+
+        if (trimmedSearch === currentParam) return;
+
+        const timer = setTimeout(() => {
+            if (trimmedSearch) {
+                setSearchParams({ search: trimmedSearch });
+            } else {
+                setSearchParams({});
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [search, isHomePage, searchParams, setSearchParams]);
+
+    return (
+        <div className="w-full bg-white shadow-sm">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+                <Link to="/" className="text-2xl font-bold text-[#E23744] cursor-pointer">
+                    FoodMesh
+                </Link>
+
+                <div className="flex items-center gap-4">
+                    <Link to="/cart" className="relative flex items-center justify-center">
+                        <CgShoppingCart className="h-6 w-6 text-[#E23744]" />
+                        <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#E23744] text-xs font-semibold text-white">
+                            {allTotalQty}
+                        </span>
+                    </Link>
+
+                    {isAuth ? (
+                        <Link to="/account" className="font-medium text-[#E23744]">
+                            Account
+                        </Link>
+                    ) : (
+                        <Link to="/login" className="font-medium text-[#E23744]">
+                            Login
+                        </Link>
+                    )}
+                </div>
+            </div>
+
+            {/* Search bar */}
+            {isHomePage && (
+                <div className="border-t px-4 py-3">
+                    <div className="mx-auto flex max-w-7xl items-center rounded-lg border shadow-sm">
+                        <div className="flex items-center gap-2 border-r px-3 text-gray-700">
+                            <BiMapPin className="h-4 w-4 text-[#E23744]" />
+                            <span className="max-w-36 truncate text-sm">
+                                {city}
+                            </span>
+                        </div>
+                        <div className="flex flex-1 items-center gap-2 px-3">
+                            <BiSearch className="h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search for restaurant"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full py-2 text-sm outline-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
+export default NavBar;
