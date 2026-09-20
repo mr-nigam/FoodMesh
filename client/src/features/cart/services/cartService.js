@@ -38,7 +38,15 @@ const createOrder = async ({
         getAuthHeader()
     );
         
-    return data?.data?.order ?? data?.order ?? null;
+    return (
+        data?.data?.order ??
+        data?.order ??
+        data?.data?.orders ??
+        data?.orders ??
+        data?.data ??
+        data ??
+        null
+    );
         
 };
 

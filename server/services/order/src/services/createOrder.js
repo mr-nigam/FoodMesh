@@ -258,6 +258,13 @@ const createOrderService = async ({
             globalTotal  
         });
 
+        if (createdOrder) {
+            createdOrder.id = createdOrder.id || createdOrder.order_id;
+            createdOrder.order_id = createdOrder.id;
+        }
+
+        const primaryOrderId = createdOrder.id;
+
         // order_restaurants
         for(const row of cartData){
 
@@ -266,18 +273,20 @@ const createOrderService = async ({
             const createdROrder = await COIRestarurantTableRepo({
                 client,
                 userId,
-                orderId: createdOrder.id,
+                orderId: primaryOrderId,
                 restaurant: row.restaurant,
                 subtotal: Number(row.total_value || row.totalValue || 0),
                 taxAmount
             });
 
+            const primaryOrderRestaurantId = createdROrder.id || createdROrder.order_restaurant_id;
+
             // order_items
             for(const item of row.items){
                 await COIItemsTableRepo({
                     client,
-                    orderId: createdOrder.id,
-                    orderRestaurantId: createdROrder.id,
+                    orderId: primaryOrderId,
+                    orderRestaurantId: primaryOrderRestaurantId,
                     item
                 });
                 

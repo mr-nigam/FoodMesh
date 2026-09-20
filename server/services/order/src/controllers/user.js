@@ -13,7 +13,7 @@ import {
 
 
 const createOrder = asyncHandler ( async (req, res) => { 
-    const orderDetails = await createOrderService({
+    const order = await createOrderService({
         userId: req.user.id,
         data: req.body
     });
@@ -23,7 +23,7 @@ const createOrder = asyncHandler ( async (req, res) => {
         .json(
             new ApiResponse(
                 201,
-                { orderDetails },
+                { order },
                 "Order created successfully"
             )
         );

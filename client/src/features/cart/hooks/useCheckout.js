@@ -46,7 +46,12 @@ const useCheckout = ({
     };
 
     const navigateToPayment = (order) => {
-        const orderId = order?.id ?? order?.order_id ?? order?._id;
+        const resolvedOrder = order?.orderDetails || order?.order || order;
+        const orderId =
+            resolvedOrder?.id ??
+            resolvedOrder?.order_id ??
+            resolvedOrder?.orderId ??
+            resolvedOrder?._id;
 
         if(!orderId){
             throw new Error(
@@ -55,7 +60,7 @@ const useCheckout = ({
         }
 
         navigate(`/checkout/${orderId}`, {
-            state: { order },
+            state: { order: resolvedOrder },
         });
     };
 

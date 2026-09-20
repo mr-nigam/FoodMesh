@@ -42,6 +42,7 @@ const COIOrdersTableRepo = async({
         )
         RETURNING 
             id,
+            id AS order_id,
             user_id,
             recipient_name,
             recipient_phone,
@@ -109,6 +110,8 @@ const COIRestarurantTableRepo = async({
         )
         RETURNING 
             id,
+            id AS order_restaurant_id,
+            order_id,
             restaurant_id,
             restaurant_name,
             subtotal,
