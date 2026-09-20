@@ -7,13 +7,13 @@ import {
 } from '@foodmesh/utils';
 
 import {
-    addRestaurant,
+    register,
     fetchMyRestaurant,
     updateRestaurantStatus,
     updateRestaurantDetails,
     getNearbyRestaurants,
     fetchSingleRestaurant
-} from '../controllers/restaurant.controller.js';
+} from '../controllers/restaurant.js';
 
 
 const router = Router();
@@ -32,7 +32,7 @@ router.get("/:restaurantId", fetchSingleRestaurant);
 router.use(isSeller);
 
 
-router.post("/add", uploadFile, addRestaurant);
+router.post("/add", uploadFile, register);
 
 
 router.patch("/status", updateRestaurantStatus);

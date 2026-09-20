@@ -25,9 +25,11 @@ import {
 
 
 const allowedRoles = [
-    "user",
+    "customer",
     "rider",
-    "seller"
+    "seller",
+    "admin",
+    "user"
 ];
 
 
@@ -87,6 +89,13 @@ const loginService = async({
 
     const accessToken = generateAccessToken(user);
 
+    const cacheKey = `user:${user.id}:profile`;
+    await setCache({
+        key: cacheKey,
+        value: user,
+        ttl: 600
+    });
+
     return {
         user,
         token: accessToken
@@ -122,8 +131,10 @@ const updateRoleService = async({
 
     const cacheKey = `user:${userId}:profile`;
 
-    await deleteCache({
-        key: cacheKey
+    await setCache({
+        key: cacheKey,
+        value: user,
+        ttl: 600
     });
 
     const accessToken = generateAccessToken(user);
@@ -144,11 +155,17 @@ const getMyProfileService = async({
         key: cacheKey
     });
 
-    if(!cachedUser) return cachedUser;
+    if(cachedUser){
+        return cachedUser;
+    }
 
     const user = await getMyProfileRepo({
         userId
     });
+
+    if(!user){
+        throw new ApiError(404, "User not found");
+    }
 
     await setCache({
         key: cacheKey,

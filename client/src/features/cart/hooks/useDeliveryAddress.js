@@ -20,6 +20,12 @@ const useDeliveryAddress = () => {
         let mounted = true;
 
         const loadDefaultAddress = async () => {
+            const token = localStorage.getItem("token");
+            if(!token){
+                setAddressLoading(false);
+                return;
+            }
+
             setAddressLoading(true);
             setAddressError(null);
 

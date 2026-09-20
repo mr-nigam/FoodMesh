@@ -9,11 +9,10 @@ import {
     errorHandler
 } from '@foodmesh/utils';
 
-import restaurantRouter from './routes/restaurant.routes.js';
+import restaurantRouter from './routes/restaurant.js';
 import menuItemsRouter from './routes/menuItem.routes.js';
 import cartRouter from './routes/cart.routes.js';
 import internalRouter from './routes/internal.js';
-// import morgan from 'morgan';
 
 
 const app = express();
@@ -28,10 +27,6 @@ app.use((req,res,next)=>{
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
     next();
 });
-
-// if(process.env.NODE_ENV === "development"){
-//     app.use(morgan('dev'));
-// };
 
 app.use(express.urlencoded({
     extended: true,

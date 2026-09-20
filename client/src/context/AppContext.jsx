@@ -41,9 +41,20 @@ const AppProvider = ({
         let ignore = false;
 
         const fetchUser = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                if (!ignore) {
+                    setUser(null);
+                    setIsAuth(false);
+                    setLoading(false);
+                }
+                return;
+            }
+
             try{
 
-                const { data} = await axios.get(
+                const { data } = await axios.get(
                     `${authService}/me`,
                     getAuthHeader()
                 );
@@ -70,7 +81,8 @@ const AppProvider = ({
 
 
                 if(error?.response?.status === 401){
-                    console.log("No authenticated user.");
+                    console.log("No authenticated user or token expired.");
+                    localStorage.removeItem("token");
                 }else{
 
                     console.error(

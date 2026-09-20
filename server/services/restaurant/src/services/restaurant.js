@@ -1,220 +1,97 @@
-import pool from '../config/postgre.js';
 import getBuffer from '../config/datauri.js';
 import axios from 'axios';
 
 import { 
     ApiError,
     ApiResponse,
-    asyncHandler
 } from '@foodmesh/utils';
 
+import {
+    uploadFile
+} from '../clients/utils.js'
 
-const addRestaurant = asyncHandler(async (req, res)=>{
-    const user = req.user;
+import {
+    validateRegisterRider
+} from '../validators/validateRegister.js';
 
-    const checkQuery  = `
-        SELECT
-            id,
-            name,
-            email,
-            description,
-            phone,
-            address,
-            pictures_urls
-        FROM restaurants
-            WHERE owner_id = $1
-            AND deleted_at IS NULL
-            AND deactivated_at IS NULL;
-    `;
+import {
+    registerRepo,
+    fetchMyRestaurantRepo,
+    updateRestaurantStatusRepo,
+    updateRestaurantDetailsRepo,
+    getNearbyRestaurantsRepo,
+    fetchSingleRestaurantRepo
+} from '../repositories/restaurant.js'
 
-    const existingRestruant = await pool.query(
-        checkQuery,
-        [user.id]
-    );
 
-    if(existingRestruant.rowCount>0){
-        return res
-            .status(400)
-            .json(
-                new ApiResponse(
-                    400,
-                    { 
-                        restaurant: existingRestruant.rows[0]
-                    },
-                    "You already have a restaurant"
-                )
-            );
-    }
+const registerService = async ({
+   userId,
+   body,
+   file
+})=>{
 
     const {
-        name,
-        description,
-        latitude,
-        longitude,
-        formattedAddress,
-        phone,
-        email
-    } = req.body;
+        valid,
+        params,
+        errors
+    } = validateRegisterRider({
+        userId,
+        data: body
+    });
     
-    if(!name || !latitude || !longitude){
+    if(!valid){
         throw new ApiError(
             400,
-            "Please give all the mandaroty details"
+            errors
         );
     }
 
-    const file = req.file;
+    const pictureUrl = await uploadFile({
+        file
+    });
 
-    if(!file){
+    params.push([pictureUrl]);
+
+    const restaurant = await registerRepo({
+        params
+    });
+
+    if(!restaurant){
         throw new ApiError(
             400,
-            "Please upload images"
+            "Failed to register restaurant"
+        );
+    }
+
+    return restaurant;
+};
+
+const fetchMyRestaurantService = async ({
+    restaurantId
+}) => {
+
+    if(!restaurantId){
+        throw new ApiError(
+            400,
+            "Please provide restaurant id"
         );
     }
     
-    const fileBuffer = getBuffer(file);
+    const restaurant = await fetchMyRestaurantRepo({
+        restaurantId
+    });
 
-    if(!fileBuffer?.content){
+    if(!restaurant){
         throw new ApiError(
             500,
-            "Faield to create file buffer"
+            "failed to fetch restaurant"
         );
     }
 
-    const uploadResponse = await axios.post(
-        `${process.env.UTILS_SERVICE}/upload`,
-        { buffer: fileBuffer.content}
-    );
+    return restaurant;
+};
 
-    const pictureUrl = uploadResponse.data?.url || uploadResponse.data?.data?.url;
- 
-    if(!pictureUrl){
-        throw new ApiError(500, "Failed to upload image");
-    }
-    
-    const picturesUrls = [pictureUrl]; // Array of image URLs
-
-    const insertQuery = `
-        INSERT INTO restaurants(
-            owner_id,
-            name,
-            description,
-            email,
-            phone,
-            pictures_urls,
-            location,
-            address 
-        )
-        VALUES(
-            $1, $2, $3,
-            $4, $5, $6,
-            ST_SetSRID(
-                    ST_MakePoint($7, $8),
-                    4326
-                )::GEOGRAPHY,
-            $9
-        )
-        RETURNING
-            id,
-            name,
-            description,
-            phone,
-            email,
-            address,
-            pictures_urls;
-    `;
-
-    const values = [
-        user.id,
-        name,
-        description,
-        email,
-        phone,
-        picturesUrls,
-        longitude,
-        latitude,
-        formattedAddress
-    ];
-
-    try {
-        const restaurant = await pool.query(
-            insertQuery,
-            values
-        );
-
-        return res
-            .status(201)
-            .json(
-                new ApiResponse(
-                    201,
-                    { 
-                        restaurant: restaurant.rows[0] 
-                    },
-                    "Restaurant created successfully"
-                )
-            );
-
-    }catch(error){
-        
-        // console.log("========== POSTGRES ERROR ==========");
-        // console.log("message:", error.message);
-        // console.log("code:", error.code);
-        // console.log("detail:", error.detail);
-        // console.log("constraint:", error.constraint);
-        // console.log("table:", error.table);
-        // console.log("column:", error.column);
-        // console.log("schema:", error.schema);
-        // console.log("====================================");
-
-        throw error;
-    }
-
-});
-
-const fetchMyRestaurant = asyncHandler(async (req, res) => {
-    const user = req.user;
-
-    const query = `
-        SELECT
-            id,
-            name,
-            email,
-            description,
-            phone,
-            address,
-            pictures_urls,
-            is_open,
-            created_at
-        FROM restaurants
-        WHERE owner_id = $1
-            AND deleted_at IS NULL
-            AND deactivated_at IS NULL
-        LIMIT 1;
-    `;
-
-    const { rows } = await pool.query(
-        query,
-        [user.id]
-    );
-
-    const restaurant = rows[0] || null;
-
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {
-                    restaurant,
-                },
-                restaurant
-                    ? "Restaurant data fetched successfully"
-                    : "No restaurant found"
-            )
-        );
-});
-
-const updateRestaurantStatus = asyncHandler( async(req, res)=>{
+const updateRestaurantStatusService = async({})=>{
     const user = req.user;
     
     const {status} = req.body;
@@ -260,9 +137,9 @@ const updateRestaurantStatus = asyncHandler( async(req, res)=>{
         );
         
 
-});
+};
 
-const updateRestaurantDetails = asyncHandler(async (req,res)=>{
+const updateRestaurantDetailsService = async ({})=>{
     const user = req.user;
 
     const restaurantName = req.body?.name?.trim() || "";
@@ -318,9 +195,9 @@ const updateRestaurantDetails = asyncHandler(async (req,res)=>{
                 "Restaurant data updated successfully"
             )
         );
-});
+};
 
-const getNearbyRestaurants = asyncHandler(async (req, res) => {
+const getNearbyRestaurantsService = async ({}) => {
     const {
         latitude,
         longitude,
@@ -426,9 +303,9 @@ const getNearbyRestaurants = asyncHandler(async (req, res) => {
                 "Nearby restaurants fetched successfully"
             )
         );
-});
+};
 
-const fetchSingleRestaurant = asyncHandler(async (req, res) => {
+const fetchSingleRestaurantService = async ({}) => {
     const { restaurantId } = req.params;
 
     if(!restaurantId){
@@ -473,14 +350,14 @@ const fetchSingleRestaurant = asyncHandler(async (req, res) => {
                 "Restaurant fetched successfully"
             )
         );
-});
+};
 
 
 export {
-    addRestaurant,
-    fetchMyRestaurant,
-    updateRestaurantStatus,
-    updateRestaurantDetails,
-    getNearbyRestaurants,
-    fetchSingleRestaurant
+    registerService,
+    fetchMyRestaurantService,
+    updateRestaurantStatusService,
+    updateRestaurantDetailsService,
+    getNearbyRestaurantsService,
+    fetchSingleRestaurantService
 };
