@@ -1,14 +1,16 @@
 const authService = "http://localhost:4000/api/v1/auth";
 const restaurantService = "http://localhost:4001/api/v1/restaurant";
+const cartService = "http://localhost:4001/api/v1/restaurant/cart";
 const utilService = "http://localhost:4002/api/v1/utils";
 const userService = "http://localhost:4003/api/v1/user";
 const addressService = "http://localhost:4003/api/v1/user/address";
-const cartService = "http://localhost:4001/api/v1/restaurant/cart";
 const orderService = "http://localhost:4006/api/v1/order";
 const riderService = "http://localhost:4007/api/v1/rider";
 const paymentService = "http://localhost:4008/api/v1/payment";
 const realtimeService = "http://localhost:4009";
 const analyticsService = "http://localhost:4010/api/v1/analytics";
+const deliveryService = "http://localhost:4011/api/v1/delivery";
+const notificationService = "http://localhost:4012/api/v1/notification";
 
 
 export {
@@ -22,5 +24,7 @@ export {
     cartService,
     paymentService,
     realtimeService,
-    analyticsService
+    analyticsService,
+    deliveryService,
+    notificationService
 };

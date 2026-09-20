@@ -6,14 +6,10 @@ import {
     KAFKA_EVENTS
 } from "@foodmesh/kafka";
 
-import {
-    orderStatusUpdateHandler
-} from './handlers/orderStatusUpdateHandler.js';
-
 
 const consumer = createConsumer({
-    groupId: "order-service",
-    clientId: "order-service"
+    groupId: "delivery-service",
+    clientId: "delivery-service"
 });
 
 const startOrderConsumer = async() =>{
@@ -24,7 +20,8 @@ const startOrderConsumer = async() =>{
         topics: [
             KAFKA_TOPICS.ORDER,
             KAFKA_TOPICS.PAYMENT,
-            KAFKA_TOPICS.DELIVERY
+            KAFKA_TOPICS.RIDER,
+            KAFKA_TOPICS.RESTAURANT,
         ]
     });
 
@@ -34,15 +31,11 @@ const startOrderConsumer = async() =>{
             event
         })=>{
 
-            const {eventType, data } = event;
+            const {eventType, data }= event;
             
             switch(eventType){
-                case KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING:
-                    await orderStatusUpdateHandler(data);
-                    break;
-                
                 case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY:
-                    await orderStatusUpdateHandler(data);
+                    await createDelievry(data);
                     break;
 
                 default:
