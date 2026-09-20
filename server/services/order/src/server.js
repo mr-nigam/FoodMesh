@@ -14,6 +14,10 @@ import {
     closeDB
 } from './config/postgre.js';
 
+import {
+    startOrderConsumer
+} from './consumers/order.js';
+
 //import createOrdersTable from './models/order.js';
 
 
@@ -25,6 +29,8 @@ const startServer = async()=>{
     });
 
     await connectProducer();
+
+    await startOrderConsumer();
 
     const PORT = process.env.PORT || 4006;
 

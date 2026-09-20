@@ -6,7 +6,7 @@ import {
 import{
     fetchOrdersService,
     fetchOrderService,
-    updateOrderStatusService
+    updateRestaurantOrderStatusService
 } from '../services/restaurant.js';
 
 
@@ -42,9 +42,9 @@ const fetchOrder = asyncHandler( async(req, res)=>{
         );
 });
 
-const updateOrderStatus = asyncHandler( async(req, res)=>{
+const updateRestaurantOrderStatus = asyncHandler( async(req, res)=>{
 
-    const order = await updateOrderStatusService({
+    const order = await updateRestaurantOrderStatusService({
         req
     });
 
@@ -63,5 +63,5 @@ const updateOrderStatus = asyncHandler( async(req, res)=>{
 export {
     fetchOrders,
     fetchOrder,
-    updateOrderStatus
+    updateRestaurantOrderStatus
 };

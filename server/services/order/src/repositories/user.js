@@ -168,10 +168,11 @@ const cancelOrderRepo = async({
 
     const params = [orderId, userId];
 
-    const deleteQuery = `
+    const cancelQuery = `
         WITH order_details AS (
             UPDATE orders
-            SET status = 'cancelled'
+            SET 
+                status = 'cancelled'
             WHERE id = $1
             AND user_id = $2
             AND deleted_at IS NULL
@@ -187,14 +188,13 @@ const cancelOrderRepo = async({
 
         order_restaurants_details AS (
             UPDATE order_restaurants
-            SET status = 'cancelled'
+            SET 
+                status = 'cancelled'
             WHERE order_id = $1
             AND user_id = $2
             AND status NOT IN (
                 'cancelled',
                 'delivered',
-                'rejected',
-                'failed'
             )
             RETURNING restaurant_id
         )
@@ -208,7 +208,7 @@ const cancelOrderRepo = async({
     `;
 
     const {rows} = await pool.query(
-        deleteQuery,
+        cancelQuery,
         params
     );
 

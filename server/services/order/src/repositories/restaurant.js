@@ -143,7 +143,7 @@ const fetchOrderRepo = async({
     return rows[0];
 };
 
-const updateOrderStatusRepo = async({
+const updateRestaurantOrderStatusRepo = async({
     status,
     orderRestaurantId,
     orderId,
@@ -152,57 +152,20 @@ const updateOrderStatusRepo = async({
     
     const params = [
         status,
-        orderRestaurantId || null,
-        orderId || null,
-        restaurantId || null
+        orderRestaurantId ,
+        orderId,
+        restaurantId
     ];
 
     const updateQuery = `
-        WITH updated_order_restaurant AS (
-            UPDATE order_restaurants
-            SET status = $1
-            WHERE (
-                ($2::uuid IS NOT NULL AND id = $2::uuid)
-                OR
-                ($3::uuid IS NOT NULL AND $4::uuid IS NOT NULL AND order_id = $3::uuid AND restaurant_id = $4::uuid)
-                OR
-                ($3::uuid IS NOT NULL AND $2::uuid IS NULL AND $4::uuid IS NULL AND order_id = $3::uuid)
-            )
-            AND status NOT IN (
-                'delivered',
-                'cancelled',
-                'rejected',
-                'failed'
-            )
-            RETURNING 
-                id,
-                order_id,
-                restaurant_id,
-                user_id,
-                total_amount,
-                status
-        ),
-        updated_order AS (
-            UPDATE orders
-            SET status = $1
-            WHERE id IN (SELECT order_id FROM updated_order_restaurant)
-            AND status NOT IN (
-                'delivered',
-                'cancelled',
-                'rejected',
-                'failed'
-            )
-            RETURNING id
-        )
-        SELECT 
-            uor.id,
-            uor.id AS order_restaurant_id,
-            uor.order_id,
-            uor.restaurant_id,
-            uor.user_id,
-            uor.total_amount,
-            uor.status
-        FROM updated_order_restaurant uor;
+        UPDATE order_restaurants
+        SET
+            status = $1
+        WHERE id = $2
+            AND order_id = $3
+            AND restaurant_id = $4
+        RETURNING
+            user_id;
     `;
     
     const { rows } = await pool.query(
@@ -217,5 +180,5 @@ const updateOrderStatusRepo = async({
 export {
     fetchOrdersRepo,
     fetchOrderRepo,
-    updateOrderStatusRepo
+    updateRestaurantOrderStatusRepo
 };

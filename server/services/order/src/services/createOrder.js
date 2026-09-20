@@ -355,8 +355,8 @@ const createOrderService = async ({
     
     // Cart cleanup AFTER successful commit
     // create and publish event in kafka
-    // Remove existing caches from redis related to this event
     // Realtime notification to user
+    // Remove existing caches from redis related to this event
     // store order state in redis
     const postCommitTasks = [
         deleteCartData({

@@ -20,7 +20,7 @@ import {
 import{
     fetchOrdersRepo,
     fetchOrderRepo,
-    updateOrderStatusRepo
+    updateRestaurantOrderStatusRepo
 } from '../repositories/restaurant.js';
 
 import { 
@@ -135,7 +135,7 @@ const fetchOrderService = async({
     return order;
 };
 
-const updateOrderStatusService = async({
+const updateRestaurantOrderStatusService = async({
     req
 }) => {
 
@@ -157,6 +157,10 @@ const updateOrderStatusService = async({
         );
     }
 
+    const restaurantId = 
+        req.user?.restaurantId ?? 
+        null;
+
     const orderId = 
         req.params?.orderId ??
         null;
@@ -164,10 +168,6 @@ const updateOrderStatusService = async({
     const orderRestaurantId = 
         req.body?.orderRestaurantId ?? 
         req.params?.orderRestaurantId ??
-        null;
-    
-    const restaurantId = 
-        req.user?.restaurantId ?? 
         null;
 
     if(!orderId && !orderRestaurantId){
@@ -177,7 +177,7 @@ const updateOrderStatusService = async({
         );
     }
 
-    const order = await updateOrderStatusRepo({
+    const order = await updateRestaurantOrderStatusRepo({
         status,
         orderRestaurantId,
         orderId,
@@ -191,87 +191,62 @@ const updateOrderStatusService = async({
         );
     }
 
-    const targetOrderId = orderId || order.order_id;
-    const targetRestaurantId = restaurantId || order.restaurant_id;
-    const targetOrderRestaurantId = orderRestaurantId || order.order_restaurant_id || order.id;
-
-    const keysToDelete = [];
-    if (targetRestaurantId) {
-        keysToDelete.push(`restaurant:${targetRestaurantId}:order:${targetOrderId}`);
-        keysToDelete.push(`restaurant:orders:${targetRestaurantId}`);
-    }
-    if (order.user_id) {
-        keysToDelete.push(`user:${order.user_id}:order:${targetOrderId}`);
-        keysToDelete.push(`user:orders:${order.user_id}`);
-    }
-    if (keysToDelete.length > 0) {
-        await deleteMultipleCache({
-            keys: keysToDelete
-        });
-    }
+    await deleteMultipleCache({
+        keys: [
+            `restaurant:${restaurantId}:order:${orderId}`,
+            `restaurant:${restaurantId}:orders`   
+        ]
+    });
 
     let eventType = null;
     const upperStatus = status.toUpperCase();
-    if(upperStatus === 'ACCEPTED'){
-        eventType = KAFKA_EVENTS.ORDER.ACCEPTED;
-    }else if(upperStatus === 'REJECTED'){
-        eventType = KAFKA_EVENTS.ORDER.REJECTED;
-    }else if(upperStatus === 'PREPARING'){
-        eventType = KAFKA_EVENTS.ORDER.PREPARING;
+    if(
+        upperStatus === 'ACCEPTED' ||
+        upperStatus === 'REJECTED' ||
+        upperStatus === 'PREPARING'
+    ){
+        eventType = KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING;
+
     }else if(upperStatus === 'READY'){
-        eventType = KAFKA_EVENTS.ORDER.READY;
+        eventType = KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY;
     }
 
     if(eventType){
         try{
-            const orderStatusUpdateEvent = createOrdersEvent({
+            const restaurantOrderStatusUpdateEvent = createOrdersEvent({
                 eventType,
                 eventData: {
-                    orderId: targetOrderId,
-                    orderRestaurantId: targetOrderRestaurantId,
-                    restaurantId: targetRestaurantId,
-                    status,
-                    totalAmount: order.total_amount,
-                    userId: order?.user_id ?? null
+                    orderId,
+                    orderRestaurantId,
+                    restaurantId,
+                    userId: order?.user_id
                 }
             });
 
             await publishEvent({
                 topic: KAFKA_TOPICS.ORDER,
-                key: targetOrderId,
-                event: orderStatusUpdateEvent
+                key: orderId,
+                event: restaurantOrderStatusUpdateEvent
             });
         }catch(kafkaError){
-            console.error("[Kafka] Failed to publish order status update:", kafkaError.message);
+            console.error(
+                "[Kafka] Failed to publish order status update:", 
+                kafkaError.message
+            );
         }
     }
 
-    // Realtime notification to restaurant and user
-    if(targetRestaurantId){
-        emitRealtimeEvent({
-            event: "order:status_updated",
-            room: `restaurant:${targetRestaurantId}`,
-            payload: {
-                orderId: targetOrderId,
-                orderRestaurantId: targetOrderRestaurantId,
-                status,
-                order
-            }
-        });
-    }
-
-    if(order.user_id){
-        emitRealtimeEvent({
-            event: "order:status_updated",
-            room: `user:${order.user_id}`,
-            payload: {
-                orderId: targetOrderId,
-                orderRestaurantId: targetOrderRestaurantId,
-                status,
-                order
-            }
-        });
-    }
+    // Realtime notification to restaurant
+    emitRealtimeEvent({
+        event: "order:status_updated",
+        room: `restaurant:${restaurantId}`,
+        payload: {
+            orderId,
+            orderRestaurantId,
+            status
+        }
+    });
+    
 
     return order;
 };
@@ -280,5 +255,5 @@ const updateOrderStatusService = async({
 export{
     fetchOrdersService,
     fetchOrderService,
-    updateOrderStatusService
+    updateRestaurantOrderStatusService
 };

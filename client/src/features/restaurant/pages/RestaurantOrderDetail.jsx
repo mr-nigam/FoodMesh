@@ -20,7 +20,7 @@ import ORDER_ACTIONS from "../../../utils/orderFlow.js";
 
 import {
   getOrder,
-  updateOrderStatus
+  updateRestaurantOrderStatus
 } from '../services/restaurantService.js';
 
 
@@ -139,11 +139,10 @@ const RestaurantOrderDetail = () => {
 
             setUpdating(true);
 
-            await updateOrderStatus({
+            await updateRestaurantOrderStatus({
                 orderId,
                 status: nextStatus,
-                orderRestaurantId: order?.order_restaurant_id,
-                restaurantId: restaurantId || order?.restaurant_id
+                orderRestaurantId: order?.order_restaurant_id
             });
 
             toast.success(`Order marked as ${nextStatus}`);

@@ -54,10 +54,9 @@ const getOrder = async({
     return data?.data?.order ??  data?.order ?? null;
 };
 
-const updateOrderStatus = async({
+const updateRestaurantOrderStatus = async({
     orderId,
     status,
-    restaurantId,
     orderRestaurantId
 })=>{
 
@@ -65,8 +64,7 @@ const updateOrderStatus = async({
             `${orderService}/restaurant/${orderId}`,
             {
                 status,
-                orderRestaurantId,
-                restaurantId
+                orderRestaurantId
             },
             getAuthHeader()
         );
@@ -162,7 +160,7 @@ export {
     getMenuItems,
     getOrders,
     getOrder,
-    updateOrderStatus,
+    updateRestaurantOrderStatus,
     getRestaurantById,
     addMenuItemService,
     addRestaurantService,

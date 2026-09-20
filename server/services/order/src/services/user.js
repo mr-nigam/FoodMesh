@@ -126,8 +126,10 @@ const cancelOrderService = async({
     }
 
     const orderStatusCacheKey = `orderId:${orderId}:status`;
+    const cachedStatus = await getCache({
+        key: orderStatusCacheKey
+    });
 
-    const cachedStatus = await getCache(orderStatusCacheKey);
     if(
         cachedStatus && 
         (

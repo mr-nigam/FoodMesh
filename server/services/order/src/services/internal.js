@@ -1,5 +1,13 @@
 import { ApiError } from '@foodmesh/utils';
-import { fetchOrderForPaymentRepo } from '../repositories/internal.js';
+import { 
+    fetchOrderForPaymentRepo,
+    getOrdersForStatusUpdate,
+    updateOrderStatusRepo
+} from '../repositories/internal.js';
+
+import {
+    getOverallOrderStatus
+} from './getOrderStatus.js';
 
 
 const fetchOrderForPaymentService = async ({
@@ -22,7 +30,34 @@ const fetchOrderForPaymentService = async ({
     return order;
 };
 
+const updateOrderStatusService = async({
+    orderId
+})=>{
+    
+    if(!orderId){
+        throw new ApiError(
+            400,
+            "please give order id for proccessing"
+        );
+    }
+
+    const restaurantOrders = await getOrdersForStatusUpdate({
+        orderId
+    });
+
+    const status = getOverallOrderStatus({
+        restaurantOrders 
+    });
+
+    const order = await updateOrderStatusRepo({
+        orderId,
+        status
+    });
+    
+    return order;
+}
 
 export {
-    fetchOrderForPaymentService
+    fetchOrderForPaymentService,
+    updateOrderStatusService
 };

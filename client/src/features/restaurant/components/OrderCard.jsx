@@ -6,7 +6,7 @@ import { BiFile } from 'react-icons/bi';
 import formatCurrency from '../../../utils/formatCurrency.js';
 import ORDER_ACTIONS from '../../../utils/orderFlow.js';
 import {
-  updateOrderStatus
+  updateRestaurantOrderStatus
 } from '../services/restaurantService.js';
 
 
@@ -45,7 +45,6 @@ const actionLabels = {
 
 const OrderCard = ({
     order,
-    restaurantId,
     onStatusUpdate
 }) => {
 
@@ -64,11 +63,10 @@ const OrderCard = ({
         try{
             setLoading(true);
 
-            await updateOrderStatus({
+            await updateRestaurantOrderStatus({
                 orderId,
                 status: nextStatus,
-                orderRestaurantId: order?.order_restaurant_id,
-                restaurantId: restaurantId || order?.restaurant_id
+                orderRestaurantId: order?.order_restaurant_id
             });
 
             toast.success(`Order marked as ${nextStatus}`);

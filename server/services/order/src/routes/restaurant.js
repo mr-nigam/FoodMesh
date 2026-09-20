@@ -7,7 +7,7 @@ import {
 import { 
     fetchOrders,
     fetchOrder,
-    updateOrderStatus
+    updateRestaurantOrderStatus
 } from '../controllers/restaurant.js';
 
 
@@ -15,9 +15,11 @@ const router = Router();
 
 
 router.use(authenticateUser);
+
+
 router.get('/', fetchOrders);
 router.get('/:orderId', fetchOrder);
-router.patch("/:orderId", updateOrderStatus);
+router.patch("/:orderId", updateRestaurantOrderStatus);
 
 
 export default router;
