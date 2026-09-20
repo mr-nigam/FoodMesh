@@ -1,112 +1,33 @@
-import pool from '../config/postgre.js';
-import axios from 'axios';
-import { 
-    OAuth2Client
-} from 'google-auth-library';
-
 import { 
     asyncHandler,
-    ApiError,
     ApiResponse
 } from '@foodmesh/utils';
 
-import {
-    generateAccessToken
-} from '../utils/token.js';
+import{
+    loginService,
+    updateRoleService,
+    getMyProfileService
+} from '../services/auth.js';
 
 
-const loginUser = asyncHandler(async (req,res) => {
-    const code = req.body?.code || null;
-    const redirectUri = req.body?.redirect_uri || "postmessage";
+const loginUser = asyncHandler(async (req, res) => {
 
-    if(!code){
-        throw new ApiError(
-            400,
-            "Authorization code is required"
-        );
-    }
+    const {
+        user,
+        token
+    } = await loginService({
+        body: req?.body 
+    });
 
-    const client = new OAuth2Client(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        redirectUri
-    );
-
-    const googleRes = await client.getToken(code);
-
-    client.setCredentials(googleRes.tokens);
-
-    const userRes = 
-        await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`);
-
-    const {email, name, picture} = userRes.data;
-
-    if(!email){
-        throw new ApiError(
-            404,
-            "Enter Email for login"
-        );
-    }
-
-    const query = `
-        SELECT
-            id,
-            name,
-            email,
-            role,
-            profile_picture_url,
-            professional_id
-        FROM users
-            WHERE email = $1
-            AND deleted_at IS NULL
-            AND deactivated_at IS NULL;
-    `;
-        
-    const result = await pool.query(query,[email]);
-    let user = result.rows[0];
-        
-        // not registered, make new id
-    if(result.rowCount === 0){
-        const query = `
-            INSERT INTO users(
-                email, name, profile_picture_url
-            )
-            VALUES(
-                $1, $2, $3
-            )
-            RETURNING
-                id,
-                name,
-                email,
-                role,
-                profile_picture_url,
-                professional_id;
-        `;
-
-        const result = await pool.query(
-            query,
-            [email, name, picture]
-        );
-
-        user = result.rows[0];
-    }
-        
-    const accessToken = generateAccessToken(user);
-        
-    // setAuthCookies(
-    //     res,
-    //     user,
-    //     accessToken
-    // );
 
     return res
-        .status(200)
+        .status(201)
         .json(
             new ApiResponse(
-                200,
+                201,
                 {
-                    user: user,
-                    token: accessToken
+                    user,
+                    token
                 },
                 "User logged in successfully"
             )
@@ -114,44 +35,15 @@ const loginUser = asyncHandler(async (req,res) => {
 });
 
 const updateRole = asyncHandler(async (req, res)=>{
-    const user = req.user;
-    const role = req.body.role?.trim() || "";
 
-    if(!allowedRoles.includes(role)){
-        throw new ApiError(
-            400,
-            "Invalid role"
-        );
-    }
+    const {
+        user,
+        token
+    } = await updateRoleService({
+        userId: req.user?.id,
+        role: req.body.role?.trim()?? ""    
+    });
 
-    const query = `
-        UPDATE users
-        SET role = $1
-        WHERE id = $2
-            AND deleted_at IS NULL
-            AND deactivated_at IS NULL
-        RETURNING
-            id,
-            name,
-            email,
-            role,
-            profile_picture_url,
-            professional_id;
-    `;
-    
-    const result = await pool.query(
-        query,
-        [role, user.id]
-    );
-
-    if(result.rowCount === 0){
-        throw new ApiError(
-            404,
-            "User not found"
-        );
-    }
-
-    const accessToken = generateAccessToken(result.rows[0]);
 
     return res
         .status(200)
@@ -159,51 +51,32 @@ const updateRole = asyncHandler(async (req, res)=>{
             new ApiResponse(
                 200,
                 {
-                    user: result.rows[0],
-                    token: accessToken
+                    user,
+                    token
                 },
                 "Role updated successfully"
             )
         );     
 });
 
-const myProfile = asyncHandler(async (req, res) => {
-    const user = req.user;
+const getMyProfile = asyncHandler(async (req, res) => {
 
-    const query = `
-        SELECT *
-        FROM users
-        WHERE id = $1
-          AND deleted_at IS NULL
-          AND deactivated_at IS NULL;
-    `;
-
-    const result = await pool.query(query, [user.id]);
-
-    if(result.rowCount === 0){
-        throw new ApiError(
-            404, 
-            "User not found"
-        );
-    }
+    const user = await getMyProfileService({
+        userId: req?.user?.id
+    })
 
     return res.status(200).json(
         new ApiResponse(
             200,
-            {
-                user: result.rows[0],
-            },
+            { user },
             "Profile fetched successfully"
         )
     );
 });
 
-const Home = asyncHandler(async (req, res)=>{});
-
 
 export {
     loginUser,
     updateRole,
-    myProfile,
-    Home
+    getMyProfile
 };

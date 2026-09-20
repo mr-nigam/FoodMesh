@@ -12,7 +12,7 @@ import {
 
 
 const orderStatusUpdateHandler = async(payload)=>{
-    console.log("orderStatusUpdateHandler-1");
+    // console.log("orderStatusUpdateHandler-1");
 
     const eventData = payload?.eventData || payload;
 
@@ -51,7 +51,7 @@ const orderStatusUpdateHandler = async(payload)=>{
         ]
     });
 
-    console.log("orderStatusUpdateHandler-2");
+    // console.log("orderStatusUpdateHandler-2");
     return order;
 };
 

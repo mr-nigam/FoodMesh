@@ -40,11 +40,11 @@ const startAuthConsumer = async () => {
             switch (eventType) {
 
                 case KAFKA_EVENTS.RESTAURANT.CREATED:
-                    await professionalAccountCreated({data});
+                    await professionalAccountCreated(data);
                     break;
 
                 case KAFKA_EVENTS.RIDER.CREATED:
-                    await professionalAccountCreated({data});
+                    await professionalAccountCreated(data);
                     break;
 
                 default:

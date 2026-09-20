@@ -10,18 +10,10 @@ const AppProvider = ({
     children
 }) => {
 
-    // =========================================================
-    // AUTH STATE
-    // =========================================================
-
     const [user, setUser] = useState(null);
     const [isAuth, setIsAuth] = useState(false);
     const [loading, setLoading] = useState(true);
 
-
-    // =========================================================
-    // LOCATION STATE
-    // =========================================================
 
     const [location, setLocation] = useState(() => {
         try {
@@ -31,15 +23,12 @@ const AppProvider = ({
             return null;
         }
     });
+
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [city, setCity] = useState(() => {
         return sessionStorage.getItem("foodmesh_city") || "Current Location";
     });
 
-
-    // =========================================================
-    // CART STATE
-    // =========================================================
 
     const [cart, setCart] = useState([]);
     const [allTotalQty, setAllTotalQty] = useState(0);
@@ -47,104 +36,67 @@ const AppProvider = ({
     const [loadingCart, setLoadingCart] = useState(false);
 
 
-    // =========================================================
-    // FETCH CURRENT USER
-    // =========================================================
-
     useEffect(() => {
 
         let ignore = false;
 
         const fetchUser = async () => {
+            try{
 
-            try {
-
-                const authConfig = getAuthHeader();
-
-                const { data: response } = await axios.get(
+                const { data} = await axios.get(
                     `${authService}/me`,
-                    authConfig
+                    getAuthHeader()
                 );
 
-                if (ignore) return;
+                if(ignore) return;
 
-                const currentUser =
-                    response?.data?.user ??
-                    response?.user ??
+                const user =
+                    data?.data?.user ??
+                    data?.user ??
                     null;
 
-
-                if (currentUser) {
-
-                    setUser(currentUser);
+                if(user){
+                    setUser(user);
                     setIsAuth(true);
 
-                } else {
-
+                }else{
                     setUser(null);
                     setIsAuth(false);
-
                 }
 
-            } catch (error) {
+            }catch(error){
 
-                if (ignore) return;
+                if(ignore) return;
 
-                /*
-                 * 401 simply means that there is currently
-                 * no authenticated user.
-                 *
-                 * This should NOT break the application.
-                 */
 
-                if (error?.response?.status === 401) {
-
-                    console.log(
-                        "No authenticated user."
-                    );
-
-                } else {
+                if(error?.response?.status === 401){
+                    console.log("No authenticated user.");
+                }else{
 
                     console.error(
                         "Error while fetching user:",
                         error
                     );
-
                 }
 
                 setUser(null);
                 setIsAuth(false);
 
-            } finally {
+            }finally{
 
-                /*
-                 * VERY IMPORTANT
-                 *
-                 * Even when /me returns 401,
-                 * loading must become false.
-                 */
-
-                if (!ignore) {
+                if(!ignore){
                     setLoading(false);
                 }
-
             }
         };
 
-
         fetchUser();
-
 
         return () => {
             ignore = true;
         };
-
     }, []);
 
-
-    // =========================================================
-    // FETCH LOCATION
-    // =========================================================
 
     useEffect(() => {
 
@@ -154,34 +106,27 @@ const AppProvider = ({
 
             setLoadingLocation(true);
 
+            if(!navigator.geolocation){
 
-            if (!navigator.geolocation) {
-
-                if (!ignore) {
-
+                if(!ignore){
                     setCity("Location not supported");
                     setLoadingLocation(false);
-
                 }
 
                 return;
             }
 
-
             navigator.geolocation.getCurrentPosition(
-
+                
                 async (position) => {
-
-                    if (ignore) return;
-
+                    if(ignore) return;
 
                     const {
                         latitude,
                         longitude
                     } = position.coords;
 
-
-                    try {
+                    try{
 
                         const { data } = await axios.get(
                             "https://nominatim.openstreetmap.org/reverse",
@@ -194,13 +139,12 @@ const AppProvider = ({
                             }
                         );
 
-
-                        if (ignore) return;
-
+                        if(ignore) return;
 
                         const address =
-                            data?.address ?? {};
-
+                            data?.address ??
+                            data?.data?.address ??
+                            {};
 
                         const resolvedLocation = {
                             latitude,
@@ -227,17 +171,13 @@ const AppProvider = ({
                             console.log(e);
                         }
 
+                    }catch(error){
 
-                    } catch (error) {
-
-                        if (ignore) return;
-
-
+                        if(ignore) return;
                         console.error(
                             "Error while fetching location:",
                             error
                         );
-
 
                         setLocation({
                             latitude,
@@ -246,13 +186,11 @@ const AppProvider = ({
                                 "Current Location",
                         });
 
-
                         setCity("Unable to load");
 
+                    }finally{
 
-                    } finally {
-
-                        if (!ignore) {
+                        if(!ignore){
                             setLoadingLocation(false);
                         }
 
@@ -262,33 +200,26 @@ const AppProvider = ({
 
                 (error) => {
 
-                    if (ignore) return;
-
+                    if(ignore) return;
 
                     console.error(
                         "Error while getting location:",
                         error
                     );
 
-
                     setCity("Location access denied");
                     setLoadingLocation(false);
-
                 },
-
 
                 {
                     enableHighAccuracy: false,
                     timeout: 10000,
                     maximumAge: 60000,
                 }
-
             );
         };
 
-
         fetchLocation();
-
 
         return () => {
             ignore = true;
@@ -297,17 +228,9 @@ const AppProvider = ({
     }, []);
 
 
-    // =========================================================
-    // FETCH CART
-    // =========================================================
-
     const fetchCart = useCallback(async () => {
 
-        /*
-         * Cart only belongs to customers.
-         */
-
-        if (!user || user.role !== "customer") {
+        if(!user || user.role !== "customer"){
 
             setCart([]);
             setAllTotalQty(0);
@@ -315,27 +238,21 @@ const AppProvider = ({
             setLoadingCart(false);
 
             return [];
-
         }
-
 
         setLoadingCart(true);
 
-
         try {
 
-            const { data: response } = await axios.get(
+            const { data } = await axios.get(
                 `${restaurantService}/cart/my`,
                 getAuthHeader()
             );
 
-
-            const responseData =
-                response?.data ?? response;
-
-
-            const rawCart =
-                responseData?.restaurants ?? [];
+            const restaurants = 
+                data?.restaurants ??
+                data?.data?.restaurants ??
+                []
 
 
             /*
@@ -345,8 +262,7 @@ const AppProvider = ({
              * - restaurants with no items
              */
 
-            const restaurantWiseCart = rawCart
-
+            const restaurantWiseCart = restaurants
                 .map((restaurant) => ({
 
                     ...restaurant,
@@ -356,7 +272,6 @@ const AppProvider = ({
                             (item) =>
                                 Number(item.quantity) > 0
                         ),
-
                 }))
 
                 .filter(
@@ -367,82 +282,58 @@ const AppProvider = ({
 
             const totalQuantity =
                 Number(
-                    responseData?.allTotalQty ?? 0
+                    data?.allTotalQty ??
+                    data?.data?.allTotalQty ?? 
+                    0
                 );
-
 
             const totalValue =
                 Number(
-                    responseData?.allTotalValue ?? 0
+                    data?.allTotalValue ??
+                    data?.data?.allTotalValue ??
+                     0
                 );
-
 
             setCart(restaurantWiseCart);
             setAllTotalQty(totalQuantity);
             setAllTotalValue(totalValue);
 
-
             return restaurantWiseCart;
 
+        }catch(error){
 
-        } catch (error) {
-
-            /*
-             * A cart failure should not destroy the
-             * authentication state.
-             */
-
-            if (error?.response?.status === 401) {
-
+            if(error?.response?.status === 401){
                 console.log(
                     "Unable to fetch cart: user is unauthorized."
                 );
 
-            } else {
-
+            }else{
                 console.error(
                     "Error while fetching cart:",
                     error
                 );
-
             }
-
 
             setCart([]);
             setAllTotalQty(0);
             setAllTotalValue(0);
 
-
             return [];
 
-
-        } finally {
-
+        }finally{
             setLoadingCart(false);
-
         }
 
     }, [user]);
 
 
-    // =========================================================
-    // REFRESH CART
-    // =========================================================
-
     const refreshCart = useCallback(async () => {
-
         return await fetchCart();
-
     }, [fetchCart]);
 
 
-    // =========================================================
-    // UPDATE CART QUANTITY
-    // =========================================================
-
     const updateQuantity = async (itemId, action) => {
-
-        try {
+        try{
 
             const { data } = await axios.put(
                 `${restaurantService}/cart/update`,
@@ -453,14 +344,11 @@ const AppProvider = ({
                 getAuthHeader()
             );
 
-
             await fetchCart();
-
 
             return data;
 
-
-        } catch (error) {
+        }catch(error){
 
             console.error(
                 "Error updating cart quantity:",
@@ -472,11 +360,6 @@ const AppProvider = ({
         }
 
     };
-
-
-    // =========================================================
-    // LOAD CART WHEN USER CHANGES
-    // =========================================================
 
     useEffect(() => {
 
@@ -492,7 +375,6 @@ const AppProvider = ({
             return;
         }
 
-
         const loadCart = async ()=>{
             await fetchCart();
         }
@@ -501,10 +383,6 @@ const AppProvider = ({
         
     }, [user, fetchCart]);
 
-
-    // =========================================================
-    // CONTEXT
-    // =========================================================
 
     return (
         <AppContext.Provider

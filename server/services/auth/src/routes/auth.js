@@ -6,8 +6,7 @@ import {
 
 import {
     loginUser,
-    myProfile,
-    Home,
+    getMyProfile,
     updateRole
 } from "../controllers/auth.js";
 
@@ -18,15 +17,10 @@ const router = Router();
 router.post("/login", loginUser);
 
 
-/*
- * Everything below this line requires authentication.
- */
-
 router.use(authenticateUser);
 
 
-router.get("/me", myProfile);
-
+router.get("/me", getMyProfile);
 router.put("/set-role", updateRole);
 
 
