@@ -6,7 +6,7 @@ import axios from "axios";
 import useAppData from "../../../context/useAppData.js";
 import RestaurantCard from "../../restaurant/components/RestaurantCard.jsx";
 import { restaurantService } from "../../../config/constants.js";
-import getAuthHeader from '../../../config/getAuthHeader.js';
+//import getAuthHeader from '../../../config/getAuthHeader.js';
 
 
 const Home = () => {
@@ -33,25 +33,29 @@ const Home = () => {
         if (isMounted) setLoading(true);
 
         const { data } = await axios.get(
-          `${restaurantService}/all-nearby`,
+          `${restaurantService}/nearby`,
           {
             params: {
               latitude: location.latitude,
               longitude: location.longitude,
               search,
             },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
           },
-          getAuthHeader()
         );
-
+        
         if (!isMounted) return;
 
-        const restaurantsData =
+        const restaurants =
           data?.data?.restaurants ||
           data?.restaurants ||
           [];
 
-        setRestaurants(restaurantsData);
+        setRestaurants(restaurants);
+        
+        console.log("restaurants: ",restaurants);
       } catch (error) {
         if (!isMounted) return;
 

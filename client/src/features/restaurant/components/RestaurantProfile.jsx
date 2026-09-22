@@ -1,7 +1,10 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { BiEdit, BiMapPin, BiSave } from "react-icons/bi";
-
+import { 
+    BiEdit, 
+    BiMapPin, 
+    BiSave
+} from "react-icons/bi";
 
 import useAppData from '../../../context/useAppData.js';
 import {
@@ -63,7 +66,7 @@ const RestaurantProfile = ({
                 });
             }
 
-        }catch (error) {
+        }catch(error){
             console.error(
                 "Failed to update restaurant status:",
                 error

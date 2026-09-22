@@ -19,7 +19,7 @@ import {
 const router = Router();
 
 // Public routes
-router.get("/all-nearby", getNearbyRestaurants);
+router.get("/nearby", getNearbyRestaurants);
 
 
 router.use(authenticateUser);

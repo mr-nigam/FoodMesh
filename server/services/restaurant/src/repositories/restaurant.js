@@ -108,18 +108,17 @@ const fetchMyRestaurantRepo = async ({
     return rows[0];
 };
 
-const updateRestaurantStatusRepo = async({})=>{
-    const user = req.user;
-    
-    const {status} = req.body;
+const updateRestaurantStatusRepo = async({
+    restaurantId,
+    status
+})=>{
 
     const updateQuery = `
         UPDATE restaurants
         SET 
             is_open = $1
-        WHERE owner_id = $2
+        WHERE id = $2
             AND deleted_at IS NULL
-            AND deactivated_at IS NULL
         RETURNING
             id,
             name,
@@ -134,49 +133,32 @@ const updateRestaurantStatusRepo = async({})=>{
     
     const {rows} = await pool.query(
         updateQuery,
-        [status, user.id]
+        [status, restaurantId]
     );
 
-    const restaurant = rows[0] || null;
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {
-                    restaurant,
-                },
-                restaurant
-                    ? "Restaurant status updated successfully"
-                    : "No restaurant found"
-            )
-        );
-        
-
+    return rows[0];
 };
 
-const updateRestaurantDetailsRepo = async ({})=>{
-    const user = req.user;
-
-    const restaurantName = req.body?.name?.trim() || "";
-    const description = req.body?.description?.trim() || "";
-
-    if( !restaurantName && !description){
-        throw new ApiError(
-            400, 
-            "Please enter name or description"
-        );
-    }
+const updateRestaurantDetailsRepo = async ({
+    restaurantId,
+    restaurantName,
+    description
+})=>{
+    
+    const params = [
+        restaurantName,
+        description,
+        restaurantId
+    ];
 
     const updateQuery = `
         UPDATE restaurants
         SET 
             name = $1,
             description = $2
-        WHERE owner_id = $3
+        WHERE id = $3
             AND deleted_at IS NULL
-            AND deactivated_at IS NULL
         RETURNING
             id,
             name,
@@ -191,80 +173,30 @@ const updateRestaurantDetailsRepo = async ({})=>{
 
     const {rows} = await pool.query(
         updateQuery,
-        [restaurantName, description, user.id]
+        params
     );
 
-    if(rows.count === 0){
-        throw new ApiError(
-            404,
-            "Restaurnt not found"
-        );
-    }
-
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {
-                    restauran: rows[0]
-                },
-                "Restaurant data updated successfully"
-            )
-        );
+    return rows[0];
 };
 
-const getNearbyRestaurantsRepo = async ({}) => {
-    const {
-        latitude,
+const getNearbyRestaurantsRepo = async ({
+    longitude,
+    latitude,
+    radius,
+    search,
+    limit = 100,
+    offset = 0
+}) => {
+
+    const params = [
         longitude,
-        radius = 5000,
-        search = ""
-    } = req.query;
-
-    if(latitude === undefined || longitude === undefined){
-        throw new ApiError(
-            400,
-            "latitude and longitude are required for searching nearby restaurants"
-        );
-    }
-
-    const lat = Number(latitude);
-    const lon = Number(longitude);
-    const searchRadius = Number(radius);
-
-    if(
-        !Number.isFinite(lat) ||
-        !Number.isFinite(lon) ||
-        !Number.isFinite(searchRadius)
-    ){
-        throw new ApiError(
-            400,
-            "latitude, longitude and radius must be valid numbers"
-        );
-    }
-
-    if(lat < -90 || lat > 90){
-        throw new ApiError(
-            400,
-            "Invalid latitude"
-        );
-    }
-
-    if(lon < -180 || lon > 180){
-        throw new ApiError(
-            400,
-            "Invalid longitude"
-        );
-    }
-
-    if(searchRadius <= 0){
-        throw new ApiError(
-            400,
-            "radius must be greater than 0"
-        );
-    }
-
+        latitude,
+        radius,
+        search,
+        limit,
+        offset
+    ];
+    
     const searchQuery = `
         SELECT
             id,
@@ -286,7 +218,6 @@ const getNearbyRestaurantsRepo = async ({}) => {
         FROM restaurants
 
         WHERE
-
             ST_DWithin(
                 location,
                 ST_SetSRID(
@@ -301,36 +232,22 @@ const getNearbyRestaurantsRepo = async ({}) => {
                 OR name ILIKE '%' || $4 || '%'
             )
 
-        ORDER BY distance ASC;
+        ORDER BY distance ASC
+        LIMIT $5
+        OFFSET $6;
     `;
 
-    const { rows } = await pool.query(searchQuery, [
-        lon,
-        lat,
-        searchRadius,
-        search.trim()
-    ]);
+    const { rows } = await pool.query(
+        searchQuery,
+        params
+    );
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {restaurants: rows},
-                "Nearby restaurants fetched successfully"
-            )
-        );
+    return rows;
 };
 
-const fetchSingleRestaurantRepo = async ({}) => {
-    const { restaurantId } = req.params;
-
-    if(!restaurantId){
-        throw new ApiError(
-            400,
-            "Restaurant id is required"
-        );
-    }
+const fetchSingleRestaurantRepo = async ({
+    restaurantId
+}) => {
 
     const searchQuery = `
         SELECT
@@ -351,22 +268,7 @@ const fetchSingleRestaurantRepo = async ({}) => {
         [restaurantId]
     );
 
-    if(rows.length === 0){
-        throw new ApiError(
-            404,
-            "Restaurant not found"
-        );
-    }
-
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                {restaurant: rows[0]},
-                "Restaurant fetched successfully"
-            )
-        );
+    return rows[0];
 };
 
 

@@ -6,6 +6,10 @@ import {
     KAFKA_EVENTS
 } from "@foodmesh/kafka";
 
+import {
+    delievryHandler
+} from './handlers/processDelivery.js'
+
 
 const consumer = createConsumer({
     groupId: "delivery-service",
@@ -35,7 +39,7 @@ const startOrderConsumer = async() =>{
             
             switch(eventType){
                 case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY:
-                    await createDelievry(data);
+                    await delievryHandler(data);
                     break;
 
                 default:
