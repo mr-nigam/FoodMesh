@@ -23,7 +23,7 @@ const RestaurantCart = ({
         totalQty = 0,
     } = restaurantCart;
 
-    const restaurantId = restaurant.id ?? restaurant._id;
+    const restaurantId = restaurant.id ?? restaurant?.restaurant_id;
 
     const visibleItems = items.filter(
         (item) => Number(item.quantity || 0) > 0

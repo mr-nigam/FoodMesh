@@ -89,7 +89,7 @@ const COIRestarurantTableRepo = async({
     ];
 
     const rOrderInsertQuery = `
-        INSERT INTO order_restaurants (
+        INSERT INTO restaurant_orders (
             order_id,
             user_id,
             restaurant_id,
@@ -110,7 +110,7 @@ const COIRestarurantTableRepo = async({
         )
         RETURNING 
             id,
-            id AS order_restaurant_id,
+            id AS restaurant_order_id,
             order_id,
             restaurant_id,
             restaurant_name,
@@ -132,7 +132,7 @@ const COIRestarurantTableRepo = async({
 const COIItemsTableRepo = async({ 
     client,
     orderId,
-    orderRestaurantId,
+    restaurantOrderId,
     item
 }) => { 
 
@@ -144,7 +144,7 @@ const COIItemsTableRepo = async({
     const subtotal = Number(item.subtotal ?? (unitPrice * quantity));
 
     const values = [
-        orderRestaurantId,
+        restaurantOrderId,
         cartId,
         itemId,
         itemName,
@@ -156,7 +156,7 @@ const COIItemsTableRepo = async({
     
     const IOrderInsertQuery = `
         INSERT INTO order_items (
-            order_restaurant_id,
+            restaurant_order_id,
             cart_id,
             item_id,
             item_name,
@@ -175,7 +175,7 @@ const COIItemsTableRepo = async({
             order_id,
             cart_id,
             item_id,
-            order_restaurant_id,
+            restaurant_order_id,
             item_name,
             unit_price,
             quantity,

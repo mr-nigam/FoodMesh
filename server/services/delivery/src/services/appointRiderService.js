@@ -1,7 +1,6 @@
 import {
     getCache,
     geoSearch,
-    deleteGeoCache,
     deleteOrderRelatedCache
 } from '@foodmesh/redis';
 
@@ -19,8 +18,7 @@ import {
 } from '../clients/order.js';
 
 import {
-    getNearbyRiders,
-    fetchRidersByIds
+    getNearbyRiders
 } from '../clients/rider.js';
 
 import {
@@ -45,14 +43,14 @@ const MAX_TOTAL_RIDERS = 40; // Up to 8 batches of 5 riders (30-40 riders)
 
 const appointRiderService = async ({
     orderId,
-    orderRestaurantId,
+    restaurantOrderId,
     customerUserId,
     restaurantId
 }) => {
 
-    console.log(`[AppointRider] Starting rider dispatch for orderId=${orderId}, restaurantOrderId=${orderRestaurantId}`);
+    console.log(`[AppointRider] Starting rider dispatch for orderId=${orderId}, restaurantOrderId=${restaurantOrderId}`);
 
-    const deliveryCacheKey = `delivery:order:${orderId}:restaurantOrder:${orderRestaurantId}`;
+    const deliveryCacheKey = `delivery:order:${orderId}:restaurantOrder:${restaurantOrderId}`;
 
     let delivery = await getCache({
         key: deliveryCacheKey
@@ -61,7 +59,7 @@ const appointRiderService = async ({
     if(!delivery){
         delivery = await getDeliveryRepo({
             orderId,
-            orderRestaurantId
+            restaurantOrderId
         });
 
         if(!delivery){
@@ -69,7 +67,7 @@ const appointRiderService = async ({
 
             const order = await getOrderData({
                 orderId,
-                orderRestaurantId
+                restaurantOrderId
             });
 
             if(!order){
@@ -355,7 +353,7 @@ const appointRiderService = async ({
                 orderId,
                 restaurantId,
                 userId: customerUserId,
-                restauranOrderId: orderRestaurantId,
+                restaurantOrderId,
                 riderId: winningRiderId,
                 deliveryId: delivery.delivery_id
             });

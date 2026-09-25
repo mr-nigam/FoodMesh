@@ -7,14 +7,13 @@ import {
 } from '../../clients/realtime.js';
 
 import {
-    deleteMultipleCache
+    deleteOrderRelatedCache
 } from '@foodmesh/redis';
 
 
 const orderStatusUpdateHandler = async(payload)=>{
-    // console.log("orderStatusUpdateHandler-1");
 
-    const eventData = payload?.eventData || payload;
+    const eventData = payload?.eventData ?? payload;
 
     if(
         !eventData || 
@@ -44,14 +43,10 @@ const orderStatusUpdateHandler = async(payload)=>{
         });
     }
     
-    await deleteMultipleCache({
-        keys: [
-            `user:${userId}:order:${orderId}`,
-            `user:${userId}:orders`
-        ]
+    await deleteOrderRelatedCache({
+        userId
     });
-
-    // console.log("orderStatusUpdateHandler-2");
+    
     return order;
 };
 

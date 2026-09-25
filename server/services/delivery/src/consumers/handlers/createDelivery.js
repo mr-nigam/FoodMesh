@@ -19,16 +19,19 @@ const createDelivery = async ({
 
     const {
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     } = data;
 
-    if(!orderId || !orderRestaurantId){
+    if(
+        !orderId || 
+        !restaurantOrderId
+    ){
         throw new Error(
             "Please provide order ID and restaurant order ID"
         );
     }
 
-    const cacheKey = `delivery:order:${orderId}:restaurantOrder:${orderRestaurantId}`;
+    const cacheKey = `delivery:order:${orderId}:restaurantOrder:${restaurantOrderId}`;
 
     const cachedDelivery = await getCache({
         key: cacheKey
@@ -40,12 +43,12 @@ const createDelivery = async ({
 
     const order = await getOrderData({
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     });
 
     if(!order){
         throw new Error(
-            `Failed to fetch order details for orderId=${orderId} and restaurantOrderId=${orderRestaurantId}`
+            `Failed to fetch order details for orderId=${orderId} and restaurantOrderId=${restaurantOrderId}`
         );
     }
 

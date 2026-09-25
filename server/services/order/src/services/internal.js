@@ -34,8 +34,11 @@ const fetchOrderService = async ({
         userId
     });
 
-    if (!order) {
-        throw new ApiError(404, "Order not found");
+    if(!order){
+        throw new ApiError(
+            404,
+            "Order not found"
+        );
     }
 
     return order;
@@ -74,12 +77,12 @@ const fetchRestaurantOrderService = async({
 
     const {
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     } = params;
 
     if(
         !orderId || 
-        !orderRestaurantId
+        !restaurantOrderId
     ){
         throw new ApiError(
             400,
@@ -89,7 +92,7 @@ const fetchRestaurantOrderService = async({
 
     const order = await fetchRestaurantOrderRepo({
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     });
 
     if(!order){

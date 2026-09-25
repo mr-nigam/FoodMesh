@@ -16,8 +16,8 @@ const createOrderItemsTable = async() => {
                     REFERENCES orders(id)
                     ON DELETE CASCADE,
                 
-                order_restaurant_id UUID NOT NULL
-                    REFERENCES order_restaurants(id)
+                restaurant_order_id UUID NOT NULL
+                    REFERENCES restaurant_orders(id)
                     ON DELETE CASCADE,
 
                 cart_id UUID UNIQUE NOT NULL,
@@ -43,8 +43,8 @@ const createOrderItemsTable = async() => {
         `);
             
         await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_order_items_order_restaurant_id
-                ON order_items(order_restaurant_id);
+            CREATE INDEX IF NOT EXISTS idx_order_items_restaurant_order_id
+                ON order_items(restaurant_order_id);
 
             CREATE INDEX IF NOT EXISTS idx_order_items_item_id
                 ON order_items(item_id);

@@ -3,7 +3,7 @@ import axios from "axios";
 
 const getOrderData = async ({
     orderId,
-    orderRestaurantId
+    restaurantOrderId
 })=>{
 
     const orderServiceUrl = 
@@ -12,7 +12,7 @@ const getOrderData = async ({
 
     try{
         const {data} = await axios.get(
-            `${orderServiceUrl}/internal/delivery/${orderRestaurantId}`,
+            `${orderServiceUrl}/internal/delivery/${restaurantOrderId}`,
             {
                 params:{
                     orderId

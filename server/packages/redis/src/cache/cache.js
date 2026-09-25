@@ -182,7 +182,7 @@ const deleteOrderRelatedCache = async({
 
     if(orderId){
         keysToDelete.push(
-            `orderId:${orderId}:status`
+            `order:${orderId}:status`
         );
     }
 

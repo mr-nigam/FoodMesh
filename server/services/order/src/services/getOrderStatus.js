@@ -10,6 +10,7 @@ const STATUS_RANK = {
     delivered: 8,
 };
 
+
 const getOverallOrderStatus = ({
     restaurantOrders
 }) =>{

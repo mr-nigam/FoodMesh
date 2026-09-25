@@ -1,4 +1,6 @@
-import { ApiError } from '@foodmesh/utils';
+import { 
+    ApiError
+} from '@foodmesh/utils';
 import razorpay from '../config/razorpay.js';
 import stripe from '../config/stripe.js';
 import verifyRazorpaySignature from '../config/verifyRazorpay.js';
@@ -191,60 +193,6 @@ const createPayment = async ({
     return payment;
 };
 
-const createPaymentAttemptsService = async ({
-    userId,
-    body
-}) => {
-
-    const {
-        orderId,
-        vendor
-    } = body || {};
-
-    const paymentVendor = vendor?.trim()?.toLowerCase();
-
-    if(!orderId){
-        throw new ApiError(
-            400,
-            "Please provide order ID"
-        );
-    }
-
-    if(
-        !paymentVendor || 
-        !ALLOWED_PAYMENT_VENDORS.includes(paymentVendor)
-    ){
-        throw new ApiError(
-            400, 
-            `Payment vendor is invalid. Allowed: ${ALLOWED_PAYMENT_VENDORS.join(", ")}`
-        );
-    }
-
-    let paymentData = await fetchPaymentDetailsRepo({
-        userId,
-        orderId
-    });
-
-    if(!paymentData){
-        paymentData = await createPayment({
-            userId,
-            orderId
-        });
-    }
-
-    if(paymentVendor === "razorpay"){
-        return await createRazorpayOrder({ 
-            paymentData 
-        });
-
-    }else if(paymentVendor === "stripe"){
-        return await createStripeOrder({ 
-            paymentData,
-            userId
-        });
-    }
-};
-
 const verifyRazorpayPayment = async ({
     body,
     paymentData
@@ -303,6 +251,61 @@ const verifyStripePayment = async ({
         providerPaymentId: paymentIntent.id,
         providerOrderId: paymentIntent.id
     };
+};
+
+
+const createPaymentAttemptsService = async ({
+    userId,
+    body
+}) => {
+
+    const {
+        orderId,
+        vendor
+    } = body || {};
+
+    const paymentVendor = vendor?.trim()?.toLowerCase();
+
+    if(!orderId){
+        throw new ApiError(
+            400,
+            "Please provide order ID"
+        );
+    }
+
+    if(
+        !paymentVendor || 
+        !ALLOWED_PAYMENT_VENDORS.includes(paymentVendor)
+    ){
+        throw new ApiError(
+            400, 
+            `Payment vendor is invalid. Allowed: ${ALLOWED_PAYMENT_VENDORS.join(", ")}`
+        );
+    }
+
+    let paymentData = await fetchPaymentDetailsRepo({
+        userId,
+        orderId
+    });
+
+    if(!paymentData){
+        paymentData = await createPayment({
+            userId,
+            orderId
+        });
+    }
+
+    if(paymentVendor === "razorpay"){
+        return await createRazorpayOrder({ 
+            paymentData 
+        });
+
+    }else if(paymentVendor === "stripe"){
+        return await createStripeOrder({ 
+            paymentData,
+            userId
+        });
+    }
 };
 
 const verifyPaymentService = async ({

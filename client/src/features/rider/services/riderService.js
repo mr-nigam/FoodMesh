@@ -80,7 +80,9 @@ const addRiderVehicle = async ({
     return data?.data?.vehicle || data?.vehicle;
 };
 
-const setPrimaryVehicle = async ({vehicleId}) => {
+const setPrimaryVehicle = async ({
+    vehicleId
+}) => {
     const { data } = await axios.patch(
         `${riderService}/vehicles/${vehicleId}/primary`,
         getAuthHeader()

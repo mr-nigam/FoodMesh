@@ -185,7 +185,7 @@ const createOrderService = async ({
             );
         }
 
-        if(row.restaurant.is_open === false){
+        if(row.restaurant?.is_open === false){
             throw new ApiError(
                 400,
                 `${row.restaurant.name} is currently closed`
@@ -235,6 +235,7 @@ const createOrderService = async ({
     const client = await pool.connect();
 
     let createdOrder;
+    let orderId;
     const createdOrderRestaurants = [];
 
     try {
@@ -258,41 +259,37 @@ const createOrderService = async ({
             globalTotal  
         });
 
-        if (createdOrder) {
-            createdOrder.id = createdOrder.id || createdOrder.order_id;
-            createdOrder.order_id = createdOrder.id;
-        }
-
-        const primaryOrderId = createdOrder.id;
+        orderId = createdOrder.id;
 
         // order_restaurants
         for(const row of cartData){
 
             const taxAmount = Math.round(Number(row.total_value || row.totalValue || 0) * 0.05); // 5% GST
 
-            const createdROrder = await COIRestarurantTableRepo({
+            const createdRestOrder = await COIRestarurantTableRepo({
                 client,
                 userId,
-                orderId: primaryOrderId,
+                orderId,
                 restaurant: row.restaurant,
                 subtotal: Number(row.total_value || row.totalValue || 0),
                 taxAmount
             });
 
-            const primaryOrderRestaurantId = createdROrder.id || createdROrder.order_restaurant_id;
+            const restaurantOrderId = 
+                createdRestOrder.id ?? 
+                createdRestOrder.restaurant_order_id;
 
             // order_items
             for(const item of row.items){
                 await COIItemsTableRepo({
                     client,
-                    orderId: primaryOrderId,
-                    orderRestaurantId: primaryOrderRestaurantId,
+                    orderId,
+                    restaurantOrderId,
                     item
-                });
-                
+                });   
             }
 
-            createdOrderRestaurants.push(createdROrder);
+            createdOrderRestaurants.push(createdRestOrder);
         }
 
         await client.query("COMMIT");
@@ -318,14 +315,14 @@ const createOrderService = async ({
     const orderCreatedEvent = createOrdersEvent({
         eventType: KAFKA_EVENTS.ORDER.CREATED,
         eventData: {
-            orderId: createdOrder.id,
+            orderId,
             userId,
             totalAmount: createdOrder.total_amount,
             requestType: targetRestId ? "single" : "all"
         }
     }); 
 
-    const orderStatusCacheKey = `orderId:${createdOrder.id}:status`;
+    const orderStatusCacheKey = `order:${orderId}:status`;
 
     const keysToDelete = [
         `user:${userId}:orders`
@@ -343,8 +340,8 @@ const createOrderService = async ({
                 event: "order:new",
                 room: `restaurant:${rOrder.restaurant_id}`,
                 payload: {
-                    orderId: createdOrder.id,
-                    orderRestaurantId: rOrder.id,
+                    orderId,
+                    restaurantOrderId: rOrder.id,
                     restaurantId: rOrder.restaurant_id,
                     totalAmount: rOrder.total_amount,
                     recipientName: createdOrder.recipient_name,
@@ -364,23 +361,27 @@ const createOrderService = async ({
             restaurantId: targetRestId,
             requestType: targetRestId ? "single" : "all"
         }),
+
         publishEvent({
             topic: KAFKA_TOPICS.ORDER,
-            key: createdOrder.id,
+            key: orderId,
             event: orderCreatedEvent
         }),
+
         emitRealtimeEvent({
             event: "order:new",
             room: `user:${userId}`,
             payload: {
-                orderId: createdOrder.id,
+                orderId,
                 status: createdOrder.status,
                 totalAmount: createdOrder.total_amount
             }
         }),
+
         deleteMultipleCache({
             keys: keysToDelete
         }),
+        
         setCache({
             key: orderStatusCacheKey,
             value: "created",

@@ -8,7 +8,7 @@ import {
 const createOrderRestaurantTable = async () => {
     try{
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS order_restaurants (
+            CREATE TABLE IF NOT EXISTS restaurant_orders (
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 
@@ -81,23 +81,23 @@ const createOrderRestaurantTable = async () => {
         `);
 
         await pool.query(`
-            CREATE INDEX IF NOT EXISTS idx_order_restaurants_restaurant_id
-                ON order_restaurants(restaurant_id);
+            CREATE INDEX IF NOT EXISTS idx_restaurant_orders_restaurant_id
+                ON restaurant_orders(restaurant_id);
 
-            CREATE INDEX IF NOT EXISTS idx_order_restaurants_status
-                ON order_restaurants(status);
+            CREATE INDEX IF NOT EXISTS idx_restaurant_orders_status
+                ON restaurant_orders(status);
         `);
 
-        await createUpdatedAtTrigger(pool, 'order_restaurants');
+        await createUpdatedAtTrigger(pool, 'restaurant_orders');
 
         console.log(
-            "✅ Order Restaurants table created successfully."
+            "✅ Restaurants Order table created successfully."
         );
 
     }catch(error){
 
         console.error(
-            "❌ Order Restaurants table creation failed",
+            "❌ Restaurants Order table creation failed",
             error
         );
 

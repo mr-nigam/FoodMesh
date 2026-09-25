@@ -114,6 +114,7 @@ const RiderDashboard = () => {
         return {
             deliveryId: delivery.id,
             orderId: delivery.order_id,
+            restaurantOrderId:  delivery?.restaurant_order_id,
             restaurantName: delivery.restaurant_name || "Restaurant",
             restaurantAddress: restaurantAddress?.formattedAddress || restaurantAddress?.addressLine1 || "Restaurant Location",
             restaurantPhone: delivery.restaurant_phone || "+919876543210",

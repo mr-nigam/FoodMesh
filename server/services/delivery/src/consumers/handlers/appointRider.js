@@ -11,14 +11,14 @@ const appointRider = async({
 
     const {
         orderId,
-        orderRestaurantId,
+        restaurantOrderId,
         userId,
         restaurantId
     } = data;
     
     const rider = await appointRiderService({
         orderId,
-        orderRestaurantId,
+        restaurantOrderId,
         userId,
         restaurantId
     });

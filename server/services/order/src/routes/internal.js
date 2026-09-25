@@ -15,7 +15,7 @@ router.use(authenticateService);
 
 
 router.get('/orders/:orderId/users/:userId', fetchOrder);
-router.get('/delivery/:orderRestaurantId', fetchRestaurantOrder);
+router.get('/delivery/:restaurantOrderId', fetchRestaurantOrder);
 
 
 export default router;

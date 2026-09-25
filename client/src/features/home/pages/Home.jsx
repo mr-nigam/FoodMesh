@@ -55,8 +55,8 @@ const Home = () => {
 
         setRestaurants(restaurants);
         
-        console.log("restaurants: ",restaurants);
-      } catch (error) {
+        
+      }catch (error){
         if (!isMounted) return;
 
         console.error(

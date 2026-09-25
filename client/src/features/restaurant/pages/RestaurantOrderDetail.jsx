@@ -82,7 +82,7 @@ const RestaurantOrderDetail = () => {
     const { user } = useAppData();
 
     const restaurantId = user?.restaurantId || user?.restaurant?.id;
-    console.log("restaurantId: ",restaurantId);
+    
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
@@ -139,10 +139,12 @@ const RestaurantOrderDetail = () => {
 
             setUpdating(true);
 
+            console.log("restaurantOrderId: ", order?.restaurant_order_id)
+            console.log("orderId: ", orderId)
             await updateRestaurantOrderStatus({
                 orderId,
                 status: nextStatus,
-                orderRestaurantId: order?.order_restaurant_id
+                restaurantOrderId: order?.restaurant_order_id
             });
 
             toast.success(`Order marked as ${nextStatus}`);

@@ -42,7 +42,7 @@ const getOrdersForStatusUpdate = async({
     const searchQuery = `
         SELECT 
             status
-        FROM order_restaurants
+        FROM restaurant_orders
         WHERE order_id = $1;
     `;
 
@@ -84,43 +84,43 @@ const updateOrderStatusRepo = async({
 
 const fetchRestaurantOrderRepo = async({
     orderId,
-    orderRestaurantId
+    restaurantOrderId
 })=>{
 
     const params = [
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     ];
 
     const searchQuery = `
         SELECT
             o.user_id,
-            orr.order_id AS order_id,
-            orr.id AS order_restaurant_id,
+            ro.order_id AS order_id,
+            ro.id AS restaurant_order_id,
 
             o.recipient_name,
             o.recipient_phone,
             o.delivery_address,
 
-            orr.restaurant_id,
-            orr.restaurant_name,
-            orr.restaurant_phone,
+            ro.restaurant_id,
+            ro.restaurant_name,
+            ro.restaurant_phone,
 
-            ST_X(orr.restaurant_location::geometry) as pickup_longitude,
-            ST_Y(orr.restaurant_location::geometry) as pickup_latitude,
+            ST_X(ro.restaurant_location::geometry) as pickup_longitude,
+            ST_Y(ro.restaurant_location::geometry) as pickup_latitude,
 
-            orr.restaurant_address,
-            orr.created_at
+            ro.restaurant_address,
+            ro.created_at
 
         FROM orders o
 
-        INNER JOIN order_restaurants orr
-            ON o.id = orr.order_id
+        INNER JOIN restaurant_orders ro
+            ON o.id = ro.order_id
 
         WHERE o.id = $1
-            AND orr.id = $2
+            AND ro.id = $2
             AND o.deleted_at IS NULL
-            AND orr.status IN (
+            AND ro.status IN (
                 'created',
                 'confirmed',
                 'accepted',

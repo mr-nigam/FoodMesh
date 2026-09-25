@@ -22,20 +22,20 @@ const fetchOrdersRepo = async({
             o.total_amount,
             o.created_at,
 
-            COUNT(orr.id) AS restaurant_count,
+            COUNT(ro.id) AS restaurant_count,
 
             jsonb_agg(
                 jsonb_build_object(
-                    'id', orr.restaurant_id,
-                    'name', orr.restaurant_name
+                    'id', ro.restaurant_id,
+                    'name', ro.restaurant_name
                 )
-                ORDER BY orr.id ASC
+                ORDER BY ro.id ASC
             ) AS restaurants
 
         FROM orders AS o
 
-        INNER JOIN order_restaurants AS orr
-            ON orr.order_id = o.id
+        INNER JOIN restaurant_orders AS ro
+            ON ro.order_id = o.id
 
         WHERE o.user_id = $1
             AND o.deleted_at IS NULL
@@ -90,30 +90,31 @@ const fetchOrderRepo = async({
 
             jsonb_agg(
                 jsonb_build_object(
-                    'order_restaurant_id', orr.id,
+                    'restaurant_order_id', ro.id,
 
-                    'restaurant_id', orr.restaurant_id,
-                    'name', orr.restaurant_name,
-                    'phone', orr.restaurant_phone,
+                    'restaurant_id', ro.restaurant_id,
+                    'name', ro.restaurant_name,
+                    'phone', ro.restaurant_phone,
 
-                    'longitude', ST_X(orr.restaurant_location::geometry),
-                    'latitude', ST_Y(orr.restaurant_location::geometry),
-                    'address', orr.restaurant_address,
+                    'longitude', ST_X(ro.restaurant_location::geometry),
+                    'latitude', ST_Y(ro.restaurant_location::geometry),
 
-                    'subtotal', orr.subtotal,
-                    'tax_amount', orr.tax_amount,
-                    'delivery_fee', orr.delivery_fee,
-                    'discount_amount', orr.discount_amount,
-                    'total_amount', orr.total_amount,
+                    'address', ro.restaurant_address,
 
-                    'status', orr.status,
+                    'subtotal', ro.subtotal,
+                    'tax_amount', ro.tax_amount,
+                    'delivery_fee', ro.delivery_fee,
+                    'discount_amount', ro.discount_amount,
+                    'total_amount', ro.total_amount,
+
+                    'status', ro.status,
 
                     'ordered_items',
                     (
                         SELECT
                             jsonb_agg(
                                 jsonb_build_object(
-                                    'order_item_id', oi.id,
+                                    'item_order_id', oi.id,
                                     'id', oi.item_id,
                                     'cart_id', oi.cart_id,
                                     'item_name', oi.item_name,
@@ -124,16 +125,16 @@ const fetchOrderRepo = async({
                                 ORDER BY oi.id ASC
                             )
                         FROM order_items AS oi
-                        WHERE oi.order_restaurant_id = orr.id
+                        WHERE oi.restaurant_order_id = ro.id
                     )
                 )
-                ORDER BY orr.id ASC
+                ORDER BY ro.id ASC
             ) AS restaurants
 
         FROM orders AS o
 
-        JOIN order_restaurants AS orr
-            ON o.id = orr.order_id
+        JOIN restaurant_orders AS ro
+            ON o.id = ro.order_id
 
         WHERE o.id = $1
             AND o.user_id = $2
@@ -186,23 +187,23 @@ const cancelOrderRepo = async({
             RETURNING id
         ),
 
-        order_restaurants_details AS (
-            UPDATE order_restaurants
+        restaurants_order_details AS (
+            UPDATE restaurant_orders
             SET 
                 status = 'cancelled'
             WHERE order_id = $1
             AND user_id = $2
             AND status NOT IN (
                 'cancelled',
-                'delivered',
+                'delivered'
             )
             RETURNING restaurant_id
         )
 
         SELECT
-            ARRAY_AGG(ord.restaurant_id) AS restaurant_ids
+            ARRAY_AGG(rod.restaurant_id) AS restaurant_ids
         FROM order_details od
-        LEFT JOIN order_restaurants_details ord
+        LEFT JOIN restaurants_order_details rod
             ON TRUE
         GROUP BY od.id;
     `;

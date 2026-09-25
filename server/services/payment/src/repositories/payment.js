@@ -76,6 +76,7 @@ const fetchPaymentDetailsRepo = async({
 const fetchPaymentByIdRepo = async({
     paymentId
 }) => {
+
     const query = `
         SELECT 
             id,
@@ -99,6 +100,7 @@ const updatePaymentStatusRepo = async({
     paymentId,
     status
 }) => {
+    
     const updateQuery = `
         UPDATE payments
         SET status = $1,

@@ -98,12 +98,12 @@ const createDeliveryRepo = async ({
 
 const getDeliveryRepo = async ({
     orderId,
-    orderRestaurantId
+    restaurantOrderId
 }) => {
 
     const params = [
         orderId,
-        orderRestaurantId
+        restaurantOrderId
     ];
 
     const searchQuery = `
@@ -276,6 +276,7 @@ const batchCreateDeliveryOffersRepo = async({
             expires_at = EXCLUDED.expires_at,
             offered_at = CURRENT_TIMESTAMP
         RETURNING
+            id,
             id AS offer_id,
             rider_id,
             delivery_id,
@@ -307,8 +308,9 @@ const expireDeliveryOffersRepo = async ({
             status = 'expired'
         WHERE id = ANY($1::uuid[])
           AND status = 'offered'
-        RETURNING 
-            id AS delivery_offer_id,
+        RETURNING
+            id,
+            id AS offer_id,
             rider_id,
             delivery_id;
     `;

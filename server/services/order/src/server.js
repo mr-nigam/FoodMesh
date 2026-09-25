@@ -18,11 +18,9 @@ import {
     startOrderConsumer
 } from './consumers/order.js';
 
-//import createOrdersTable from './models/order.js';
-
 
 const startServer = async()=>{
-    
+
     await bootstrapDB({
         connectDB,
         closeDB

@@ -16,48 +16,48 @@ const fetchOrdersRepo = async({
     const searchQuery = `
         SELECT
             o.id AS order_id,
-            ort.id AS order_restaurant_id,
+            ro.id AS restaurant_order_id,
 
             o.recipient_name,
             
             COUNT(oi.item_id) AS item_count,
             SUM(oi.quantity) AS total_quantity,
 
-            ort.subtotal,
-            ort.total_amount,
-            ort.discount_amount,
-            ort.delivery_fee,
-            ort.tax_amount,
+            ro.subtotal,
+            ro.total_amount,
+            ro.discount_amount,
+            ro.delivery_fee,
+            ro.tax_amount,
 
-            ort.status,
+            ro.status,
             o.created_at
 
-        FROM order_restaurants ort
+        FROM restaurant_orders ro
 
         INNER JOIN orders o
-            ON o.id = ort.order_id
+            ON o.id = ro.order_id
 
         INNER JOIN order_items oi
-            ON  ort.id = oi.order_restaurant_id
+            ON  ro.id = oi.restaurant_order_id
         
-        WHERE ort.restaurant_id = $1
+        WHERE ro.restaurant_id = $1
             AND o.deleted_at IS NULL
 
         GROUP BY
             o.id,
-            ort.id,
+            ro.id,
             o.recipient_name,
-            ort.subtotal,
-            ort.discount_amount,
-            ort.delivery_fee,
-            ort.tax_amount,
-            ort.total_amount,
-            ort.status,
+            ro.subtotal,
+            ro.discount_amount,
+            ro.delivery_fee,
+            ro.tax_amount,
+            ro.total_amount,
+            ro.status,
             o.created_at
 
         ORDER BY 
             o.created_at DESC,
-            ort.id DESC
+            ro.id DESC
 
         LIMIT $2
         OFFSET $3;
@@ -84,18 +84,18 @@ const fetchOrderRepo = async({
     const searchQuery = `
         SELECT
             o.id AS order_id,
-            ort.id AS order_restaurant_id,
+            ro.id AS restaurant_order_id,
 
             o.recipient_name,
-            ort.restaurant_id,
+            ro.restaurant_id,
 
-            ort.subtotal,
-            ort.total_amount,
-            ort.discount_amount,
-            ort.delivery_fee,
-            ort.tax_amount,
+            ro.subtotal,
+            ro.total_amount,
+            ro.discount_amount,
+            ro.delivery_fee,
+            ro.tax_amount,
             
-            ort.status,
+            ro.status,
             o.created_at,
             
             jsonb_agg(
@@ -109,29 +109,29 @@ const fetchOrderRepo = async({
                 ORDER BY oi.id ASC
             ) AS items
 
-        FROM order_restaurants ort
+        FROM restaurant_orders ro
 
         INNER JOIN orders o
-            ON o.id = ort.order_id
+            ON o.id = ro.order_id
 
         INNER JOIN order_items oi
-            ON ort.id = oi.order_restaurant_id
+            ON ro.id = oi.restaurant_order_id
         
         WHERE o.id = $1
-            AND ort.restaurant_id = $2
+            AND ro.restaurant_id = $2
         AND o.deleted_at IS NULL
 
         GROUP BY
             o.id,
-            ort.id,
+            ro.id,
             o.recipient_name,
-            ort.restaurant_id,
-            ort.subtotal,
-            ort.discount_amount,
-            ort.delivery_fee,
-            ort.tax_amount,
-            ort.total_amount,
-            ort.status,
+            ro.restaurant_id,
+            ro.subtotal,
+            ro.discount_amount,
+            ro.delivery_fee,
+            ro.tax_amount,
+            ro.total_amount,
+            ro.status,
             o.created_at;
     `;
 
@@ -145,20 +145,20 @@ const fetchOrderRepo = async({
 
 const updateRestaurantOrderStatusRepo = async({
     status,
-    orderRestaurantId,
+    restaurantOrderId,
     orderId,
     restaurantId
 }) => {
     
     const params = [
         status,
-        orderRestaurantId ,
+        restaurantOrderId,
         orderId,
         restaurantId
     ];
 
     const updateQuery = `
-        UPDATE order_restaurants
+        UPDATE restaurant_orders
         SET
             status = $1
         WHERE id = $2

@@ -11,7 +11,7 @@ import {
 
 const fetchOrder = asyncHandler( async(req,res) =>{
     
-    const orderDetails = await fetchOrderService({
+    const order = await fetchOrderService({
         userId: req.params?.userId,
         orderId: req.params?.orderId
     });
@@ -21,7 +21,7 @@ const fetchOrder = asyncHandler( async(req,res) =>{
         .json(
             new ApiResponse(
                 200,
-                {orderDetails},
+                { order },
                 "Order data fatched successfully"
             )
         );

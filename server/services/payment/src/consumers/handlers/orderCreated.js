@@ -2,12 +2,13 @@ import pool from '../../config/postgre.js';
 
 
 const handleOrderCreated = async (payload) => {
-    console.log("handler-1");
 
-    
     const eventData = payload?.eventData || payload;
 
-    if(!eventData || !eventData.orderId){
+    if(
+        !eventData || 
+        !eventData.orderId
+    ){
         console.error("[Payment Service] Invalid event payload received:", payload);
         return null;
     }
@@ -39,6 +40,7 @@ const handleOrderCreated = async (payload) => {
         )
         RETURNING
             id,
+            id AS payment_id,
             user_id,
             order_id,
             amount,
@@ -68,7 +70,6 @@ const handleOrderCreated = async (payload) => {
         throw error;
     }
 
-    console.log("handler-2");
     return newPayment;
 };
 

@@ -36,7 +36,7 @@ const createDeliveryService = async ({
     }
 
     const orderId = order.order_id;
-    const orderRestaurantId = order.order_restaurant_id;
+    const restaurantOrderId = order.restaurant_order_id;
     const userId = order.user_id;
 
     const pickupLongitude = Number(order.pickup_longitude ?? 0);
@@ -89,7 +89,7 @@ const createDeliveryService = async ({
 
     const params = [
         orderId,
-        orderRestaurantId,
+        restaurantOrderId,
         userId,
 
         order.restaurant_id,
@@ -121,7 +121,7 @@ const createDeliveryService = async ({
         );
     }
 
-    const cacheKey = `delivery:order:${orderId}:restaurantOrder:${orderRestaurantId}`;
+    const cacheKey = `delivery:order:${orderId}:restaurantOrder:${restaurantOrderId}`;
 
     await setCache({
         key: cacheKey,

@@ -72,6 +72,7 @@ const cancelOrder = async({
 
     await axios.patch(
         `${orderService}/${orderId}`,
+        {},
         getAuthHeader()
     );
 };

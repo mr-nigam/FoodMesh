@@ -5,7 +5,7 @@ const CartEmptyState = () => {
     return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
             <h2 className="text-2xl font-semibold">Your cart is empty</h2>
-
+restaurantOrderId
             <p className="text-gray-500">
                 Add some delicious food first.
             </p>

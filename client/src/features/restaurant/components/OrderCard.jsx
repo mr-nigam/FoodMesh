@@ -66,7 +66,7 @@ const OrderCard = ({
             await updateRestaurantOrderStatus({
                 orderId,
                 status: nextStatus,
-                orderRestaurantId: order?.order_restaurant_id
+                restaurantOrderId: order?.restaurant_order_id
             });
 
             toast.success(`Order marked as ${nextStatus}`);

@@ -52,7 +52,7 @@ const fetchOrder = asyncHandler ( async (req, res) => {
     
     const order = await fetchOrderService({
         userId: req.user.id,
-        orderId: req.params?.orderId ||  req.params?.id
+        orderId: req.params?.orderId ||  req.query?.orderId
     });
     
     return res
@@ -70,7 +70,7 @@ const cancelOrder = asyncHandler(async (req, res)=>{
     
     const order = await cancelOrderService({
         userId: req.user.id,
-        orderId: req.params?.id ?? req.params?.orderId
+        orderId: req.params?.orderId ?? req.query?.orderId
     });
 
     return res

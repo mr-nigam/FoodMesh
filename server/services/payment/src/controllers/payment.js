@@ -10,6 +10,7 @@ import {
 
 
 const createPaymentAttempts = asyncHandler( async(req, res) => {
+
     const payment = await createPaymentAttemptsService({
         userId: req.user.id,
         body: req.body
@@ -27,6 +28,7 @@ const createPaymentAttempts = asyncHandler( async(req, res) => {
 });
 
 const verifyPayment = asyncHandler( async(req, res) => {
+
     const result = await verifyPaymentService({
         userId: req.user.id,
         body: req.body,
@@ -44,7 +46,6 @@ const verifyPayment = asyncHandler( async(req, res) => {
         );
 });
 
-
 const confirmCod = asyncHandler( async(req, res) => {
     const result = await confirmCodService({
         userId: req.user.id,
@@ -61,6 +62,7 @@ const confirmCod = asyncHandler( async(req, res) => {
             )
         );
 });
+
 
 export {
     createPaymentAttempts,

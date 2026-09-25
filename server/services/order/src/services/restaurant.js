@@ -35,6 +35,7 @@ const ALLOWED_ORDER_STATUS_FOR_UPDATE = [
     'rejected'
 ];
 
+
 const fetchOrdersService = async({
     req
 }) => {
@@ -165,21 +166,21 @@ const updateRestaurantOrderStatusService = async({
         req.params?.orderId ??
         null;
   
-    const orderRestaurantId = 
-        req.body?.orderRestaurantId ?? 
-        req.params?.orderRestaurantId ??
+    const restaurantOrderId = 
+        req.body?.restaurantOrderId ?? 
+        req.params?.restaurantOrderId ??
         null;
 
-    if(!orderId && !orderRestaurantId){
+    if(!orderId && !restaurantOrderId){
         throw new ApiError(
             400,
-            "Please provide orderId or orderRestaurantId"
+            "Please provide orderId or restaurantOrderId"
         );
     }
 
     const order = await updateRestaurantOrderStatusRepo({
         status,
-        orderRestaurantId,
+        restaurantOrderId,
         orderId,
         restaurantId
     });
@@ -219,7 +220,7 @@ const updateRestaurantOrderStatusService = async({
                 eventType,
                 eventData: {
                     orderId,
-                    orderRestaurantId,
+                    restaurantOrderId,
                     restaurantId,
                     userId: order?.user_id
                 }
@@ -244,7 +245,7 @@ const updateRestaurantOrderStatusService = async({
         room: `restaurant:${restaurantId}`,
         payload: {
             orderId,
-            orderRestaurantId,
+            restaurantOrderId,
             status
         }
     });

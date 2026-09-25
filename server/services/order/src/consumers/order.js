@@ -34,7 +34,10 @@ const startOrderConsumer = async() =>{
             event
         })=>{
 
-            const {eventType, data } = event;
+            const {
+                eventType,
+                data
+            } = event;
             
             switch(eventType){
                 case KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING:

@@ -58,14 +58,14 @@ const getOrder = async({
 const updateRestaurantOrderStatus = async({
     orderId,
     status,
-    orderRestaurantId
+    restaurantOrderId
 })=>{
 
        await axios.patch(
             `${orderService}/restaurant/${orderId}`,
             {
                 status,
-                orderRestaurantId
+                restaurantOrderId
             },
             getAuthHeader()
         );
