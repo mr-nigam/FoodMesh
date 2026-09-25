@@ -134,7 +134,7 @@ const fetchProfileService = async({
     riderId
 })=>{
 
-    const cacheKey = `rider:profile:id:${riderId}`;
+    const cacheKey = `rider:profile:${riderId}`;
 
     const cachedRider = await getCache({
         key: cacheKey
@@ -192,11 +192,13 @@ const updateAvailabilityStatusService = async({
     const cacheKey = `riders:active`;
 
     if(availabilityStatus === "online" && rider.longitude && rider.latitude){
+        const memberValue = `${userId}:${riderId}`;
+
         await setGeoCache({
             key: cacheKey,
             longitude: rider.longitude,
             latitude: rider.latitude,
-            memberValue: riderId
+            memberValue,
         });
     }else{
         await deleteGeoCache({
@@ -223,6 +225,7 @@ const updateAvailabilityStatusService = async({
 };
 
 const updateLocationService = async({
+    userId,
     riderId,
     longitude,
     latitude
@@ -264,11 +267,12 @@ const updateLocationService = async({
     }
 
     if(rider.availability_status === "online"){
+        const memberValue = `${userId}:${riderId}`;
         await setGeoCache({
             key: `riders:active`,
             longitude: numLon,
             latitude: numLat,
-            memberValue: riderId
+            memberValue,
         });
     }
 

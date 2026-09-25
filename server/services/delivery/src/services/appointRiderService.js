@@ -46,7 +46,7 @@ const MAX_TOTAL_RIDERS = 40; // Up to 8 batches of 5 riders (30-40 riders)
 const appointRiderService = async ({
     orderId,
     orderRestaurantId,
-    userId,
+    customerUserId,
     restaurantId
 }) => {
 
@@ -95,7 +95,7 @@ const appointRiderService = async ({
         );
     }
 
-    if(delivery.rider_id){
+    if(delivery?.rider_id){
         console.log(`[AppointRider] Delivery ${delivery.delivery_id} is already assigned to rider ${delivery.rider_id}. Skipping.`);
 
         return {
@@ -147,10 +147,14 @@ const appointRiderService = async ({
         if(Array.isArray(redisResults) && redisResults.length > 0){
 
             for(const item of redisResults){
-                const riderId = Array.isArray(item) ? item[0] : item;
+                const[riderUserId, riderId] = item.split(':');
+
                 if(riderId && !seenRiderIds.has(String(riderId))){
                     seenRiderIds.add(String(riderId));
-                    candidateRiders.push(String(riderId));
+                    candidateRiders.push({
+                        riderUserId: riderUserId,
+                        riderId: riderId
+                    });
                 }
             }
 
@@ -179,12 +183,15 @@ const appointRiderService = async ({
             });
 
             if (Array.isArray(dbRiders)){
-                for (const r of dbRiders) {
+                for (const r of dbRiders){
                     const idStr = String(r.id || r.rider_id);
                     
                     if(idStr && !seenRiderIds.has(idStr) && r.user_id){
                         seenRiderIds.add(idStr);
-                        candidateRiders.push(String(idStr));
+                        candidateRiders.push({
+                            riderUserId: r.user_id,
+                            riderId: r.rider_id
+                        });
                     }
                 }
             }
@@ -228,11 +235,14 @@ const appointRiderService = async ({
         
         if(alreadyAssignedRider){
             console.log(`[AppointRider] Delivery already accepted by rider ${alreadyAssignedRider}. Terminating dispatch.`);
-            return { assigned: true, riderId: alreadyAssignedRider };
+            return { 
+                assigned: true,
+                riderId: alreadyAssignedRider
+            };
         }
 
         const expiresAt = new Date(Date.now() + WINDOW_SECONDS * 1000);
-        const riderIds = [...currentBatch];
+        const riderIds = currentBatch.map(r => r.riderId);
 
         const createdOffers = await batchCreateDeliveryOffersRepo({
             deliveryId: delivery.delivery_id,
@@ -246,20 +256,37 @@ const appointRiderService = async ({
         }
 
         // Send real-time request to each rider in the batch
-        const restaurantAddress = typeof delivery.restaurant_address === 'string'
-            ? JSON.parse(delivery.restaurant_address)
-            : (delivery.restaurant_address || {});
+        const safeParseAddress = (address) => {
+            if (!address) return {};
+            if (typeof address === 'object') return address;
+            if (typeof address === 'string') {
+                try {
+                    const parsed = JSON.parse(address);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        return parsed;
+                    }
+                    return { formattedAddress: String(parsed), addressLine1: String(parsed) };
+                } catch {
+                    return { formattedAddress: address, addressLine1: address };
+                }
+            }
+            return {};
+        };
 
-        const deliveryAddress = typeof delivery.delivery_address === 'string'
-            ? JSON.parse(delivery.delivery_address)
-            : (delivery.delivery_address || {});
+        const restaurantAddress = safeParseAddress(delivery.restaurant_address);
+        const deliveryAddress = safeParseAddress(delivery.delivery_address);
 
-        for(const riderId of currentBatch){
+        for(const rider of currentBatch){
+            const {
+                riderId,
+                riderUserId
+            } = rider;
+
             const offer = offerMapByRiderId.get(String(riderId));
             if(!offer) continue;
 
             const offerPayload = {
-                offerId: offer.id,
+                offerId: offer.offer_id,
                 deliveryId: delivery.delivery_id,
                 orderId: delivery.order_id,
                 restaurantOrderId: delivery.restaurant_order_id,
@@ -285,11 +312,11 @@ const appointRiderService = async ({
 
             await emitRealtimeEvent({
                 event: "delivery:offer:new",
-                room: `user:${riderId}`,
+                room: `user:${riderUserId}`,
                 payload: offerPayload
             });
 
-            console.log(`[AppointRider] Sent delivery:offer:new to rider ${riderId} offerId=${offer.id}`);
+            console.log(`[AppointRider] Sent delivery:offer:new to rider ${riderId} offerId=${offer.offer_id}`);
         }
 
         // Wait up to 15 seconds, polling every 1 second for acceptance
@@ -325,17 +352,12 @@ const appointRiderService = async ({
             
             // redis cache cleanup for user, restaurant and rider
             await deleteOrderRelatedCache({
-                userId,
                 orderId,
                 restaurantId,
-                orderRestaurantId,
+                userId: customerUserId,
+                restauranOrderId: orderRestaurantId,
                 riderId: winningRiderId,
                 deliveryId: delivery.delivery_id
-            });
-
-            await deleteGeoCache({
-                key: riderSearchCacheKey,
-                memberValue: winningRiderId
             });
             
             return {
@@ -353,14 +375,19 @@ const appointRiderService = async ({
         });
 
         // Notify the 4 riders that offer has expired
-        for(const riderId of currentBatch){
+        for(const rider of currentBatch){
+            const {
+                riderId,
+                riderUserId
+            } = rider;
+            
             const offer = offerMapByRiderId.get(String(riderId));
             if (offer) {
                 emitRealtimeEvent({
                     event: "delivery:offer:expired",
-                    room: `user:${riderId}`,
+                    room: `user:${riderUserId}`,
                     payload: {
-                        offerId: offer.id,
+                        offerId: offer.offer_id,
                         deliveryId: delivery.delivery_id
                     }
                 }).catch(() => {});

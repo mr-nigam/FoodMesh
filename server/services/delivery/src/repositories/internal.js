@@ -276,7 +276,7 @@ const batchCreateDeliveryOffersRepo = async({
             expires_at = EXCLUDED.expires_at,
             offered_at = CURRENT_TIMESTAMP
         RETURNING
-            id AS delivery_offer_id,
+            id AS offer_id,
             rider_id,
             delivery_id,
             status,

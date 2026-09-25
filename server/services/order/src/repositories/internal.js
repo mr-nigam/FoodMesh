@@ -133,8 +133,6 @@ const fetchRestaurantOrderRepo = async({
         searchQuery,
         params
     );
-
-    console.log(rows[0]);
     
     return rows[0];
 };

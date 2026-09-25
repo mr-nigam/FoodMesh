@@ -188,7 +188,8 @@ const deleteOrderRelatedCache = async({
 
     if(riderId){
         keysToDelete.push(
-            `rider:${riderId}:deliveries`
+            `rider:${riderId}:deliveries`,
+            `analytics:rider:${riderId}`
         );
 
         if(deliveryId){

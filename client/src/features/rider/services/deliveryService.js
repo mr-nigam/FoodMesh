@@ -16,14 +16,15 @@ const acceptDeliveryOffer = async ({
     try{
         const { data } = await axios.put(
             `${deliveryService}/offers/${offerId}/accept`,
-            {deliveryId},
+            { deliveryId },
             getAuthHeader()
         );
         
-        return  data?.data?.delivery ?? data?.delivery
+        return data?.data?.delivery ?? data?.delivery;
 
     }catch(error){
-        console.log(error);
+        console.error("acceptDeliveryOffer error:", error.response?.data || error.message);
+        throw error;
     }
 };
 

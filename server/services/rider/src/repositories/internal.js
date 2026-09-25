@@ -19,10 +19,6 @@ const findNearbyRidersRepo = async ({
         SELECT
             r.id AS rider_id,
             r.user_id,
-            r.name,
-            r.phone,
-            r.email,
-            r.status,
             r.availability_status,
             ST_X(r.location::geometry) AS longitude,
             ST_Y(r.location::geometry) AS latitude,

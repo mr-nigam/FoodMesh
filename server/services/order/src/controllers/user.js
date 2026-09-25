@@ -3,7 +3,9 @@ import {
     ApiResponse
 } from '@foodmesh/utils';
 
-import createOrderService from '../services/createOrder.js';
+import {
+    createOrderService
+} from '../services/createOrder.js';
 
 import {
     fetchOrdersService,
@@ -52,8 +54,6 @@ const fetchOrder = asyncHandler ( async (req, res) => {
         userId: req.user.id,
         orderId: req.params?.orderId ||  req.params?.id
     });
-
-    console.log(order);
     
     return res
         .status(200)

@@ -42,9 +42,24 @@ const createDeliveryService = async ({
     const pickupLongitude = Number(order.pickup_longitude ?? 0);
     const pickupLatitude = Number(order.pickup_latitude ?? 0);
 
-    const deliveryAddress = typeof order.delivery_address === 'string'
-        ? JSON.parse(order.delivery_address)
-        : (order.delivery_address || {});
+    const safeParseAddress = (address) => {
+        if (!address) return {};
+        if (typeof address === 'object') return address;
+        if (typeof address === 'string') {
+            try {
+                const parsed = JSON.parse(address);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    return parsed;
+                }
+                return { formattedAddress: String(parsed), addressLine1: String(parsed) };
+            } catch {
+                return { formattedAddress: address, addressLine1: address };
+            }
+        }
+        return {};
+    };
+
+    const deliveryAddress = safeParseAddress(order.delivery_address);
 
     const dropLongitude = Number(
         order.delivery_longitude ??

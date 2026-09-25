@@ -68,6 +68,7 @@ const updateAvailabilityStatus = asyncHandler(async(req, res)=>{
 const updateLocation = asyncHandler(async(req, res)=>{
 
     const rider = await updateLocationService({
+        userId: req.user.id,
         riderId: req?.user?.riderId?.trim() ?? null,
         longitude: req.body?.longitude,
         latitude: req.body?.latitude

@@ -30,21 +30,24 @@ const ActiveDeliveryCard = ({
     };
 
     const handleNextStep = () => {
-        if (taskStep === "assigned") {
+        if(taskStep === "assigned"){
             onStepChange("arrived_restaurant");
             toast.success("Status updated: Arrived at restaurant");
-        } else if (taskStep === "arrived_restaurant") {
+
+        }else if (taskStep === "arrived_restaurant"){
             const allChecked = task.items?.every((_, idx) => checkedItems[idx]);
             if (task.items?.length > 0 && !allChecked) {
                 toast("Please verify all items in the bag before leaving!", { icon: "⚠️" });
             }
             onStepChange("picked_up");
             toast.success("Order picked up. Heading to customer.");
-        } else if (taskStep === "picked_up") {
+
+        }else if (taskStep === "picked_up"){
             onStepChange("arrived_customer");
             toast.success("Arrived at customer location");
-        } else if (taskStep === "arrived_customer") {
-            if (task.deliveryOtp && otp.trim() !== String(task.deliveryOtp).trim()) {
+
+        }else if (taskStep === "arrived_customer"){
+            if(task.deliveryOtp && otp.trim() !== String(task.deliveryOtp).trim()) {
                 setOtpError(true);
                 toast.error("Invalid Delivery OTP. Ask customer for the 4-digit code.");
                 return;

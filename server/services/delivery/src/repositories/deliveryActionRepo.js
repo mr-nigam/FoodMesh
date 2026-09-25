@@ -20,34 +20,40 @@ const acceptDeliveryOfferRepo = async({
                 rider_id = $3,
                 status = 'accepted',
                 accepted_at = CURRENT_TIMESTAMP
-            WHERE id = $2
-                AND rider_id IS NULL
-                AND status = 'searching_rider'
+            WHERE deliveries.id = $2
+                AND deliveries.rider_id IS NULL
+                AND deliveries.status = 'searching_rider'
                 AND EXISTS (
                     SELECT 1
-                    FROM delivery_offers
-                    WHERE id = $1
-                        AND delivery_id = $2
-                        AND rider_id = $3
-                        AND status = 'offered'
-                        AND expires_at > CURRENT_TIMESTAMP
+                    FROM delivery_offers AS d_offers
+                    WHERE d_offers.id = $1
+                        AND d_offers.delivery_id = $2
+                        AND d_offers.rider_id = $3
+                        AND d_offers.status = 'offered'
+                        AND d_offers.expires_at > CURRENT_TIMESTAMP
                 )
-                RETURNING id
+                RETURNING
+                    deliveries.*,
+                    deliveries.id AS delivery_id
         ),
 
         updated_offers AS (
             UPDATE delivery_offers
             SET
                 status = CASE
-                    WHEN id = $1 THEN 'accepted'
+                    WHEN delivery_offers.id = $1 
+                        THEN 'accepted'
                     ELSE 'cancelled'
                 END,
                 responded_at = CASE
-                    WHEN id = $1 THEN CURRENT_TIMESTAMP
-                    ELSE responded_at
+                    WHEN delivery_offers.id = $1
+                        THEN CURRENT_TIMESTAMP
+                    ELSE delivery_offers.responded_at
                 END
+
             FROM accepted a
-            WHERE delivery_offers.delivery_id = a.id
+
+            WHERE delivery_offers.delivery_id = a.delivery_id
                 AND delivery_offers.expires_at > CURRENT_TIMESTAMP
                 AND (
                     delivery_offers.id = $1
@@ -59,6 +65,7 @@ const acceptDeliveryOfferRepo = async({
                 delivery_offers.rider_id,
                 delivery_offers.status
         )
+
         SELECT *
         FROM accepted
     `;
@@ -69,128 +76,6 @@ const acceptDeliveryOfferRepo = async({
     );
 
     return rows[0];
-}
-
-const acceptDeliveryOfferRepo2 = async({
-    offerId,
-    riderId    
-})=>{
-
-    const client = await pool.connect();
-    
-    try{
-        await client.query('BEGIN');
-
-        // 1. Fetch offer and lock row
-        const offerQuery = `
-            SELECT * FROM delivery_offers
-            WHERE id = $1 AND rider_id = $2
-            FOR UPDATE;
-        `;
-
-        const { rows: offerRows } = await client.query(
-            offerQuery,
-            [offerId, riderId]
-        );
-        
-        if(offerRows.length === 0){
-            await client.query('ROLLBACK');
-            return { error: 'Offer not found or does not belong to you' };
-        }
-
-        const offer = offerRows[0];
-
-        if(offer.status !== 'offered'){
-            await client.query('ROLLBACK');
-            return { error: `Offer is already ${offer.status}` };
-        }
-
-        if(new Date() > new Date(offer.expires_at)){
-            await client.query(
-                `UPDATE delivery_offers SET status = 'expired' WHERE id = $1`,
-                [offerId]
-            );
-            
-            await client.query('COMMIT');
-            return { error: 'Offer has expired' };
-        }
-
-         // 2. Fetch and lock delivery row
-        const deliveryQuery = `
-            SELECT * FROM deliveries
-            WHERE id = $1
-            FOR UPDATE;
-        `;
-
-        const { rows: deliveryRows } = await client.query(
-            deliveryQuery,
-            [offer.delivery_id]
-        );
-        
-        if(deliveryRows.length === 0){
-            await client.query('ROLLBACK');
-            return { error: 'Delivery not found' };
-        }
-
-        const delivery = deliveryRows[0];
-        if(
-            delivery.rider_id || 
-            !['pending', 'searching_rider'].includes(delivery.status)
-        ){
-            await client.query('ROLLBACK');
-            return { error: 'Delivery has already been assigned to another rider' };
-        }
-
-        // 3. Mark offer accepted
-        const updateOfferQuery = `
-            UPDATE delivery_offers
-            SET
-                status = 'accepted',
-                responded_at = CURRENT_TIMESTAMP
-            WHERE id = $1
-            RETURNING *;
-        `;
-        const { rows: updatedOfferRows } = await client.query(
-            updateOfferQuery,
-            [offerId]
-        );
-        
-        // 4. Update delivery row
-        const updateDeliveryQuery = `
-            UPDATE deliveries
-            SET
-                rider_id = $1,
-                status = 'assigned',
-                assigned_at = CURRENT_TIMESTAMP
-            WHERE id = $2
-            RETURNING *;
-        `;
-        const { rows: updatedDeliveryRows } = await client.query(updateDeliveryQuery, [
-            riderId,
-            offer.delivery_id
-        ]);
-
-        // 5. Cancel all other active offers for this delivery
-        await client.query(
-            `UPDATE delivery_offers
-             SET status = 'cancelled'
-             WHERE delivery_id = $1 AND id != $2 AND status = 'offered'`,
-            [offer.delivery_id, offerId]
-        );
-        await client.query('COMMIT');
-        return {
-            success: true,
-            offer: updatedOfferRows[0],
-            delivery: updatedDeliveryRows[0]
-        };
-        
-
-    }catch(error){
-        await client.query('ROLLBACK');
-        throw err;
-    }finally{
-        client.release();
-    }
 };
 
 const rejectDeliveryOfferRepo = async ({

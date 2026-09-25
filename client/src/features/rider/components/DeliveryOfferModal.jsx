@@ -40,7 +40,7 @@ const DeliveryOfferModal = ({
 
     // Countdown Timer Loop
     useEffect(() => {
-        if (!offer) return;
+        if(!offer) return;
 
         // Calculate initial remaining time if expiresAt is provided
         const calcRemaining = () => {

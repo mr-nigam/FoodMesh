@@ -11,7 +11,7 @@ import {
 const fetchRiderMetrics = asyncHandler(async(req, res)=>{
 
     const metrics = await fetchRiderMetricsService({
-        riderId : req.params?.riderId || req.query?.riderId
+        riderId : req.user?.riderId
     });
 
     return res

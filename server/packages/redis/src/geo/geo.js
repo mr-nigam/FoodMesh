@@ -20,7 +20,7 @@ const setGeoCache = async({
             key,
             Number(longitude),
             Number(latitude),
-            String(memberValue)
+            memberValue
         );
 
         return true;
@@ -77,7 +77,7 @@ const deleteGeoCache = async({
     }
 
     try{
-        await redis.zrem(key, String(memberValue));
+        await redis.zrem(key, memberValue);
         return true;
 
     }catch(error){

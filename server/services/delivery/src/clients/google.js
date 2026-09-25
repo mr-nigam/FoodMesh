@@ -18,7 +18,7 @@ const getRoadDistanceAndTime  = async({
             {
                 origin:{
                     location:{
-                        latlng:{
+                        latLng:{
                             latitude: Number(pickupLatitude),
                             longitude: Number(pickupLongitude)
                         }
@@ -26,7 +26,7 @@ const getRoadDistanceAndTime  = async({
                 },
                 destination:{
                     location:{
-                        latlng:{
+                        latLng:{
                             latitude: Number(dropLatitude),
                             longitude: Number(dropLongitude)
                         }

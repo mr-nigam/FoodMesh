@@ -91,14 +91,25 @@ const RiderDashboard = () => {
     const [activeTask, setActiveTask] = useState(null);
     const [taskStep, setTaskStep] = useState("assigned");
 
+    const parseAddressSafe = (val) => {
+        if (!val) return {};
+        if (typeof val === 'object') return val;
+        if (typeof val === 'string') {
+            try {
+                const parsed = JSON.parse(val);
+                if (typeof parsed === 'object' && parsed !== null) return parsed;
+                return { formattedAddress: String(parsed), addressLine1: String(parsed) };
+            } catch {
+                return { formattedAddress: val, addressLine1: val };
+            }
+        }
+        return {};
+    };
+
     const mapDeliveryToTask = (delivery) => {
         if (!delivery) return null;
-        const restaurantAddress = typeof delivery.restaurant_address === 'string'
-            ? JSON.parse(delivery.restaurant_address)
-            : (delivery.restaurant_address || {});
-        const deliveryAddress = typeof delivery.delivery_address === 'string'
-            ? JSON.parse(delivery.delivery_address)
-            : (delivery.delivery_address || {});
+        const restaurantAddress = parseAddressSafe(delivery.restaurant_address);
+        const deliveryAddress = parseAddressSafe(delivery.delivery_address);
 
         return {
             deliveryId: delivery.id,
@@ -326,7 +337,7 @@ const RiderDashboard = () => {
 
     const handleAcceptIncomingOffer = async (offer) => {
         try {
-            const res = await acceptDeliveryOffer({ offerId: offer.offerId });
+            const res = await acceptDeliveryOffer({ offerId: offer.offerId, deliveryId: offer.deliveryId });
             toast.success("Delivery offer accepted! Head to the restaurant.", { icon: "🎉" });
             setIncomingOffer(null);
 

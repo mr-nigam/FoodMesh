@@ -1,6 +1,6 @@
 import {
     setCache,
-    deleteCache
+    deleteGeoCache
 } from '@foodmesh/redis';
 
 import {
@@ -33,7 +33,7 @@ const acceptOfferService = async ({
     const userId = req.user?.id?.trim();
 
     const offerId = req.params?.offerId;
-    const deliveryId = req.body?.deliveryId;
+    const deliveryId = req.body?.deliveryId ?? req.query?.deliveryId;
 
     if(!riderId){
         throw new ApiError(
@@ -42,13 +42,10 @@ const acceptOfferService = async ({
         );
     }
 
-    if(
-        !offerId || 
-        !deliveryId
-    ){
+    if(!offerId){
         throw new ApiError(
             400,
-            "Offer ID and Delivery ID are required"
+            "Offer ID is required"
         );
     }
 
@@ -61,14 +58,15 @@ const acceptOfferService = async ({
     if(!delivery){
         throw new ApiError(
             400,
-            "Fail to accept the order"
+            "Failed to accept the offer. It may have expired or already been accepted."
         );
     }
 
+    const resolvedDeliveryId = delivery.delivery_id || delivery.id || deliveryId;
 
     // Cache assigned rider in Redis so appointRiderService loop terminates immediately
     await setCache({
-        key: `delivery:${deliveryId}:assigned_rider`,
+        key: `delivery:${resolvedDeliveryId}:assigned_rider`,
         value: riderId,
         ttl: 3600
     });
@@ -78,7 +76,7 @@ const acceptOfferService = async ({
         event: "delivery:offer:accepted",
         room: `user:${userId}`,
         payload: {
-            deliveryId: deliveryId,
+            deliveryId: resolvedDeliveryId,
             orderId: delivery.order_id,
             restaurantOrderId: delivery.restaurant_order_id,
             status: delivery.status
@@ -100,28 +98,34 @@ const acceptOfferService = async ({
     try {
         await publishEvent({
             topic: KAFKA_TOPICS.DELIVERY,
-            key: delivery.delivery_id,
+            key: resolvedDeliveryId,
             event: {
                 eventType: KAFKA_EVENTS.DELIVERY.RIDER_ASSIGNED,
                 timestamp: new Date().toISOString(),
                 data: {
-                    deliveryId: delivery.delivery_id,
+                    deliveryId: resolvedDeliveryId,
                     orderId: delivery.order_id,
                     restaurantOrderId: delivery.restaurant_order_id,
                     riderId,
                     userId: delivery.user_id,
-                    assignedAt: delivery.assigned_at
+                    assignedAt: delivery.accepted_at || delivery.assigned_at || new Date().toISOString()
                 }
             }
         });
-    } catch (kErr) {
+
+    }catch(kErr){
         console.warn("[Kafka] Failed to publish DELIVERY.RIDER_ASSIGNED event:", kErr.message);
     }
 
-    return {
-        delivery,
-        offer
-    };
+    const riderSearchCacheKey = 'riders:active';
+    const memberValue = `${userId}:${riderId}`;
+
+    await deleteGeoCache({
+        key: riderSearchCacheKey,
+        memberValue
+    });
+
+    return delivery;
 };
 
 const rejectOfferService = async ({
