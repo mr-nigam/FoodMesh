@@ -10,6 +10,7 @@ import {
 } from '@foodmesh/utils';
 
 import riderRouter from './routes/rider.js';
+import internalRouter from './routes/internal.js';
 
 
 const app = express();
@@ -36,6 +37,7 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/rider/internal", internalRouter);
 app.use("/api/v1/rider", riderRouter);
 
 

@@ -7,7 +7,10 @@ import { realtimeService } from '../config/constants.js';
 const SOCKET_URL =
     import.meta.env.VITE_REALTIME_URL || realtimeService;
 
-const SocketProvider = ({ children }) => {
+const SocketProvider = ({
+    children
+}) => {
+
     const { isAuth, user } = useAppData();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
@@ -17,7 +20,7 @@ const SocketProvider = ({ children }) => {
             localStorage.getItem('token') ||
             localStorage.getItem('accessToken');
 
-        if (!isAuth || !token) {
+        if(!isAuth || !token){
             if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
@@ -26,7 +29,7 @@ const SocketProvider = ({ children }) => {
             return;
         }
 
-        if (socketRef.current?.connected) return;
+        if(socketRef.current?.connected) return;
 
         const newSocket = io(SOCKET_URL, {
             auth: {
@@ -82,7 +85,7 @@ const SocketProvider = ({ children }) => {
             }
             setSocket(null);
         };
-    }, [isAuth, user?.id, user?._id]);
+    }, [isAuth, user?.id, user?._id, user?.professional_id]);
 
     return (
         <SocketContext.Provider value={socket}>

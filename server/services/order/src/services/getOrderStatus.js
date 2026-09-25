@@ -29,7 +29,7 @@ const getOverallOrderStatus = ({
     }
     
     // All order reject
-    if(statuses.some(status => status === "rejected")){
+    if(statuses.every(status => status === "rejected")){
         return "rejected";
     }
 

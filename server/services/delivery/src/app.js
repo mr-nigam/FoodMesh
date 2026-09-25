@@ -10,6 +10,9 @@ import {
 } from '@foodmesh/utils';
 
 
+import deliveryRouter from './routes/delivery.js';
+
+
 const app = express();
 
 
@@ -34,6 +37,7 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/delivery", deliveryRouter);
 
 
 app.use((req,res,next)=>{

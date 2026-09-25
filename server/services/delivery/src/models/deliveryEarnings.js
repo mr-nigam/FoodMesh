@@ -9,7 +9,6 @@ const createDeliveryEarningsTable = async () => {
     try{
         await pool.query(`
             CREATE TABLE IF NOT EXISTS delivery_earnings (
-
                 id UUID PRIMARY KEY
                     DEFAULT gen_random_uuid(),
 

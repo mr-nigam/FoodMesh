@@ -138,6 +138,81 @@ const getPaginatedList = async({
     return items;
 };
 
+const deleteOrderRelatedCache = async({
+    userId = null,
+    restaurantId = null,
+    riderId = null,
+    orderId = null,
+    restauranOrderId = null,
+    deliveryId = null
+})=>{
+
+    
+    const keysToDelete = [];
+
+    if(userId){
+        keysToDelete.push(
+            `user:${userId}:orders`
+        );
+
+        if(orderId){
+            keysToDelete.push(
+                `user:${userId}:order:${orderId}`
+            );
+        }
+    }
+
+    if(restaurantId){
+        keysToDelete.push(
+            `restaurant:${restaurantId}:orders`
+        );
+
+        if(orderId){
+            keysToDelete.push(
+                `restaurant:${restaurantId}:order:${orderId}`
+            );
+        }
+
+        if(restauranOrderId){
+            keysToDelete.push(
+                `restaurant:${restaurantId}:restaurantOrder:${restauranOrderId}`
+            );
+        }
+    }
+
+    if(orderId){
+        keysToDelete.push(
+            `orderId:${orderId}:status`
+        );
+    }
+
+    if(riderId){
+        keysToDelete.push(
+            `rider:${riderId}:deliveries`
+        );
+
+        if(deliveryId){
+            keysToDelete.push(
+                `rider:${riderId}:delivery:${deliveryId}`
+            );
+        }   
+    }
+
+    if(orderId && restauranOrderId){
+        keysToDelete.push(
+            `delivery:order:${orderId}:restaurantOrder:${restauranOrderId}`
+        );
+    }
+
+    if(keysToDelete.length > 0){
+        await deleteMultipleCache({
+            keys: keysToDelete
+        });
+    }
+
+    return true;
+};
+
 
 export{
     setCache,
@@ -145,5 +220,6 @@ export{
     deleteCache,
     deleteMultipleCache,
     cachePaginatedList,
-    getPaginatedList
+    getPaginatedList,
+    deleteOrderRelatedCache
 };

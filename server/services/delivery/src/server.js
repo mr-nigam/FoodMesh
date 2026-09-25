@@ -25,7 +25,7 @@ const startServer = async()=>{
         connectDB,
         closeDB
     });
-
+    
     await connectProducer();
 
     await startOrderConsumer();

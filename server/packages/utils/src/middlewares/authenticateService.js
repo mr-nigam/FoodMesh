@@ -4,7 +4,12 @@ const currentServiceKeys = {
     "cart-service": process.env.CART_SERVICE_KEY,
     "rider-service": process.env.RIDER_SERVICE_KEY,
     "payment-service": process.env.PAYMENT_SERVICE_KEY,
-    "user-service": process.env.USER_SERVICE_KEY
+    "user-service": process.env.USER_SERVICE_KEY,
+    "delivery-service": process.env.DELIVERY_SERVICE_KEY,
+    "analytics-service": process.env.ANALYTICS_SERVICE_KEY,
+    "auth-service": process.env.AUTH_SERVICE_KEY,
+    "notification-service": process.env.NOTIFICATON_SERVICE_KEY,
+    "realtime-service": process.env.REALTIME_SERVICE_KEY,
 };
 
 const authenticateService = (req, res, next) => {

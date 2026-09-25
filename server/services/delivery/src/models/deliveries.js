@@ -30,10 +30,10 @@ const createDeliveriesTable = async () => {
                 restaurant_name VARCHAR(255) NOT NULL,
                 restaurant_address JSONB NOT NULL,
 
-                customer_name VARCHAR(255) NOT NULL,
-                customer_phone VARCHAR(15) NOT NULL
+                recipient_name VARCHAR(255) NOT NULL,
+                recipient_phone VARCHAR(15) NOT NULL
                     CHECK (
-                        customer_phone ~ '^\\+[1-9][0-9]{6,14}$'
+                        recipient_phone ~ '^\\+[1-9][0-9]{6,14}$'
                     ),
 
                 delivery_address JSONB NOT NULL,
@@ -42,11 +42,16 @@ const createDeliveriesTable = async () => {
 
                 drop_location GEOGRAPHY(POINT, 4326) NOT NULL,
 
+                aerial_distance_meters INTEGER
+                    CHECK (
+                        aerial_distance_meters >= 0
+                    ),
+                
                 estimated_distance_meters INTEGER
                     CHECK (
                         estimated_distance_meters >= 0
                     ),
-
+                
                 actual_distance_meters INTEGER
                     CHECK (
                         actual_distance_meters >= 0
@@ -103,6 +108,9 @@ const createDeliveriesTable = async () => {
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_deliveries_order_id
                 ON deliveries(order_id);
+
+            CREATE INDEX IF NOT EXISTS idx_deliveries_restaurant_order_id
+                ON deliveries(restaurant_order_id);
 
             CREATE INDEX IF NOT EXISTS idx_deliveries_user_id
                 ON deliveries(user_id);

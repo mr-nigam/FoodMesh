@@ -1,7 +1,23 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { 
+    useEffect, 
+    useState
+} from "react";
+import {
+    useNavigate,
+    Link
+} from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+    BiCycling,
+    BiCar,
+    BiRupee,
+    BiMapPin,
+    BiPlay,
+} from "react-icons/bi";
+
+
 import useAppData from "../../../context/useAppData.js";
+import useSocket from "../../../context/useSocket.js";
 
 import {
     getRiderProfile,
@@ -10,23 +26,27 @@ import {
     getRiderVehicles,
     getRiderMetrics
 } from "../services/riderService.js";
-import { getCurrentRiderCoords, startRiderLocationWatch } from "../utils/riderLocation.js";
+import {
+    acceptDeliveryOffer,
+    rejectDeliveryOffer,
+    getActiveDelivery,
+    updateDeliveryProgress
+} from "../services/deliveryService.js";
+import { 
+    getCurrentRiderCoords,
+    startRiderLocationWatch 
+} from "../utils/riderLocation.js";
 
 import RiderNavbar from "../components/RiderNavbar.jsx";
 import RiderLiveMap from "../components/RiderLiveMap.jsx";
 import ActiveDeliveryCard from "../components/ActiveDeliveryCard.jsx";
+import DeliveryOfferModal from "../components/DeliveryOfferModal.jsx";
 import RiderEarnings from "../components/RiderEarnings.jsx";
 import RiderVehicles from "../components/RiderVehicles.jsx";
 import RiderDeliveriesHistory from "../components/RiderDeliveriesHistory.jsx";
 import RiderProfile from "../components/RiderProfile.jsx";
 
-import {
-    BiCycling,
-    BiCar,
-    BiRupee,
-    BiMapPin,
-    BiPlay,
-} from "react-icons/bi";
+
 
 
 const sampleDemoTask = {
@@ -53,6 +73,7 @@ const RiderDashboard = () => {
     const { user, setUser } = useAppData();
     const navigate = useNavigate();
 
+    const socket = useSocket();
     const [profile, setProfile] = useState(null);
     const [vehicles, setVehicles] = useState([]);
     const [metrics, setMetrics] = useState(null);
@@ -63,9 +84,46 @@ const RiderDashboard = () => {
     const [gettingLocation, setGettingLocation] = useState(false);
     const [activeTab, setActiveTab] = useState("dashboard");
 
+    // Incoming Realtime Offer modal state
+    const [incomingOffer, setIncomingOffer] = useState(null);
+
     // Active delivery task state
     const [activeTask, setActiveTask] = useState(null);
     const [taskStep, setTaskStep] = useState("assigned");
+
+    const mapDeliveryToTask = (delivery) => {
+        if (!delivery) return null;
+        const restaurantAddress = typeof delivery.restaurant_address === 'string'
+            ? JSON.parse(delivery.restaurant_address)
+            : (delivery.restaurant_address || {});
+        const deliveryAddress = typeof delivery.delivery_address === 'string'
+            ? JSON.parse(delivery.delivery_address)
+            : (delivery.delivery_address || {});
+
+        return {
+            deliveryId: delivery.id,
+            orderId: delivery.order_id,
+            restaurantName: delivery.restaurant_name || "Restaurant",
+            restaurantAddress: restaurantAddress?.formattedAddress || restaurantAddress?.addressLine1 || "Restaurant Location",
+            restaurantPhone: delivery.restaurant_phone || "+919876543210",
+            restaurantCoords: {
+                latitude: Number(delivery.pickup_latitude || 28.6315),
+                longitude: Number(delivery.pickup_longitude || 77.2167)
+            },
+            customerName: delivery.recipient_name || "Customer",
+            customerAddress: deliveryAddress?.formattedAddress || deliveryAddress?.addressLine1 || "Customer Address",
+            customerPhone: delivery.recipient_phone || "+919811223344",
+            customerCoords: {
+                latitude: Number(delivery.drop_latitude || 28.6289),
+                longitude: Number(delivery.drop_longitude || 77.2245)
+            },
+            items: delivery.items || [
+                { name: "Order Package", quantity: 1 }
+            ],
+            earnings: 65.0,
+            deliveryOtp: "4589"
+        };
+    };
 
     // Initial Data Fetch
     const fetchDashboardData = async () => {
@@ -80,13 +138,19 @@ const RiderDashboard = () => {
             setProfile(prof);
             setAvailabilityStatus(prof.availability_status || "offline");
 
-            const [vehList, met] = await Promise.all([
+            const [vehList, met, activeDel] = await Promise.all([
                 getRiderVehicles().catch(() => []),
-                getRiderMetrics().catch(() => null)
+                getRiderMetrics().catch(() => null),
+                getActiveDelivery().catch(() => null)
             ]);
 
             setVehicles(Array.isArray(vehList) ? vehList : []);
             setMetrics(met);
+
+            if (activeDel) {
+                setActiveTask(mapDeliveryToTask(activeDel));
+                setTaskStep(activeDel.status === "assigned" ? "assigned" : activeDel.status);
+            }
         } catch (err) {
             console.error("Failed to load rider profile:", err);
             if (err.response?.status === 404 || err.message?.includes("not found")) {
@@ -221,9 +285,98 @@ const RiderDashboard = () => {
         }
     };
 
+    // Realtime Socket Listeners for Delivery Offers
+    useEffect(() => {
+        if (!socket || !user || user.role !== "rider") return;
+
+        const handleNewOffer = (offerPayload) => {
+            console.log("🔔 [Rider Socket] Received incoming delivery offer:", offerPayload);
+            if (availabilityStatus === "online") {
+                setIncomingOffer(offerPayload);
+            }
+        };
+
+        const handleOfferExpired = (data) => {
+            setIncomingOffer((current) => {
+                if (current?.offerId === data?.offerId) return null;
+                return current;
+            });
+        };
+
+        const handleOfferCancelled = (data) => {
+            setIncomingOffer((current) => {
+                if (current?.offerId === data?.offerId || current?.deliveryId === data?.deliveryId) {
+                    toast("Delivery offer was accepted by another rider", { icon: "ℹ️" });
+                    return null;
+                }
+                return current;
+            });
+        };
+
+        socket.on("delivery:offer:new", handleNewOffer);
+        socket.on("delivery:offer:expired", handleOfferExpired);
+        socket.on("delivery:offer:cancelled", handleOfferCancelled);
+
+        return () => {
+            socket.off("delivery:offer:new", handleNewOffer);
+            socket.off("delivery:offer:expired", handleOfferExpired);
+            socket.off("delivery:offer:cancelled", handleOfferCancelled);
+        };
+    }, [socket, user, availabilityStatus]);
+
+    const handleAcceptIncomingOffer = async (offer) => {
+        try {
+            const res = await acceptDeliveryOffer({ offerId: offer.offerId });
+            toast.success("Delivery offer accepted! Head to the restaurant.", { icon: "🎉" });
+            setIncomingOffer(null);
+
+            const delivery = res?.delivery || res;
+            setActiveTask(mapDeliveryToTask({
+                ...delivery,
+                restaurant_name: offer.restaurantName,
+                restaurant_address: offer.restaurantAddress,
+                recipient_name: offer.recipientName,
+                recipient_phone: offer.recipientPhone,
+                delivery_address: offer.deliveryAddress,
+                pickup_latitude: offer.pickupCoords?.latitude,
+                pickup_longitude: offer.pickupCoords?.longitude,
+                drop_latitude: offer.dropCoords?.latitude,
+                drop_longitude: offer.dropCoords?.longitude
+            }));
+            setTaskStep("assigned");
+            setActiveTab("dashboard");
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message;
+            toast.error(`Could not accept offer: ${msg}`);
+            setIncomingOffer(null);
+        }
+    };
+
+    const handleDeclineIncomingOffer = async (offer) => {
+        try {
+            await rejectDeliveryOffer({ offerId: offer.offerId });
+        } catch(e) {
+            console.log(e);
+            // ignore
+        }
+        setIncomingOffer(null);
+    };
+
     // Handle Active Delivery Step & Completion
-    const handleStepChange = (newStep) => {
+    const handleStepChange = async (newStep) => {
         setTaskStep(newStep);
+
+        if (activeTask?.deliveryId) {
+            try {
+                await updateDeliveryProgress({
+                    deliveryId: activeTask.deliveryId,
+                    status: newStep
+                });
+            } catch (err) {
+                console.warn("Could not sync step to delivery service:", err.message);
+            }
+        }
+
         if (newStep === "delivered") {
             setAvailabilityStatus("online");
         }
@@ -487,6 +640,16 @@ const RiderDashboard = () => {
                 {/* TAB: PROFILE */}
                 {activeTab === "profile" && <RiderProfile rider={profile} />}
             </main>
+
+            {/* Incoming Realtime Delivery Offer Modal (15s Window Batch Dispatch) */}
+            {incomingOffer && (
+                <DeliveryOfferModal
+                    offer={incomingOffer}
+                    onAccept={handleAcceptIncomingOffer}
+                    onDecline={handleDeclineIncomingOffer}
+                    onExpired={() => setIncomingOffer(null)}
+                />
+            )}
         </div>
     );
 };

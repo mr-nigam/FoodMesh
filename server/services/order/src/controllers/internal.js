@@ -4,12 +4,14 @@ import{
 } from '@foodmesh/utils';
 
 import {
-    fetchOrderForPaymentService
+    fetchOrderService,
+    fetchRestaurantOrderService
 } from '../services/internal.js';
+
 
 const fetchOrder = asyncHandler( async(req,res) =>{
     
-    const orderDetails = await fetchOrderForPaymentService({
+    const orderDetails = await fetchOrderService({
         userId: req.params?.userId,
         orderId: req.params?.orderId
     });
@@ -25,7 +27,28 @@ const fetchOrder = asyncHandler( async(req,res) =>{
         );
 });
 
+const fetchRestaurantOrder = asyncHandler(async(req, res)=>{
+
+    const order = await fetchRestaurantOrderService({
+        params: {
+            ...req.params,
+            ...req.query
+        }
+    });
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {order},
+                "Fetched restaurant order successfully"
+            )
+        );
+});
+
 
 export {
-    fetchOrder
+    fetchOrder,
+    fetchRestaurantOrder
 };

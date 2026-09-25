@@ -1,7 +1,7 @@
 import pool from '../config/postgre.js';
 
 
-const fetchOrderForPaymentRepo = async ({
+const fetchOrderRepo = async ({
     orderId,
     userId
 }) => {
@@ -82,9 +82,67 @@ const updateOrderStatusRepo = async({
     return rows[0];
 };
 
+const fetchRestaurantOrderRepo = async({
+    orderId,
+    orderRestaurantId
+})=>{
+
+    const params = [
+        orderId,
+        orderRestaurantId
+    ];
+
+    const searchQuery = `
+        SELECT
+            o.user_id,
+            orr.order_id AS order_id,
+            orr.id AS order_restaurant_id,
+
+            o.recipient_name,
+            o.recipient_phone,
+            o.delivery_address,
+
+            orr.restaurant_id,
+            orr.restaurant_name,
+            orr.restaurant_phone,
+
+            ST_X(orr.restaurant_location::geometry) as pickup_longitude,
+            ST_Y(orr.restaurant_location::geometry) as pickup_latitude,
+
+            orr.restaurant_address,
+            orr.created_at
+
+        FROM orders o
+
+        INNER JOIN order_restaurants orr
+            ON o.id = orr.order_id
+
+        WHERE o.id = $1
+            AND orr.id = $2
+            AND o.deleted_at IS NULL
+            AND orr.status IN (
+                'created',
+                'confirmed',
+                'accepted',
+                'preparing',
+                'ready'        
+            );
+    `;
+
+    const {rows} = await pool.query(
+        searchQuery,
+        params
+    );
+
+    console.log(rows[0]);
+    
+    return rows[0];
+};
+
 
 export {
-    fetchOrderForPaymentRepo,
+    fetchOrderRepo,
     getOrdersForStatusUpdate,
-    updateOrderStatusRepo
+    updateOrderStatusRepo,
+    fetchRestaurantOrderRepo
 };

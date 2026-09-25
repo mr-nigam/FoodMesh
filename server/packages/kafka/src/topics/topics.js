@@ -1,9 +1,30 @@
 const KAFKA_TOPICS = Object.freeze({
+    ADMIN: 
+        "foodmesh.admin",
+
+    ANALYTICS:
+        "foodmesh.analytics",
+
+    AUTH: 
+        "foodmesh.auth",
+
+    CART:
+        "foodmesh.cart",
+    
+    DELIVERY:
+        "foodmesh.delivery",
+
+    NOTIFICATION:
+        "foodmesh.notification",
+
     ORDER:
         "foodmesh.order",
 
     PAYMENT:
         "foodmesh.payment",
+    
+    REALTIME:
+        "foodmesh.realtime",
 
     RESTAURANT:
         "foodmesh.restaurant",
@@ -11,20 +32,11 @@ const KAFKA_TOPICS = Object.freeze({
     RIDER:
         "foodmesh.rider",
 
-    DELIVERY:
-        "foodmesh.delivery",
-
     REVIEW:
         "foodmesh.review",
-    
-    CART:
-        "foodmesh.cart",
 
-    NOTIFICATION:
-        "foodmesh.notification",
-
-    ANALYTICS:
-        "foodmesh.analytics"
+    USER:
+        "foodmesh.user"
 });
 
 

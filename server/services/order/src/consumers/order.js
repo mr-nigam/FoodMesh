@@ -38,6 +38,7 @@ const startOrderConsumer = async() =>{
             
             switch(eventType){
                 case KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING:
+                case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_REJECTED:
                     await orderStatusUpdateHandler(data);
                     break;
                 

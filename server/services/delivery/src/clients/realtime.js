@@ -6,6 +6,7 @@ const emitRealtimeEvent = async ({
     room,
     payload
 }) => {
+    
     try{
         const realtimeUrl = process.env.REALTIME_SERVICE_URL || 'http://localhost:4009';
 

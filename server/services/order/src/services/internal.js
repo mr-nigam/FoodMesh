@@ -1,8 +1,12 @@
-import { ApiError } from '@foodmesh/utils';
 import { 
-    fetchOrderForPaymentRepo,
+    ApiError
+} from '@foodmesh/utils';
+
+import { 
+    fetchOrderRepo,
     getOrdersForStatusUpdate,
-    updateOrderStatusRepo
+    updateOrderStatusRepo,
+    fetchRestaurantOrderRepo
 } from '../repositories/internal.js';
 
 import {
@@ -10,15 +14,22 @@ import {
 } from './getOrderStatus.js';
 
 
-const fetchOrderForPaymentService = async ({
+const fetchOrderService = async ({
     userId,
     orderId
 }) => {
-    if (!orderId || !userId) {
-        throw new ApiError(400, "User ID and Order ID are required");
+    
+    if(
+        !orderId || 
+        !userId
+    ){
+        throw new ApiError(
+            400,
+            "User ID and Order ID are required"
+        );
     }
 
-    const order = await fetchOrderForPaymentRepo({
+    const order = await fetchOrderRepo({
         orderId,
         userId
     });
@@ -57,7 +68,43 @@ const updateOrderStatusService = async({
     return order;
 }
 
+const fetchRestaurantOrderService = async({
+    params
+})=>{
+
+    const {
+        orderId,
+        orderRestaurantId
+    } = params;
+
+    if(
+        !orderId || 
+        !orderRestaurantId
+    ){
+        throw new ApiError(
+            400,
+            "Please provide order ID and restaurant order ID"
+        );
+    }
+
+    const order = await fetchRestaurantOrderRepo({
+        orderId,
+        orderRestaurantId
+    });
+
+    if(!order){
+        throw new ApiError(
+            500,
+            "Restaurant Order not found"
+        );
+    }
+
+    return order;
+};
+
+
 export {
-    fetchOrderForPaymentService,
-    updateOrderStatusService
+    fetchOrderService,
+    updateOrderStatusService,
+    fetchRestaurantOrderService
 };

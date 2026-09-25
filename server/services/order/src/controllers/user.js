@@ -53,6 +53,8 @@ const fetchOrder = asyncHandler ( async (req, res) => {
         orderId: req.params?.orderId ||  req.params?.id
     });
 
+    console.log(order);
+    
     return res
         .status(200)
         .json(

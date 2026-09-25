@@ -11,6 +11,7 @@ const KAFKA_EVENTS = Object.freeze({
         READY: "order.ready",
         
         RESTAURANT_ORDER_READY: "order.restaurant.ready",
+        RESTAURANT_ORDER_REJECTED: "order.restaurant.REJECTED",
         RESTAURANT_STATUS_UPDATING: "order.restaurant.status.updating"
     },
 

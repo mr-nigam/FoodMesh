@@ -7,8 +7,12 @@ import {
 } from "@foodmesh/kafka";
 
 import {
-    delievryHandler
-} from './handlers/processDelivery.js'
+    createDelivery
+} from './handlers/createDelivery.js';
+
+import {
+    appointRider
+} from './handlers/appointRider.js'
 
 
 const consumer = createConsumer({
@@ -38,12 +42,20 @@ const startOrderConsumer = async() =>{
             const {eventType, data }= event;
             
             switch(eventType){
-                case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY:
-                    await delievryHandler(data);
+                case KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING:
+                    await createDelivery({
+                        payload: data
+                    });
                     break;
 
+                case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY:
+                    await appointRider({
+                       payload: data
+                    });
+                    break;
+                    
                 default:
-                    console.log(`[Order Service] Unhandled event type: ${eventType}`);
+                    console.log(`[Delivery Service] Unhandled event type: ${eventType}`);
                     break;
             }
         }

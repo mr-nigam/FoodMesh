@@ -202,13 +202,15 @@ const updateRestaurantOrderStatusService = async({
     const upperStatus = status.toUpperCase();
     if(
         upperStatus === 'ACCEPTED' ||
-        upperStatus === 'REJECTED' ||
         upperStatus === 'PREPARING'
     ){
         eventType = KAFKA_EVENTS.ORDER.RESTAURANT_STATUS_UPDATING;
 
     }else if(upperStatus === 'READY'){
         eventType = KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY;
+        
+    }else if(upperStatus === 'REJECTED'){
+         eventType = KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_REJECTED;
     }
 
     if(eventType){
