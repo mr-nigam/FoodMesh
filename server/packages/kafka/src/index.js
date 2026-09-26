@@ -39,3 +39,7 @@ export {
 export{
     createRiderEvent
 } from './events/riderEvents.js';
+
+export {
+    createDeliveryEvent
+} from './events/deliveryEvents.js';

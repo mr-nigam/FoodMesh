@@ -6,7 +6,8 @@ import {
     fetchOrderRepo,
     getOrdersForStatusUpdate,
     updateOrderStatusRepo,
-    fetchRestaurantOrderRepo
+    fetchRestaurantOrderRepo,
+    deliveryUpdateRepo
 } from '../repositories/internal.js';
 
 import {
@@ -105,9 +106,44 @@ const fetchRestaurantOrderService = async({
     return order;
 };
 
+const deliveryUpdateService = async({
+    orderId,
+    restaurantOrderId,
+    status
+})=>{
+
+    const restOrder = await deliveryUpdateRepo({
+        orderId,
+        restaurantOrderId,
+        status
+    });
+
+    if(!restOrder){
+        throw Error(
+            "Fail to update restaurant order status"
+        );
+    }
+
+    const restaurantOrders = await getOrdersForStatusUpdate({
+        orderId
+    });
+
+    const orderStatus = getOverallOrderStatus({
+        restaurantOrders 
+    });
+
+    await updateOrderStatusRepo({
+        orderId,
+        status: orderStatus
+    });
+    
+    return restOrder;
+}
+
 
 export {
     fetchOrderService,
     updateOrderStatusService,
-    fetchRestaurantOrderService
+    fetchRestaurantOrderService,
+    deliveryUpdateService
 };

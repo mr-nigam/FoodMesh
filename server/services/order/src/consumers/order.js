@@ -10,6 +10,9 @@ import {
     orderStatusUpdateHandler
 } from './handlers/orderStatusUpdateHandler.js';
 
+import{
+    deliveryUpdate
+} from './handlers/deliveryHandler.js';
 
 const consumer = createConsumer({
     groupId: "order-service",
@@ -47,6 +50,34 @@ const startOrderConsumer = async() =>{
                 
                 case KAFKA_EVENTS.ORDER.RESTAURANT_ORDER_READY:
                     await orderStatusUpdateHandler(data);
+                    break;
+
+                case KAFKA_EVENTS.DELIVERY.RIDER_ASSIGNED:
+                    await deliveryUpdate({
+                        payload: data,
+                        status: "rider_assigned"
+                    });
+                    break;
+
+                case KAFKA_EVENTS.DELIVERY.PICKED_UP:
+                    await deliveryUpdate({
+                        payload: data,
+                        status: "picked_up"
+                    });
+                    break;
+
+                case KAFKA_EVENTS.DELIVERY.ON_THE_WAY:
+                    await deliveryUpdate({
+                        payload: data,
+                        status: "rider_assigned"
+                    });
+                    break;
+                
+                case KAFKA_EVENTS.DELIVERY.DELIVERED:
+                    await deliveryUpdate({
+                        payload: data,
+                        status: "delivered"
+                    });
                     break;
 
                 default:

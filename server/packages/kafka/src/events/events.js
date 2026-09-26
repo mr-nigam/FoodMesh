@@ -25,7 +25,7 @@ const KAFKA_EVENTS = Object.freeze({
     DELIVERY: {
         RIDER_ASSIGNED: "rider.rider_assigned",
         PICKED_UP: "delivery.picked_up",
-        STARTED: "delivery.started",
+        ON_THE_WAY: "delivery.on_the_way",
         DELIVERED: "delivery.delivered"
     },
 

@@ -380,7 +380,7 @@ const appointRiderService = async ({
             } = rider;
             
             const offer = offerMapByRiderId.get(String(riderId));
-            if (offer) {
+            if(offer){
                 emitRealtimeEvent({
                     event: "delivery:offer:expired",
                     room: `user:${riderUserId}`,

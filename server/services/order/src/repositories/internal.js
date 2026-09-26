@@ -137,10 +137,46 @@ const fetchRestaurantOrderRepo = async({
     return rows[0];
 };
 
+const deliveryUpdateRepo = async({
+    orderId,
+    restaurantOrderId,
+    status
+})=>{
+
+    const params =[
+        status,
+        restaurantOrderId,
+        orderId
+    ];
+
+    const updateQuery = `
+        UPDATE restaurant_orders
+        SET status = $1
+        WHERE id = $2
+            AND order_id = $3
+            AND status IN (
+                'ready',
+                'rider_assigned',
+                'picked_up',
+                'on_the_way'
+            )
+        RETURNING
+            restaurant_id;
+    `;
+
+    const {rows} = await pool.query(
+        updateQuery,
+        params
+    );
+
+    return rows[0];
+};
+
 
 export {
     fetchOrderRepo,
     getOrdersForStatusUpdate,
     updateOrderStatusRepo,
-    fetchRestaurantOrderRepo
+    fetchRestaurantOrderRepo,
+    deliveryUpdateRepo
 };

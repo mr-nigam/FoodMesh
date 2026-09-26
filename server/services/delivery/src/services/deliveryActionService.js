@@ -10,7 +10,8 @@ import {
 import {
     publishEvent,
     KAFKA_TOPICS,
-    KAFKA_EVENTS
+    KAFKA_EVENTS,
+    createDeliveryEvent
 } from '@foodmesh/kafka';
 
 import {
@@ -30,7 +31,7 @@ const acceptOfferService = async ({
 }) => {
 
     const riderId = req.user?.riderId?.trim();
-    const userId = req.user?.id?.trim();
+    const riderUserId = req.user?.id?.trim();
 
     const offerId = req.params?.offerId;
     const deliveryId = req.body?.deliveryId ?? req.query?.deliveryId;
@@ -71,10 +72,34 @@ const acceptOfferService = async ({
         ttl: 3600
     });
 
+    // Publish Kafka Event
+    const riderAssignedEvent = createDeliveryEvent({
+        eventType: KAFKA_EVENTS.DELIVERY.RIDER_ASSIGNED,
+        eventData: {
+            riderId,
+            deliveryId,
+            orderId: delivery.order_id,
+            customerUserId: delivery.user_id,
+            restaurantOrderId: delivery.restaurant_order_id,
+            assignedAt: delivery.accepted_at || delivery.assigned_at || new Date().toISOString()
+        }
+    });
+
+    try{
+        await publishEvent({
+            topic: KAFKA_TOPICS.DELIVERY,
+            key: deliveryId,
+            event: riderAssignedEvent
+        });
+
+    }catch(kErr){
+        console.warn("[Kafka] Failed to publish DELIVERY.RIDER_ASSIGNED event:", kErr.message);
+    }
+
     // Notify the accepted rider
     emitRealtimeEvent({
         event: "delivery:offer:accepted",
-        room: `user:${userId}`,
+        room: `user:${riderUserId}`,
         payload: {
             deliveryId: resolvedDeliveryId,
             orderId: delivery.order_id,
@@ -83,42 +108,8 @@ const acceptOfferService = async ({
         }
     }).catch(() => {});
 
-    // Notify the customer
-    emitRealtimeEvent({
-        event: "order:status_updated",
-        room: `user:${delivery.user_id}`,
-        payload: {
-            orderId: delivery.order_id,
-            status: "rider_assigned",
-            riderId
-        }
-    }).catch(() => {});
-
-    // Publish Kafka Event
-    try {
-        await publishEvent({
-            topic: KAFKA_TOPICS.DELIVERY,
-            key: resolvedDeliveryId,
-            event: {
-                eventType: KAFKA_EVENTS.DELIVERY.RIDER_ASSIGNED,
-                timestamp: new Date().toISOString(),
-                data: {
-                    deliveryId: resolvedDeliveryId,
-                    orderId: delivery.order_id,
-                    restaurantOrderId: delivery.restaurant_order_id,
-                    riderId,
-                    userId: delivery.user_id,
-                    assignedAt: delivery.accepted_at || delivery.assigned_at || new Date().toISOString()
-                }
-            }
-        });
-
-    }catch(kErr){
-        console.warn("[Kafka] Failed to publish DELIVERY.RIDER_ASSIGNED event:", kErr.message);
-    }
-
     const riderSearchCacheKey = 'riders:active';
-    const memberValue = `${userId}:${riderId}`;
+    const memberValue = `${riderUserId}:${riderId}`;
 
     await deleteGeoCache({
         key: riderSearchCacheKey,
@@ -178,7 +169,7 @@ const updateDeliveryStatusService = async ({
 }) => {
 
     const { deliveryId } = req.params;
-    const { status } = req.body;
+    const status = req.body?.trim()?.toLowercase();
     const riderId = req.user?.riderId?.trim();
 
     if(!riderId){
@@ -214,6 +205,49 @@ const updateDeliveryStatusService = async ({
             404,
             "Delivery not found or not assigned to you"
         );
+    }
+
+    
+    const validStatusesForOrderRecords = [
+        'picked_up',
+        'on_the_way',
+        'delivered'
+    ];
+
+    if(validStatusesForOrderRecords.includes(status)){
+        // Publish Kafka Event
+        let eventType = "";
+
+        if(status === 'picked_up'){
+            eventType = KAFKA_EVENTS.DELIVERY.PICKED_UP;
+        }else if(status === 'picked_up'){
+            eventType = KAFKA_EVENTS.DELIVERY.ON_THE_WAY;
+        }else if(status === 'delivered'){
+            eventType = KAFKA_EVENTS.DELIVERY.DELIVERED;
+        }
+
+        const deliveryEvent = createDeliveryEvent({
+            eventType,
+            eventData: {
+                riderId,
+                deliveryId,
+                orderId: updated.order_id,
+                customerUserId: updated.user_id,
+                restaurantOrderId: updated.restaurant_order_id
+            }
+        });
+
+        try{
+            await publishEvent({
+                topic: KAFKA_TOPICS.DELIVERY,
+                key: deliveryId,
+                event: deliveryEvent
+            });
+
+        }catch(kErr){
+            console.warn("[Kafka] Failed to publish DELIVERY.RIDER_ASSIGNED event:", kErr.message);
+        }
+
     }
 
     // Realtime notification to user

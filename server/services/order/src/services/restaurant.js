@@ -7,7 +7,8 @@ import {
     getCache,
     deleteMultipleCache,
     cachePaginatedList,
-    getPaginatedList
+    getPaginatedList,
+    deleteOrderRelatedCache
 } from '@foodmesh/redis';
 
 import {
@@ -192,11 +193,10 @@ const updateRestaurantOrderStatusService = async({
         );
     }
 
-    await deleteMultipleCache({
-        keys: [
-            `restaurant:${restaurantId}:order:${orderId}`,
-            `restaurant:${restaurantId}:orders`   
-        ]
+    await deleteOrderRelatedCache({
+        orderId,
+        restaurantId,
+        userId: order.user_id
     });
 
     let eventType = null;

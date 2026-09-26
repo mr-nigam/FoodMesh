@@ -10,7 +10,7 @@ export {
     deleteMultipleCache,
     cachePaginatedList,
     getPaginatedList,
-    deleteOrderRelatedCache
+    deleteOrderRelatedCache,
 } from "./cache/cache.js";
 
 
