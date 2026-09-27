@@ -26,6 +26,7 @@ const KAFKA_EVENTS = Object.freeze({
         RIDER_ASSIGNED: "rider.rider_assigned",
         PICKED_UP: "delivery.picked_up",
         ON_THE_WAY: "delivery.on_the_way",
+        STATUS_UPDATED: "delivery.status_updated",
         DELIVERED: "delivery.delivered"
     },
 
@@ -71,7 +72,8 @@ const KAFKA_EVENTS = Object.freeze({
         ITEM_DELETED: "restaurant.item_deleted",
 
         VERIFIED: "restaurant.verified",
-        SUSPENDED: "restaurant.suspended"
+        SUSPENDED: "restaurant.suspended",
+        ORDER_UPDATES: "restaurant.order.updates"
     },
 
     USER: {

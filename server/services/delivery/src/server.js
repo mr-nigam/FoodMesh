@@ -15,7 +15,7 @@ import {
 } from './config/postgre.js';
 
 import {
-    startOrderConsumer
+    startDeliveryConsumer
 } from './consumers/delivery.js';
 
 
@@ -28,7 +28,7 @@ const startServer = async()=>{
     
     await connectProducer();
 
-    await startOrderConsumer();
+    await startDeliveryConsumer();
 
     const PORT = process.env.PORT || 4011;
 

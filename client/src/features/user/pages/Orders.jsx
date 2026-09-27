@@ -16,7 +16,8 @@ const ACTIVE_STATUSES = [
     "ready",
     "rider_assigned",
     "picked_up",
-    "on_the_way"
+    "on_the_way",
+    "partially_delivered"
 ];
 
 

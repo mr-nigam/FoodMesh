@@ -1,6 +1,7 @@
 import {
     setCache,
-    deleteGeoCache
+    deleteGeoCache,
+    deleteOrderRelatedCache
 } from '@foodmesh/redis';
 
 import {
@@ -73,7 +74,7 @@ const acceptOfferService = async ({
     });
 
     // Publish Kafka Event
-    const riderAssignedEvent = createDeliveryEvent({
+    const deliveryEvent = createDeliveryEvent({
         eventType: KAFKA_EVENTS.DELIVERY.RIDER_ASSIGNED,
         eventData: {
             riderId,
@@ -89,7 +90,7 @@ const acceptOfferService = async ({
         await publishEvent({
             topic: KAFKA_TOPICS.DELIVERY,
             key: deliveryId,
-            event: riderAssignedEvent
+            event: deliveryEvent
         });
 
     }catch(kErr){
@@ -169,10 +170,19 @@ const updateDeliveryStatusService = async ({
 }) => {
 
     const { deliveryId } = req.params;
-    const status = req.body?.trim()?.toLowercase();
+    // Extract status from request body (expects { status: "some_status" })
+    const statusRaw = req.body?.status?.trim()?.toLowerCase();
+
+    if (!statusRaw) {
+        throw new ApiError(
+            400,
+            "Delivery status is required in request body"
+        );
+    }
+
     const riderId = req.user?.riderId?.trim();
 
-    if(!riderId){
+    if (!riderId) {
         throw new ApiError(
             403,
             "You must be registered as a rider to update status"
@@ -187,79 +197,86 @@ const updateDeliveryStatusService = async ({
         'cancelled'
     ];
 
-    if(!validStatuses.includes(status)){
+    if (!validStatuses.includes(statusRaw)) {
         throw new ApiError(
             400,
-            `Invalid delivery status: ${status}`
+            `Invalid delivery status: ${statusRaw}`
         );
     }
+
+    // Translate arrival statuses to a generic "on_the_way" for internal storage
+    const normalizedStatus = (statusRaw === 'arrived_restaurant' || statusRaw === 'arrived_customer') ? 'on_the_way' : statusRaw;
 
     const updated = await updateDeliveryStatusRepo({
         deliveryId,
         riderId,
-        status: status === 'arrived_restaurant' || status === 'arrived_customer' ? 'on_the_way' : status
+        status: normalizedStatus
     });
 
-    if(!updated){
+    if (!updated) {
         throw new ApiError(
             404,
             "Delivery not found or not assigned to you"
         );
     }
 
-    
-    const validStatusesForOrderRecords = [
-        'picked_up',
-        'on_the_way',
-        'delivered'
-    ];
-
-    if(validStatusesForOrderRecords.includes(status)){
-        // Publish Kafka Event
-        let eventType = "";
-
-        if(status === 'picked_up'){
+    // Determine if we need to emit a Kafka event for order‑related statuses
+    const orderRelevantStatuses = ['picked_up', 'on_the_way', 'delivered'];
+    let eventType = '';
+    if (orderRelevantStatuses.includes(statusRaw)) {
+        if (statusRaw === 'picked_up') {
             eventType = KAFKA_EVENTS.DELIVERY.PICKED_UP;
-        }else if(status === 'picked_up'){
+        } else if (statusRaw === 'arrived_restaurant' || statusRaw === 'arrived_customer') {
             eventType = KAFKA_EVENTS.DELIVERY.ON_THE_WAY;
-        }else if(status === 'delivered'){
+        } else if (statusRaw === 'delivered') {
             eventType = KAFKA_EVENTS.DELIVERY.DELIVERED;
         }
-
-        const deliveryEvent = createDeliveryEvent({
-            eventType,
-            eventData: {
-                riderId,
-                deliveryId,
-                orderId: updated.order_id,
-                customerUserId: updated.user_id,
-                restaurantOrderId: updated.restaurant_order_id
-            }
-        });
-
-        try{
-            await publishEvent({
-                topic: KAFKA_TOPICS.DELIVERY,
-                key: deliveryId,
-                event: deliveryEvent
-            });
-
-        }catch(kErr){
-            console.warn("[Kafka] Failed to publish DELIVERY.RIDER_ASSIGNED event:", kErr.message);
-        }
-
+    }
+    // Fallback generic event if no specific type matched
+    if (!eventType) {
+        eventType = KAFKA_EVENTS.DELIVERY.STATUS_UPDATED;
     }
 
-    // Realtime notification to user
+    const deliveryEvent = createDeliveryEvent({
+        eventType,
+        eventData: {
+            riderId,
+            deliveryId,
+            orderId: updated.order_id,
+            customerUserId: updated.user_id,
+            restaurantOrderId: updated.restaurant_order_id
+        }
+    });
+
+    try {
+        await publishEvent({
+            topic: KAFKA_TOPICS.DELIVERY,
+            key: deliveryId,
+            event: deliveryEvent
+        });
+    } catch (kErr) {
+        console.warn('[Kafka] Failed to publish delivery status event:', kErr.message);
+    }
+
+    // Realtime notification to customer (and restaurant if applicable)
     emitRealtimeEvent({
         event: "order:status_updated",
         room: `user:${updated.user_id}`,
         payload: {
             orderId: updated.order_id,
-            status,
+            status: normalizedStatus,
             deliveryId
         }
     }).catch(() => {});
+
+    await deleteOrderRelatedCache({
+        orderId: updated.order_id,
+        restaurantId: updated.restaurant_id,
+        userId: updated.user_id,
+        restaurantOrderId: updated.restaurant_order_id,
+        riderId: updated.rider_id,
+        deliveryId: updated.delivery_id
+    });
 
     return updated;
 };

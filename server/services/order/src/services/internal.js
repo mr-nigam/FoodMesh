@@ -128,6 +128,10 @@ const deliveryUpdateService = async({
         orderId
     });
 
+    if(status === "rider_assigned"){
+        return restOrder;
+    }
+
     const orderStatus = getOverallOrderStatus({
         restaurantOrders 
     });

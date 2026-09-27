@@ -117,9 +117,36 @@ const deleteCartDataRepo = async({
     );
 
     return rows;
-}
+};
+
+const fetchRestaurantDataRepo = async({
+    restaurantId
+})=>{
+
+    const searchQuery = `
+        SELECT
+            id,
+            id as restaurant_id,
+            owner_id,
+            owner_id AS user_id,
+            location,
+            address,
+            is_open
+        WHERE id = $1
+            AND deleted_at IS NULL;
+    `;
+
+    const {rows} = await pool.query(
+        searchQuery,
+        [restaurantId]
+    );
+
+    return rows[0];
+};
+
 
 export {
     fetchCartItemsRepo,
-    deleteCartDataRepo
+    deleteCartDataRepo,
+    fetchRestaurantDataRepo
 };

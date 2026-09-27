@@ -20,7 +20,7 @@ const consumer = createConsumer({
     clientId: "delivery-service"
 });
 
-const startOrderConsumer = async() =>{
+const startDeliveryConsumer = async() =>{
     await consumer.connect();
 
     await subscribeConsumer({
@@ -64,5 +64,5 @@ const startOrderConsumer = async() =>{
 
 
 export {
-    startOrderConsumer
+    startDeliveryConsumer
 };

@@ -28,6 +28,7 @@ export {
     KAFKA_EVENTS
 } from './events/events.js';
 
+
 export {
     createOrdersEvent
 } from "./events/orderEvents.js";
@@ -43,3 +44,7 @@ export{
 export {
     createDeliveryEvent
 } from './events/deliveryEvents.js';
+
+export {
+    createRestaurantEvent
+} from '../src/events/restaurantEvents.js';

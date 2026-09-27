@@ -3,6 +3,10 @@ import {
 } from '../../clients/realtime.js';
 
 import {
+    getRestaurantData
+} from '../../clients/restaurant.js';
+
+import {
     deliveryUpdateService
 } from '../../services/internal.js';
 
@@ -18,9 +22,6 @@ const deliveryUpdate = async({
 
     const eventData = payload?.eventData ?? payload;
 
-    console.log("eventData: ",eventData);
-    console.log("status: ",status);
-
     const {
         riderId,
         deliveryId,
@@ -35,6 +36,13 @@ const deliveryUpdate = async({
         status
     });
 
+    await deleteOrderRelatedCache({
+        orderId,
+        userId: customerUserId,
+        resturantId: order.resturant_id,
+        restaurantOrderId
+    });
+
     // Notify the customer
     emitRealtimeEvent({
         event: "order:status_updated",
@@ -47,10 +55,15 @@ const deliveryUpdate = async({
         }
     }).catch(() => {});
     
+
     // Notify the restaurant
+    const restaurant = await getRestaurantData({
+        resturantId: order.resturant_id  
+    })
+    
     emitRealtimeEvent({
         event: "order:status_updated",
-        room: `user:${order.resturant_id}`,
+        room: `user:${restaurant.user_id}`,
         payload: {
             deliveryId,
             orderId,
@@ -60,12 +73,6 @@ const deliveryUpdate = async({
         }
     }).catch(() => {});
 
-    await deleteOrderRelatedCache({
-        orderId,
-        userId: customerUserId,
-        resturantId: order.resturant_id,
-        restaurantOrderId
-    });
 
     return order;
 };

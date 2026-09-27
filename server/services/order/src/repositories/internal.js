@@ -67,8 +67,7 @@ const updateOrderStatusRepo = async({
             AND status NOT IN(
                 'cancelled',
                 'rejected',
-                'failed',
-                'delivered'
+                'failed'
             )
         RETURNING
             status;
@@ -158,7 +157,8 @@ const deliveryUpdateRepo = async({
                 'ready',
                 'rider_assigned',
                 'picked_up',
-                'on_the_way'
+                'on_the_way',
+                'delivered'
             )
         RETURNING
             restaurant_id;

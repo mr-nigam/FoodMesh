@@ -6,7 +6,8 @@ import {
 
 import {
     fetchCartItems,
-    deleteCartData
+    deleteCartData,
+    fetchRestaurantData
 } from '../controllers/internal.js';
 
 
@@ -15,6 +16,8 @@ const router = Router();
 
 router.use(authenticateService);
 
+
+router.get("/:restaurantId", fetchRestaurantData);
 
 router.get(
     "/users/:userId/:requestType/restaurant/:restaurantId",
