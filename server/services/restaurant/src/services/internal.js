@@ -114,8 +114,8 @@ const fetchRestaurantDataService = async({
 
     if(!restaurant){
         throw new ApiError(
-            500,
-            "Fail to fetch restaurant data`"
+            404,
+            "Restaurant not found"
         );
     }
 

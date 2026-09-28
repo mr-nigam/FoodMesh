@@ -192,6 +192,7 @@ const updateDeliveryStatusService = async ({
     const validStatuses = [
         'arrived_restaurant',
         'picked_up',
+        'on_the_way',
         'arrived_customer',
         'delivered',
         'cancelled'
@@ -221,12 +222,12 @@ const updateDeliveryStatusService = async ({
     }
 
     // Determine if we need to emit a Kafka event for order‑related statuses
-    const orderRelevantStatuses = ['picked_up', 'on_the_way', 'delivered'];
+    const orderRelevantStatuses = ['picked_up', 'on_the_way', 'delivered', 'arrived_restaurant', 'arrived_customer'];
     let eventType = '';
     if (orderRelevantStatuses.includes(statusRaw)) {
         if (statusRaw === 'picked_up') {
             eventType = KAFKA_EVENTS.DELIVERY.PICKED_UP;
-        } else if (statusRaw === 'arrived_restaurant' || statusRaw === 'arrived_customer') {
+        } else if (statusRaw === 'arrived_restaurant' || statusRaw === 'arrived_customer' || statusRaw === 'on_the_way') {
             eventType = KAFKA_EVENTS.DELIVERY.ON_THE_WAY;
         } else if (statusRaw === 'delivered') {
             eventType = KAFKA_EVENTS.DELIVERY.DELIVERED;

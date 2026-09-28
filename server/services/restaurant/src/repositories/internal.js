@@ -132,6 +132,7 @@ const fetchRestaurantDataRepo = async({
             location,
             address,
             is_open
+        FROM restaurants
         WHERE id = $1
             AND deleted_at IS NULL;
     `;

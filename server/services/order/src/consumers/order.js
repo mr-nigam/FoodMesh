@@ -69,7 +69,7 @@ const startOrderConsumer = async() =>{
                 case KAFKA_EVENTS.DELIVERY.ON_THE_WAY:
                     await deliveryUpdate({
                         payload: data,
-                        status: "rider_assigned"
+                        status: "on_the_way"
                     });
                     break;
                 

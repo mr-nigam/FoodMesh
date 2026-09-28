@@ -39,9 +39,9 @@ const deliveryUpdate = async({
     await deleteOrderRelatedCache({
         orderId,
         userId: customerUserId,
-        resturantId: order.resturant_id,
+        restaurantId: order?.restaurant_id,
         restaurantOrderId
-    });
+    }).catch(() => {});
 
     // Notify the customer
     emitRealtimeEvent({
@@ -57,21 +57,29 @@ const deliveryUpdate = async({
     
 
     // Notify the restaurant
-    const restaurant = await getRestaurantData({
-        resturantId: order.resturant_id  
-    })
-    
-    emitRealtimeEvent({
-        event: "order:status_updated",
-        room: `user:${restaurant.user_id}`,
-        payload: {
-            deliveryId,
-            orderId,
-            status,
-            riderId,
-            restaurantOrderId
+    try {
+        if (order?.restaurant_id) {
+            const restaurant = await getRestaurantData({
+                restaurantId: order.restaurant_id  
+            });
+            
+            if (restaurant?.user_id) {
+                emitRealtimeEvent({
+                    event: "order:status_updated",
+                    room: `user:${restaurant.user_id}`,
+                    payload: {
+                        deliveryId,
+                        orderId,
+                        status,
+                        riderId,
+                        restaurantOrderId
+                    }
+                }).catch(() => {});
+            }
         }
-    }).catch(() => {});
+    } catch (rErr) {
+        console.warn("[deliveryHandler] Failed to notify restaurant:", rErr?.message || rErr);
+    }
 
 
     return order;

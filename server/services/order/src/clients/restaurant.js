@@ -32,8 +32,8 @@ const getRestaurantData = async({
         return restaurant;
 
     }catch(error){
-        console.log("Failed to fetch restaurant data: ", error);
-        throw new Error;
+        console.warn("Failed to fetch restaurant data:", error?.response?.data?.message || error?.message || error);
+        return null;
     }
 };
 

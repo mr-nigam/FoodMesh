@@ -153,12 +153,10 @@ const deliveryUpdateRepo = async({
         SET status = $1
         WHERE id = $2
             AND order_id = $3
-            AND status IN (
-                'ready',
-                'rider_assigned',
-                'picked_up',
-                'on_the_way',
-                'delivered'
+            AND status NOT IN (
+                'cancelled',
+                'rejected',
+                'failed'
             )
         RETURNING
             restaurant_id;

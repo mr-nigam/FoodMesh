@@ -38,6 +38,7 @@ const createOrdersTable = async () => {
                             'accepted',
                             'preparing',
                             'ready',
+                            'rider_assigned',
                             'picked_up',
                             'on_the_way',
                             'partially_delivered',
@@ -102,6 +103,27 @@ const createOrdersTable = async () => {
             ON orders(created_at DESC);
         `);
         
+        await pool.query(`
+            ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+            ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (
+                status IN (
+                    'created',
+                    'confirmed',
+                    'accepted',
+                    'preparing',
+                    'ready',
+                    'rider_assigned',
+                    'picked_up',
+                    'on_the_way',
+                    'partially_delivered',
+                    'delivered',
+                    'cancelled',
+                    'rejected',
+                    'failed'
+                )
+            );
+        `);
+
         await createUpdatedAtTrigger(pool, 'orders');
 
         console.log("✅ Orders table created successfully.");

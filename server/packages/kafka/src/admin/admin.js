@@ -54,9 +54,25 @@ const createTopics = async () => {
     );
 };
 
+const deleteTopics = async () => {
+
+    const topics = Object.values(KAFKA_TOPICS);
+
+    await admin.deleteTopics({
+        topics
+    });
+
+    console.log(
+        "Kafka topics deleted:",
+        topics
+    );
+
+};
+
 
 export {
     connectAdmin,
     disconnectAdmin,
-    createTopics
+    createTopics,
+    deleteTopics
 }
