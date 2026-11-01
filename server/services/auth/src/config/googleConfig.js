@@ -11,3 +11,9 @@ const oauth2client = new google.auth.OAuth2(
     //"authmessage"
     "postmessage"
 );
+
+
+export {
+    oauth2client
+};
+export default oauth2client;

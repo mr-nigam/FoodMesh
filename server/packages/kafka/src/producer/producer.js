@@ -1,12 +1,13 @@
+import { Partitioners } from "kafkajs";
 import kafka from "../config/kafka.js";
+import { ensureTopicsExist } from "../admin/admin.js";
 
 let connected = false;
 
 
 const producer = kafka.producer({
-
-    allowAutoTopicCreation: false
-
+    createPartitioner: Partitioners.DefaultPartitioner,
+    allowAutoTopicCreation: true
 });
 
 const connectProducer = async () => {
@@ -22,6 +23,8 @@ const connectProducer = async () => {
     console.log(
         "Kafka Producer connected"
     );
+
+    await ensureTopicsExist();
 };
 
 const disconnectProducer = async () => {
@@ -79,4 +82,4 @@ export {
     connectProducer,
     disconnectProducer,
     publishEvent
-}
+};

@@ -9,7 +9,7 @@ const baseCookieOptions = {
 
 const getAccessTokenCookieOptions = () => ({
     ...baseCookieOptions,
-    maxAge: 30 * 60 * 1000, // 15 min
+    maxAge: 30 * 60 * 1000, // 30 min
 });
 
 const getRefreshTokenCookieOptions = () => ({

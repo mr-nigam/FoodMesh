@@ -17,7 +17,8 @@ export {
 export {
     connectAdmin,
     disconnectAdmin,
-    createTopics
+    createTopics,
+    ensureTopicsExist
 } from "./admin/admin.js";
 
 export {

@@ -181,5 +181,4 @@ export {
     loginService,
     updateRoleService,
     getMyProfileService
-
 }
