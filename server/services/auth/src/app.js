@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import { 
     ApiError,
     errorHandler
- } from '@foodmesh/utils';
+} from '@foodmesh/utils';
 
 import authRouter from './routes/auth.js';
 
