@@ -5,7 +5,7 @@ import { BsCartPlus, BsEye } from "react-icons/bs";
 import { FiEyeOff } from "react-icons/fi";
 import toast, { LoaderIcon } from "react-hot-toast";
 
-import { restaurantService } from "../../config/constants.js";
+import { apiBaseUrl } from "../../config/constants.js";
 import useAppData from "../../context/useAppData.js";
 import getAuthHeader from "../../config/getAuthHeader.js";
 
@@ -25,12 +25,12 @@ const MenuItems = ({
   const { cart, refreshCart, updateQuantity } = useAppData();
 
 
-  const getCartQuantity = (itemId) => {
+  const getCartQuantity = (targetItemId) => {
     if (!cart || !Array.isArray(cart)) return 0;
     for (const restaurantCart of cart) {
       if (restaurantCart?.items) {
         const found = restaurantCart.items.find(
-          (i) => i.item_id === itemId || i.id === itemId
+          (i) => (i.item_id || i.id || i._id) === targetItemId
         );
         if (found) return found.quantity || 0;
       }
@@ -55,7 +55,7 @@ const MenuItems = ({
       setLoadingAction("availability");
 
       const { data } = await axios.patch(
-        `${restaurantService}/menu/${itemId}/availability`,
+        `${apiBaseUrl}/restaurant/menu/${itemId}/availability`,
         {},
         getAuthHeader()
       );
@@ -95,16 +95,16 @@ const MenuItems = ({
       return;
     }
 
-    const itemId = item.id;
+    const itemId = item.id || item._id;
     const targetRestaurantId = item.restaurant_id || item.restaurantId || restaurantId;
     const price = item.price;
     
-    setLoadingItemId(item.id);
+    setLoadingItemId(itemId);
 
     try{
 
       const {data} = await axios.post(
-        `${restaurantService}/cart/add`,
+        `${apiBaseUrl}/restaurant/cart/add`,
         {
           restaurantId: targetRestaurantId, itemId, price
         },
@@ -159,7 +159,7 @@ const MenuItems = ({
         setLoadingAction("delete");
 
         const { data } = await axios.delete(
-            `${restaurantService}/menu/${itemId}`,
+            `${apiBaseUrl}/restaurant/menu/${itemId}`,
             getAuthHeader()
         );
 
@@ -211,12 +211,13 @@ const MenuItems = ({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {items.map((item) => {
-        const isLoading = loadingItemId === item.id;
+        const itemId = item.id || item._id;
+        const isLoading = loadingItemId === itemId;
         const imageUrl = item?.pictures_urls?.[0];
 
         return (
           <div
-            key={item.id}
+            key={itemId}
             className={`relative flex gap-4 rounded-lg bg-white p-4 shadow-sm transition ${
               !item.is_available ? "opacity-70" : ""
             }`}
@@ -277,7 +278,7 @@ const MenuItems = ({
                   <button
                     type="button"
                     disabled={isLoading}
-                    onClick={() => toggleItemAvailability(item.id)}
+                    onClick={() => toggleItemAvailability(itemId)}
                     title={
                       item.is_available
                         ? "Mark unavailable"
@@ -302,7 +303,7 @@ const MenuItems = ({
                   <button
                     type="button"
                     disabled={isLoading}
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => handleDelete(itemId)}
                     title="Delete item"
                     className={`rounded-lg p-2 transition ${
                       isLoading
@@ -318,14 +319,14 @@ const MenuItems = ({
                   </button>
                 </>
               ) : (() => {
-                const cartQty = getCartQuantity(item.id);
+                const cartQty = getCartQuantity(itemId);
                 if (cartQty > 0) {
                   return (
                     <div className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 p-1">
                       <button
                         type="button"
                         disabled={isLoading}
-                        onClick={() => handleUpdateQuantity(item.id, "dec")}
+                        onClick={() => handleUpdateQuantity(itemId, "dec")}
                         title="Decrease quantity"
                         className="flex h-7 w-7 items-center justify-center rounded bg-white text-sm font-bold text-red-500 shadow-sm transition hover:bg-red-100 disabled:opacity-50"
                       >
@@ -343,7 +344,7 @@ const MenuItems = ({
                       <button
                         type="button"
                         disabled={!item.is_available || isLoading}
-                        onClick={() => handleUpdateQuantity(item.id, "inc")}
+                        onClick={() => handleUpdateQuantity(itemId, "inc")}
                         title="Increase quantity"
                         className="flex h-7 w-7 items-center justify-center rounded bg-red-500 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:opacity-50"
                       >

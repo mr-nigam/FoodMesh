@@ -7,7 +7,7 @@ const getBaseUrl = (url, prefix) => {
     return cleanUrl.endsWith(prefix) ? cleanUrl : `${cleanUrl}${prefix}`;
 };
 
-const ORDER_SERVICE = getBaseUrl(process.env.ORDER_SERVICE_URL, '/api/v1/order');
+const ORDER_SERVICE = getBaseUrl(process.env.ORDER_SERVICE_URL || 'http://localhost:4006/api/v1/order', '/api/v1/order');
 const PAYMENT_SERVICE_KEY = process.env.PAYMENT_SERVICE_KEY;
 
 const getOrderForPayment = async({

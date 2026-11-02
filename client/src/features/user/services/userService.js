@@ -1,35 +1,25 @@
 import axios from 'axios';
 import getAuthHeader from '../../../config/getAuthHeader.js';
+
 import { 
-    userService,
-    orderService 
+    apiBaseUrl 
 } from '../../../config/constants.js';
 
 
 const addAddress = async ({
     payload
 })=>{
-
-    const header = getAuthHeader();
-
-    const config = {
-        headers: {
-            ...header.headers,
-            'Content-Type': 'multipart/form-data'
-        }
-    };
-
     await axios.post(
-        `${userService}/address/add`,
+        `${apiBaseUrl}/user/address/add`,
         payload,
-        config
+        getAuthHeader()
     );
 };
 
 const getAddresses = async()=>{
 
     const { data } = await axios.get(
-        `${userService}/address/all`,
+        `${apiBaseUrl}/user/address/all`,
         getAuthHeader()  
     );
     
@@ -40,14 +30,14 @@ const delAddress = async({
     id
 })=>{
     await axios.delete(
-        `${userService}/address/${id}`,
+        `${apiBaseUrl}/user/address/${id}`,
         getAuthHeader()
     ); 
 };
 
 const getOrders = async()=>{
     const { data } = await axios.get(
-        orderService,
+        `${apiBaseUrl}/order`,
         getAuthHeader()
     );
 
@@ -59,7 +49,7 @@ const getOrder = async({
 })=>{
 
     const { data } = await axios.get(
-        `${orderService}/${orderId}`,
+        `${apiBaseUrl}/order/${orderId}`,
         getAuthHeader()
     );
 
@@ -71,7 +61,7 @@ const cancelOrder = async({
 })=>{
 
     await axios.patch(
-        `${orderService}/${orderId}`,
+        `${apiBaseUrl}/order/${orderId}`,
         {},
         getAuthHeader()
     );

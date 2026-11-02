@@ -7,8 +7,8 @@ const getBaseUrl = (url, prefix) => {
     return cleanUrl.endsWith(prefix) ? cleanUrl : `${cleanUrl}${prefix}`;
 };
 
-const USER_SERVICE = getBaseUrl(process.env.USER_SERVICE_URL, '/api/v1/user');
-const RESTAURANT_SERVICE = getBaseUrl(process.env.RESTAURANT_SERVICE_URL, '/api/v1/restaurant');
+const USER_SERVICE = getBaseUrl(process.env.USER_SERVICE_URL || 'http://localhost:4002/api/v1/user', '/api/v1/user');
+const RESTAURANT_SERVICE = getBaseUrl(process.env.RESTAURANT_SERVICE_URL || 'http://localhost:4003/api/v1/restaurant', '/api/v1/restaurant');
 const ORDER_SERVICE_KEY = process.env.ORDER_SERVICE_KEY;
 
 const getAddress = async ({

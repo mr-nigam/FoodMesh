@@ -79,38 +79,32 @@ const registerService = async ({
 };
 
 const fetchMyRestaurantService = async ({
-    restaurantId
+    restaurantId,
+    ownerId
 }) => {
 
-    if(!restaurantId){
+    if(!restaurantId && !ownerId){
         throw new ApiError(
             400,
-            "Please provide restaurant id"
+            "Please provide restaurant id or owner id"
         );
     }
     
     const restaurant = await fetchMyRestaurantRepo({
-        restaurantId
+        restaurantId,
+        ownerId
     });
-
-    if(!restaurant){
-        throw new ApiError(
-            500,
-            "failed to fetch restaurant"
-        );
-    }
 
     return restaurant;
 };
 
 const updateRestaurantStatusService = async({
     restaurantId,
+    ownerId,
     status
 })=>{
 
-    if(
-        !restaurantId
-    ){
+    if(!restaurantId && !ownerId){
         throw new ApiError(
             400,
             "please provide status and restaurant id"
@@ -119,6 +113,7 @@ const updateRestaurantStatusService = async({
 
     const restaurant = await updateRestaurantStatusRepo({
         restaurantId,
+        ownerId,
         status
     });
 
@@ -134,9 +129,9 @@ const updateRestaurantStatusService = async({
 
 const updateRestaurantDetailsService = async ({
     restaurantId,
+    ownerId,
     body
 })=>{
-
     
     const restaurantName = body?.name?.trim() || "";
     const description = body?.description?.trim() || "";
@@ -150,6 +145,7 @@ const updateRestaurantDetailsService = async ({
 
     const restaurant = await updateRestaurantDetailsRepo({
         restaurantId,
+        ownerId,
         restaurantName,
         description
     });
@@ -157,7 +153,7 @@ const updateRestaurantDetailsService = async ({
     if(!restaurant){
         throw new ApiError(
             500,
-            "fail to update restaurnt details"
+            "fail to update restaurant details"
         );
     }
 

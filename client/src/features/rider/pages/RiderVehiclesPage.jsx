@@ -157,90 +157,93 @@ const RiderVehiclesPage = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        {vehicles.map((v) => (
-                            <div
-                                key={v.id}
-                                className={`bg-white rounded-2xl p-6 border transition shadow-sm space-y-5 flex flex-col justify-between ${
-                                    v.is_primary
-                                        ? "border-orange-400 ring-2 ring-orange-100"
-                                        : "border-gray-200/80 hover:border-orange-200"
-                                }`}
-                            >
-                                <div className="space-y-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3.5">
-                                            <div
-                                                className={`p-3.5 rounded-2xl text-2xl ${
-                                                    v.is_primary
-                                                        ? "bg-orange-500 text-white shadow-sm"
-                                                        : "bg-orange-50 text-orange-600"
-                                                }`}
-                                            >
-                                                <BiCar />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-gray-900 text-base capitalize">
-                                                        {v.manufacturer
-                                                            ? `${v.manufacturer} ${v.model}`
-                                                            : `${v.vehicle_type} Ride`}
-                                                    </h3>
-                                                    {v.is_primary && (
-                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wide">
-                                                            <BiCheckCircle className="text-xs" /> Primary Ride
-                                                        </span>
-                                                    )}
+                        {vehicles.map((v) => {
+                            const vId = v.id || v._id;
+                            return (
+                                <div
+                                    key={vId}
+                                    className={`bg-white rounded-2xl p-6 border transition shadow-sm space-y-5 flex flex-col justify-between ${
+                                        v.is_primary
+                                            ? "border-orange-400 ring-2 ring-orange-100"
+                                            : "border-gray-200/80 hover:border-orange-200"
+                                    }`}
+                                >
+                                    <div className="space-y-4">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3.5">
+                                                <div
+                                                    className={`p-3.5 rounded-2xl text-2xl ${
+                                                        v.is_primary
+                                                            ? "bg-orange-500 text-white shadow-sm"
+                                                            : "bg-orange-50 text-orange-600"
+                                                    }`}
+                                                >
+                                                    <BiCar />
                                                 </div>
-                                                <p className="text-xs text-gray-500 font-mono mt-0.5 font-semibold tracking-wider">
-                                                    {v.registration_number || "NO PLATE / BICYCLE"}
-                                                </p>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-bold text-gray-900 text-base capitalize">
+                                                            {v.manufacturer
+                                                                ? `${v.manufacturer} ${v.model}`
+                                                                : `${v.vehicle_type} Ride`}
+                                                        </h3>
+                                                        {v.is_primary && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wide">
+                                                                <BiCheckCircle className="text-xs" /> Primary Ride
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 font-mono mt-0.5 font-semibold tracking-wider">
+                                                        {v.registration_number || "NO PLATE / BICYCLE"}
+                                                    </p>
+                                                </div>
                                             </div>
+                                        </div>
+
+                                        {/* Attributes Grid */}
+                                        <div className="pt-3 border-t border-gray-100 text-xs text-gray-600 grid grid-cols-2 gap-3">
+                                            <div className="p-2.5 bg-gray-50 rounded-xl">
+                                                <span className="text-gray-400 block text-[10px] uppercase font-semibold">Type</span>
+                                                <strong className="capitalize text-gray-900">{v.vehicle_type}</strong>
+                                            </div>
+                                            <div className="p-2.5 bg-gray-50 rounded-xl">
+                                                <span className="text-gray-400 block text-[10px] uppercase font-semibold">Color</span>
+                                                <strong className="capitalize text-gray-900">{v.color || "Standard"}</strong>
+                                            </div>
+                                            {v.registration_expiry_date && (
+                                                <div className="col-span-2 p-2.5 bg-gray-50 rounded-xl text-gray-700 flex items-center justify-between">
+                                                    <span className="text-gray-400 text-[10px] uppercase font-semibold flex items-center gap-1">
+                                                        <BiCalendar /> RC Expiry
+                                                    </span>
+                                                    <strong className="text-gray-900 font-mono">
+                                                        {new Date(v.registration_expiry_date).toLocaleDateString()}
+                                                    </strong>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Attributes Grid */}
-                                    <div className="pt-3 border-t border-gray-100 text-xs text-gray-600 grid grid-cols-2 gap-3">
-                                        <div className="p-2.5 bg-gray-50 rounded-xl">
-                                            <span className="text-gray-400 block text-[10px] uppercase font-semibold">Type</span>
-                                            <strong className="capitalize text-gray-900">{v.vehicle_type}</strong>
-                                        </div>
-                                        <div className="p-2.5 bg-gray-50 rounded-xl">
-                                            <span className="text-gray-400 block text-[10px] uppercase font-semibold">Color</span>
-                                            <strong className="capitalize text-gray-900">{v.color || "Standard"}</strong>
-                                        </div>
-                                        {v.registration_expiry_date && (
-                                            <div className="col-span-2 p-2.5 bg-gray-50 rounded-xl text-gray-700 flex items-center justify-between">
-                                                <span className="text-gray-400 text-[10px] uppercase font-semibold flex items-center gap-1">
-                                                    <BiCalendar /> RC Expiry
-                                                </span>
-                                                <strong className="text-gray-900 font-mono">
-                                                    {new Date(v.registration_expiry_date).toLocaleDateString()}
-                                                </strong>
+                                    {/* Action Buttons */}
+                                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                                        {v.is_primary ? (
+                                            <div className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                                                <BiCheckCircle className="text-base" /> Active for Deliveries
                                             </div>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSetPrimary(vId)}
+                                                disabled={settingPrimaryId === vId}
+                                                className="w-full py-2.5 px-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs rounded-xl border border-orange-200 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                            >
+                                                <BiStar className="text-base" />
+                                                {settingPrimaryId === vId ? "Setting as Primary..." : "Set as Primary Vehicle"}
+                                            </button>
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Action Buttons */}
-                                <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                                    {v.is_primary ? (
-                                        <div className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-                                            <BiCheckCircle className="text-base" /> Active for Deliveries
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleSetPrimary(v.id)}
-                                            disabled={settingPrimaryId === v.id}
-                                            className="w-full py-2.5 px-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs rounded-xl border border-orange-200 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                                        >
-                                            <BiStar className="text-base" />
-                                            {settingPrimaryId === v.id ? "Setting as Primary..." : "Set as Primary Vehicle"}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 

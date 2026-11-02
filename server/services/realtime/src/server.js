@@ -22,7 +22,7 @@ const startServer = async () => {
             closeDB
         });
 
-        const PORT = Number(process.env.REALTIME_PORT) || 4009;
+        const PORT = Number(process.env.REALTIME_PORT) || 5000;
         const server = http.createServer(app);
 
         initializeSocket(server);

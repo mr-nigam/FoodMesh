@@ -42,6 +42,7 @@ app.use(cookieParser());
 app.use("/api/v1/restaurant/internal", internalRouter);
 app.use("/api/v1/restaurant/menu", menuItemsRouter);
 app.use("/api/v1/restaurant/cart", cartRouter);
+app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/restaurant", restaurantRouter);
 
 

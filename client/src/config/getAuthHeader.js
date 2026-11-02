@@ -1,7 +1,7 @@
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
 
-    if (!token) {
+    if(!token){
         return {};
     }
 

@@ -4,7 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 
-import { authService } from "../../config/constants.js";
+import { apiBaseUrl } from "../../config/constants.js";
 import useAppData from "../../context/useAppData";
 
 
@@ -55,24 +55,13 @@ const Login = () => {
 
 
                 const { data: response } = await axios.post(
-                    `${authService}/login`,
+                    `${apiBaseUrl}/auth/login`,
                     {
                         code,
                         redirect_uri: redirectUri,
                     }
                 );
 
-
-                /*
-                 * Your backend response is:
-                 *
-                 * {
-                 *     data: {
-                 *         user,
-                 *         token
-                 *     }
-                 * }
-                 */
 
                 const responseData =
                     response?.data ?? response;
@@ -86,10 +75,6 @@ const Login = () => {
                     responseData?.user ?? null;
 
 
-                /*
-                 * Token is mandatory.
-                 */
-
                 if (!token) {
 
                     throw new Error(
@@ -98,25 +83,14 @@ const Login = () => {
 
                 }
 
-
-                /*
-                 * Store JWT.
-                 *
-                 * getAuthHeader() reads this exact key.
-                 */
-
                 localStorage.setItem(
                     "token",
                     token
                 );
 
 
-                /*
-                 * Update global authentication state.
-                 */
 
-                if (user) {
-
+                if(user){
                     setUser(user);
                     setIsAuth(true);
 
@@ -127,11 +101,6 @@ const Login = () => {
                     response?.message ||
                     "Logged in successfully"
                 );
-
-
-                /*
-                 * Remove ?code=... from URL.
-                 */
 
                 navigate(
                     "/",
@@ -147,11 +116,6 @@ const Login = () => {
                     "Google login error:",
                     error
                 );
-
-
-                /*
-                 * Do not leave an invalid token behind.
-                 */
 
                 localStorage.removeItem("token");
 
@@ -176,7 +140,7 @@ const Login = () => {
                 );
 
 
-            } finally {
+            }finally{
 
                 setLoading(false);
 

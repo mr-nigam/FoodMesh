@@ -61,7 +61,7 @@ const SocketProvider = ({
 
         newSocket.on('connect_error', (error) => {
             // Only warn if connection attempt failed and socket is actively trying to reconnect
-            if (newSocket.active) {
+            if(newSocket.active){
                 console.warn(
                     '⚠️ Socket connection error (reconnecting):',
                     error.message

@@ -1,14 +1,15 @@
 import axios from 'axios';
+
 import getAuthHeader from '../../../config/getAuthHeader.js';
+
 import { 
-    riderService,
-    analyticsService 
+    apiBaseUrl
 } from '../../../config/constants.js';
 
 
 const getRiderProfile = async () => {
     const {data} = await axios.get(
-        riderService,
+        `${apiBaseUrl}/rider`,
         getAuthHeader()
     );
 
@@ -26,7 +27,7 @@ const registerRider = async ({formData}) => {
     };
 
     const {data} = await axios.post(
-        riderService,
+        `${apiBaseUrl}/rider`,
         formData,
         config
     );
@@ -38,7 +39,7 @@ const updateAvailabilityStatus = async ({
     availabilityStatus
 }) => {
     const {data} = await axios.patch(
-        `${riderService}/availability-status`,
+        `${apiBaseUrl}/rider/availability-status`,
         { availabilityStatus },
         getAuthHeader()
     );
@@ -51,7 +52,7 @@ const updateRiderLocation = async ({
     latitude
 }) => {
     const {data} = await axios.patch(
-        `${riderService}/location`,
+        `${apiBaseUrl}/rider/location`,
         { longitude, latitude },
         getAuthHeader()
     );
@@ -61,18 +62,17 @@ const updateRiderLocation = async ({
 
 const getRiderVehicles = async () => {
     const {data} = await axios.get(
-        `${riderService}/vehicles`,
+        `${apiBaseUrl}/rider/vehicles`,
         getAuthHeader()
     );
     
     return data?.data?.vehicles || data?.vehicles || [];
 };
 
-const addRiderVehicle = async ({
-    vehicleData
-}) => {
+const addRiderVehicle = async (payload) => {
+    const vehicleData = payload?.vehicleData || payload;
     const {data} = await axios.post(
-        `${riderService}/vehicles`,
+        `${apiBaseUrl}/rider/vehicles`,
         vehicleData,
         getAuthHeader()
     );
@@ -80,11 +80,14 @@ const addRiderVehicle = async ({
     return data?.data?.vehicle || data?.vehicle;
 };
 
-const setPrimaryVehicle = async ({
-    vehicleId
-}) => {
+const setPrimaryVehicle = async (arg) => {
+    const vehicleId = typeof arg === 'object' && arg !== null
+        ? (arg.vehicleId || arg.id)
+        : arg;
+
     const { data } = await axios.patch(
-        `${riderService}/vehicles/${vehicleId}/primary`,
+        `${apiBaseUrl}/rider/vehicles/${vehicleId}/primary`,
+        {},
         getAuthHeader()
     );
 
@@ -93,7 +96,7 @@ const setPrimaryVehicle = async ({
 
 const getRiderMetrics = async () => {
     const {data} = await axios.get(
-        `${analyticsService}/rider/metrics`,
+        `${apiBaseUrl}/analytics/rider/metrics`,
         getAuthHeader()
     );
 

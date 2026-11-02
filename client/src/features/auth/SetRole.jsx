@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import useAppData from '../../context/useAppData';
-import { authService } from '../../config/constants';
+import { apiBaseUrl } from '../../config/constants';
 import getAuthHeader from '../../config/getAuthHeader.js';
 
 
@@ -18,19 +18,16 @@ const SetRole = () => {
   const [role, setRole] = useState(null);
   const { setUser } = useAppData();
   const navigate = useNavigate();
-  // const [isAuth, setIsAuth] = useState(false);
 
   const addRole = async()=>{
     console.log("Next clicked");
     console.log("Selected role:", role);
 
-    // if(!role) return;
-
     try{
       console.log("Sending request...");
 
       const { data } = await axios.put(
-        `${authService}/set-role`,
+        `${apiBaseUrl}/auth/set-role`,
         {role},
         getAuthHeader()
       );

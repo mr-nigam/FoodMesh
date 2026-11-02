@@ -7,7 +7,7 @@ const emitRealtimeEvent = async ({
     payload
 }) => {
     try{
-        const realtimeUrl = process.env.REALTIME_SERVICE_URL || 'http://localhost:4009';
+        const realtimeUrl = process.env.REALTIME_SERVICE_URL || 'http://localhost:5000';
 
         await axios.post(
             `${realtimeUrl}/internal/emit`,

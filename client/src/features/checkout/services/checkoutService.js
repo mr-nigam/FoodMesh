@@ -1,8 +1,7 @@
 import axios from "axios";
 
 import {
-    paymentService,
-    orderService
+    apiBaseUrl
 } from "../../../config/constants";
 
 import getAuthHeader from 
@@ -43,7 +42,7 @@ const extractOrder = (data) => {
 };
 
 const normalizeOrder = (rawOrder) => {
-    if (!rawOrder) {
+    if(!rawOrder){
         return null;
     }
 
@@ -143,7 +142,7 @@ const createPayment = async ({
 }) => {
 
     const { data } = await axios.post(
-        paymentService,
+        `${apiBaseUrl}/payment`,
         {
             orderId,
             vendor
@@ -160,7 +159,7 @@ const createPayment = async ({
 const verifyPayment = async (payload) => {
 
     const { data } = await axios.post(
-        `${paymentService}/verify`,
+        `${apiBaseUrl}/payment/verify`,
         payload,
         getAuthHeader()
     );
@@ -174,7 +173,7 @@ const confirmCod = async ({
 }) => {
 
     const { data } = await axios.post(
-        `${paymentService}/cod`,
+        `${apiBaseUrl}/payment/cod`,
         { orderId },
         getAuthHeader()
     );
@@ -187,7 +186,7 @@ const getOrder = async({
 })=>{
 
     const { data } = await axios.get(
-        `${orderService}/${orderId}`,
+        `${apiBaseUrl}/order/${orderId}`,
         getAuthHeader()
     );
 

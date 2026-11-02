@@ -24,7 +24,7 @@ const startServer = async()=>{
 
     await connectProducer();
 
-    const PORT = process.env.PORT || 4003;
+    const PORT = process.env.PORT || 4002;
 
     app.listen(PORT,()=>{
         console.log(`🚀 User Server running on port: ${PORT}`);

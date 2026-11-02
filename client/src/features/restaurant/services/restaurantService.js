@@ -1,15 +1,16 @@
 import axios from 'axios';
 
-import getAuthHeader from '../../../config/getAuthHeader.js';
+import getAuthHeader from 
+'../../../config/getAuthHeader.js';
+
 import { 
-    restaurantService,
-    orderService 
+    apiBaseUrl
 } from '../../../config/constants.js';
 
 
 const getMyRestaurant = async()=>{
     const { data } = await axios.get(
-        `${restaurantService}/my`,
+        `${apiBaseUrl}/restaurant/my`,
         getAuthHeader()
     );
 
@@ -26,7 +27,7 @@ const getMenuItems = async({
 })=>{
 
     const { data } = await axios.get(
-      `${restaurantService}/menu/all/${restaurantId}`,
+      `${apiBaseUrl}/restaurant/menu/all/${restaurantId}`,
       getAuthHeader()
     );
 
@@ -36,7 +37,7 @@ const getMenuItems = async({
 const getOrders = async()=>{
 
     const { data } = await axios.get(
-        `${orderService}/restaurant`,
+        `${apiBaseUrl}/order/restaurant`,
         getAuthHeader()
     );
 
@@ -48,7 +49,7 @@ const getOrder = async({
 })=>{
 
     const { data } = await axios.get(
-        `${orderService}/restaurant/${orderId}`,
+        `${apiBaseUrl}/order/restaurant/${orderId}`,
         getAuthHeader()
     );
 
@@ -62,7 +63,7 @@ const updateRestaurantOrderStatus = async({
 })=>{
 
        await axios.patch(
-            `${orderService}/restaurant/${orderId}`,
+            `${apiBaseUrl}/order/restaurant/${orderId}`,
             {
                 status,
                 restaurantOrderId
@@ -76,7 +77,7 @@ const getRestaurantById = async({
     restaurantId
 })=>{
     const {data} = await axios.get(
-        `${restaurantService}/${restaurantId}`,
+        `${apiBaseUrl}/restaurant/${restaurantId}`,
         getAuthHeader()
     );
 
@@ -97,7 +98,7 @@ const addMenuItemService = async({
     };
 
     const { data } = await axios.post(
-        `${restaurantService}/menu/add-item`,
+        `${apiBaseUrl}/restaurant/menu/add-item`,
         formData,
         config
     );
@@ -119,7 +120,7 @@ const addRestaurantService = async({
     };
 
     await axios.post(
-        `${restaurantService}/add`,
+        `${apiBaseUrl}/restaurant/add`,
         formData,
         config
     );
@@ -132,7 +133,7 @@ const updateOpenStatus = async({
 })=>{
 
     const { data } = await axios.patch(
-        `${restaurantService}/status`,
+        `${apiBaseUrl}/restaurant/status`,
         { status },
         getAuthHeader()
     );
@@ -147,7 +148,7 @@ const updateProfile = async({
 })=>{
     
     await axios.patch(
-        `${restaurantService}/edit`,
+        `${apiBaseUrl}/restaurant/edit`,
         { name, description },
         getAuthHeader()
     );

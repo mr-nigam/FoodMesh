@@ -1,6 +1,5 @@
 import pool from '../config/postgre.js';
 
-
 import { 
     ApiError,
     ApiResponse,
@@ -39,7 +38,8 @@ const register = asyncHandler(async (req, res)=>{
 const fetchMyRestaurant = asyncHandler(async (req, res) => {
     
     const restaurant = await fetchMyRestaurantService({
-        restaurantId: req?.user?.restaurantId
+        restaurantId: req?.user?.restaurantId,
+        ownerId: req?.user?.id
     });
 
     return res
@@ -59,6 +59,7 @@ const updateRestaurantStatus = asyncHandler( async(req, res)=>{
 
     const restaurant = await updateRestaurantStatusService({
         restaurantId: req?.user?.restaurantId,
+        ownerId: req?.user?.id,
         status: req?.body?.status ?? ""
     });
 
@@ -79,6 +80,7 @@ const updateRestaurantDetails = asyncHandler(async (req,res)=>{
 
     const restaurant = await updateRestaurantDetailsService({
         restaurantId: req?.user?.restaurantId,
+        ownerId: req?.user?.id,
         body: req.body
     });
     
@@ -112,9 +114,9 @@ const getNearbyRestaurants = asyncHandler(async (req, res) => {
 
 const fetchSingleRestaurant = asyncHandler(async (req, res) => {
 
-    const restaurant = await fetchMyRestaurantService({
+    const restaurant = await fetchSingleRestaurantService({
         restaurantId: req?.params?.restaurantId ?? req?.params?.id
-    })
+    });
     
     return res
         .status(200)

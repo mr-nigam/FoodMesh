@@ -10,7 +10,7 @@ const getNearbyRiders = async ({
 
     const riderUrl = 
         process.env.RIDER_SERVICE_URL
-        ?? "http://localhost:4007/api/v1/rider";
+        ?? "http://localhost:4004/api/v1/rider";
 
     try{
         const { data } = await axios.get(
@@ -47,7 +47,7 @@ const fetchRidersByIds = async ({
 
     const riderUrl = 
         process.env.RIDER_SERVICE_URL
-        ?? "http://localhost:4007/api/v1/rider";
+        ?? "http://localhost:4004/api/v1/rider";
 
     try {
         const { data } = await axios.post(

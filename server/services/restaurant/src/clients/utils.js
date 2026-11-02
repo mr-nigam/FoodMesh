@@ -24,8 +24,9 @@ const uploadFile = async({
     }
 
     const utilsServiceUrl = 
+        process.env.UTILS_SERVICE_URL ||
         process.env.UTILS_SERVICE || 
-        "http://localhost:4002/api/v1/utils";
+        "http://localhost:4012/api/v1/utils";
 
     const {data} = await axios.post(
         `${utilsServiceUrl}/upload`,

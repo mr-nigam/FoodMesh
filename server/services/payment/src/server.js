@@ -30,7 +30,7 @@ const startServer = async()=>{
 
     await startOrderConsumer();
 
-    const PORT = process.env.PORT || 4008;
+    const PORT = process.env.PORT || 4007;
 
     app.listen(PORT,()=>{
         console.log(`🚀 Payment Server running on port: ${PORT}`);

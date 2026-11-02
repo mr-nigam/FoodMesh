@@ -30,7 +30,7 @@ const startServer = async()=>{
 
     await startDeliveryConsumer();
 
-    const PORT = process.env.PORT || 4011;
+    const PORT = process.env.PORT || 4008;
 
     app.listen(PORT,()=>{
         console.log(`🚀 Delivery Server running on port: ${PORT}`);

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const RESTAURANT_SERVICE = 
     process.env.RESTAURANT_SERVICE_URL ??
-    "http://localhost:4001/api/v1/restaurant";
+    "http://localhost:4003/api/v1/restaurant";
 
 const ORDER_SERVICE_KEY = process.env.ORDER_SERVICE_KEY;
 

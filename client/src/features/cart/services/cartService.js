@@ -1,9 +1,6 @@
 import axios from "axios";
 import { 
-    orderService,
-    addressService,
-    userService, 
-    restaurantService
+    apiBaseUrl
 } from "../../../config/constants";
 
 import getAuthHeader from 
@@ -12,7 +9,7 @@ import getAuthHeader from
 
 const getDefaultAddress = async () => {
     const { data } = await axios.get(
-        `${addressService}/default`,
+        `${apiBaseUrl}/user/address/default`,
         getAuthHeader(),
     );
     
@@ -21,7 +18,7 @@ const getDefaultAddress = async () => {
 
 const getAllAddresses = async () => {
     const { data } = await axios.get(
-        `${userService}/address/all`,
+        `${apiBaseUrl}/user/address/all`,
         getAuthHeader(),
     );
 
@@ -33,7 +30,7 @@ const createOrder = async ({
 }) => {
 
     const {data} = await axios.post(
-        orderService,
+        `${apiBaseUrl}/order`,
         payload,
         getAuthHeader()
     );
@@ -55,7 +52,7 @@ const removeCartItem = async ({
 }) => {
 
     const { data } = await axios.delete(
-        `${restaurantService}/cart/remove/${itemId}`,
+        `${apiBaseUrl}/restaurant/cart/remove/${itemId}`,
         getAuthHeader()
     );
 
@@ -69,7 +66,7 @@ const removeRestaurantFromCart = async ({
 }) => {
 
     const { data } = await axios.delete(
-        `${restaurantService}/cart/remove/r/${restaurantId}`,
+        `${apiBaseUrl}/restaurant/cart/remove/r/${restaurantId}`,
         getAuthHeader()
     );
 
@@ -80,7 +77,7 @@ const removeRestaurantFromCart = async ({
 
 const clearCartService = async () => {
     const { data } = await axios.delete(
-        `${restaurantService}/cart/clear`,
+        `${apiBaseUrl}/restaurant/cart/clear`,
         getAuthHeader()
     );
 

@@ -24,7 +24,7 @@ const startServer = async()=>{
     
     await connectProducer();
 
-    const PORT = process.env.PORT || 4007;
+    const PORT = process.env.PORT || 4004;
 
     app.listen(PORT,()=>{
         console.log(`🚀 Rider Server running on port: ${PORT}`);

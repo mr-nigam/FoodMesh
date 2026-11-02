@@ -9,11 +9,11 @@ const generateAccessToken = (user) =>{
     };
 
     if(user.role === "rider"){
-        data.riderId = user.professional_id
+        data.riderId = user.professional_id;
     }else if(user.role === "seller"){
-        data.restaurantId = user.professional_id
-    }else if(user.role === "seller"){
-        data.adminId = user.professional_id
+        data.restaurantId = user.professional_id;
+    }else if(user.role === "admin"){
+        data.adminId = user.professional_id;
     }
 
     return jwt.sign(
@@ -32,11 +32,11 @@ const generateRefreshToken = (user) =>{
     };
 
     if(user.role === "rider"){
-        data.riderId = user.professional_id
+        data.riderId = user.professional_id;
     }else if(user.role === "seller"){
-        data.restaurantId = user.professional_id
-    }else if(user.role === "seller"){
-        data.adminId = user.professional_id
+        data.restaurantId = user.professional_id;
+    }else if(user.role === "admin"){
+        data.adminId = user.professional_id;
     }
 
     return jwt.sign(

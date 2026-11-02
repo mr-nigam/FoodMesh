@@ -3,8 +3,8 @@ import axios from 'axios';
 import getAuthHeader from 
 '../../../config/getAuthHeader.js';
 
-import { 
-    deliveryService
+import {
+    apiBaseUrl
 } from '../../../config/constants.js';
 
 
@@ -15,7 +15,7 @@ const acceptDeliveryOffer = async ({
 
     try{
         const { data } = await axios.put(
-            `${deliveryService}/offers/${offerId}/accept`,
+            `${apiBaseUrl}/delivery/offers/${offerId}/accept`,
             { deliveryId },
             getAuthHeader()
         );
@@ -34,7 +34,7 @@ const rejectDeliveryOffer = async ({
 
     try{
         const { data } = await axios.put(
-            `${deliveryService}/offers/${offerId}/reject`,
+            `${apiBaseUrl}/delivery/offers/${offerId}/reject`,
             {},
             getAuthHeader()
         );
@@ -49,7 +49,7 @@ const rejectDeliveryOffer = async ({
 const getActiveDelivery = async () => {
     try {
         const { data } = await axios.get(
-            `${deliveryService}/active`,
+            `${apiBaseUrl}/delivery/active`,
             getAuthHeader()
         );
 
@@ -67,7 +67,7 @@ const updateDeliveryProgress = async ({
 
     try{
         const { data } = await axios.patch(
-            `${deliveryService}/${deliveryId}/status`,
+            `${apiBaseUrl}/delivery/${deliveryId}/status`,
             { status },
             getAuthHeader()
         );

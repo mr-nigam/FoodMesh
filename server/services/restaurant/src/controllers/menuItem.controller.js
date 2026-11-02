@@ -12,7 +12,8 @@ import {
 
 
 const fetcheRestaurnt = async({
-    userId
+    userId,
+    restaurantId
 })=>{
     const searchQuery = `
         SELECT
@@ -23,12 +24,14 @@ const fetcheRestaurnt = async({
             pictures_urls,
             created_at
         FROM restaurants
-        WHERE owner_id = $1;
+        WHERE (owner_id = $1 OR id = $2)
+          AND deleted_at IS NULL
+        LIMIT 1;
     `;
 
     const {rows} = await pool.query(
         searchQuery,
-        [userId]
+        [userId || null, restaurantId || null]
     );
 
     if(rows.length === 0){
@@ -43,7 +46,8 @@ const fetcheRestaurnt = async({
 
 const addMenuItem = asyncHandler(async (req,res) => {
     const restaurant = await fetcheRestaurnt({
-        userId: req.user.id
+        userId: req?.user?.id,
+        restaurantId: req?.user?.restaurantId
     });
     
     const {
@@ -168,7 +172,8 @@ const fetchAllItems = asyncHandler(async (req,res) => {
 
 const updateMenuItem = asyncHandler(async (req,res) => {
     const restaurant = await fetcheRestaurnt({
-        userId: req.user.id
+        userId: req?.user?.id,
+        restaurantId: req?.user?.restaurantId
     });
 
     const { itemId } = req.params;
@@ -260,13 +265,6 @@ const updateMenuItem = asyncHandler(async (req,res) => {
         );
     }
 
-    if(updates.length === 0){
-        throw new ApiError(
-            400,
-            "No fields provided for update"
-        );
-    }
-
     values.push(itemId);
     values.push(restaurant.id);
 
@@ -315,7 +313,8 @@ const updateMenuItem = asyncHandler(async (req,res) => {
 
 const deleteMenuItem = asyncHandler(async (req,res) => {
     const restaurant = await fetcheRestaurnt({
-        userId: req.user.id
+        userId: req?.user?.id,
+        restaurantId: req?.user?.restaurantId
     });
 
     const { itemId } = req.params;
@@ -369,7 +368,8 @@ const deleteMenuItem = asyncHandler(async (req,res) => {
 
 const toggleItemAvailability = asyncHandler(async(req,res)=>{
     const restaurant = await fetcheRestaurnt({
-        userId: req.user.id
+        userId: req?.user?.id,
+        restaurantId: req?.user?.restaurantId
     });
 
     const { itemId } = req.params;

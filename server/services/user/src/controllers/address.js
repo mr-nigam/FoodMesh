@@ -10,21 +10,22 @@ import {
 
 const addAddress = asyncHandler( async (req,res) => {
 
+    const body = req.body || {};
     const validatedData = validateAddress({
-        label: req.body.label,
-        recipientName: req.body.recipientName,
-        recipientPhone: req.body.recipientPhone,
-        addressLine1: req.body.addressLine1,
-        addressLine2: req.body.addressLine2,
-        landmark: req.body.landmark,
-        city: req.body.city,
-        state: req.body.state,
-        postalCode: req.body.postalCode,
-        countryCode: req.body.countryCode,
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        formattedAddress: req.body.formattedAddress,
-        isDefault: req.body.isDefault
+        label: body.label,
+        recipientName: body.recipientName,
+        recipientPhone: body.recipientPhone,
+        addressLine1: body.addressLine1,
+        addressLine2: body.addressLine2,
+        landmark: body.landmark,
+        city: body.city,
+        state: body.state,
+        postalCode: body.postalCode,
+        countryCode: body.countryCode,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        formattedAddress: body.formattedAddress,
+        isDefault: body.isDefault
     });
 
     const isDefault = validatedData[11];
@@ -331,7 +332,8 @@ const fecthAddress = asyncHandler( async (req, res) => {
 });
 
 const editAddress = asyncHandler( async (req, res) => {
-    const addressId = req.body.addressId || req.params?.addressId;
+    const body = req.body || {};
+    const addressId = body.addressId || req.params?.addressId;
 
     if(!addressId){
         throw new ApiError(
@@ -341,20 +343,20 @@ const editAddress = asyncHandler( async (req, res) => {
     }
 
     const validatedData = validateAddress({
-        label: req.body.label,
-        recipientName: req.body.recipientName,
-        recipientPhone: req.body.recipientPhone,
-        addressLine1: req.body.addressLine1,
-        addressLine2: req.body.addressLine2,
-        landmark: req.body.landmark,
-        city: req.body.city,
-        state: req.body.state,
-        postalCode: req.body.postalCode,
-        countryCode: req.body.countryCode,
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        formattedAddress: req.body.formattedAddress,
-        isDefault: req.body.isDefault
+        label: body.label,
+        recipientName: body.recipientName,
+        recipientPhone: body.recipientPhone,
+        addressLine1: body.addressLine1,
+        addressLine2: body.addressLine2,
+        landmark: body.landmark,
+        city: body.city,
+        state: body.state,
+        postalCode: body.postalCode,
+        countryCode: body.countryCode,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        formattedAddress: body.formattedAddress,
+        isDefault: body.isDefault
     });
 
     const isDefault = validatedData[11];

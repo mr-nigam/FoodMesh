@@ -5,7 +5,7 @@ import axios from "axios";
 
 import useAppData from "../../../context/useAppData.js";
 import RestaurantCard from "../../restaurant/components/RestaurantCard.jsx";
-import { restaurantService } from "../../../config/constants.js";
+import { apiBaseUrl } from "../../../config/constants.js";
 //import getAuthHeader from '../../../config/getAuthHeader.js';
 
 
@@ -33,7 +33,7 @@ const Home = () => {
         if (isMounted) setLoading(true);
 
         const { data } = await axios.get(
-          `${restaurantService}/nearby`,
+          `${apiBaseUrl}/restaurant/nearby`,
           {
             params: {
               latitude: location.latitude,

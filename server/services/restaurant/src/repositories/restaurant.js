@@ -80,7 +80,8 @@ const registerRepo = async ({
 };
 
 const fetchMyRestaurantRepo = async ({
-    restaurantId
+    restaurantId,
+    ownerId
 }) => {
 
     const searchQuery = `
@@ -95,14 +96,14 @@ const fetchMyRestaurantRepo = async ({
             is_open,
             created_at
         FROM restaurants
-        WHERE id = $1
+        WHERE (id = $1 OR owner_id = $2)
             AND deleted_at IS NULL
         LIMIT 1;
     `;
 
     const { rows } = await pool.query(
         searchQuery,
-        [restaurantId]
+        [restaurantId || null, ownerId || null]
     );
 
     return rows[0];
@@ -110,6 +111,7 @@ const fetchMyRestaurantRepo = async ({
 
 const updateRestaurantStatusRepo = async({
     restaurantId,
+    ownerId,
     status
 })=>{
 
@@ -117,7 +119,7 @@ const updateRestaurantStatusRepo = async({
         UPDATE restaurants
         SET 
             is_open = $1
-        WHERE id = $2
+        WHERE (id = $2 OR owner_id = $3)
             AND deleted_at IS NULL
         RETURNING
             id,
@@ -133,15 +135,15 @@ const updateRestaurantStatusRepo = async({
     
     const {rows} = await pool.query(
         updateQuery,
-        [status, restaurantId]
+        [status, restaurantId || null, ownerId || null]
     );
-
 
     return rows[0];
 };
 
 const updateRestaurantDetailsRepo = async ({
     restaurantId,
+    ownerId,
     restaurantName,
     description
 })=>{
@@ -149,7 +151,8 @@ const updateRestaurantDetailsRepo = async ({
     const params = [
         restaurantName,
         description,
-        restaurantId
+        restaurantId || null,
+        ownerId || null
     ];
 
     const updateQuery = `
@@ -157,7 +160,7 @@ const updateRestaurantDetailsRepo = async ({
         SET 
             name = $1,
             description = $2
-        WHERE id = $3
+        WHERE (id = $3 OR owner_id = $4)
             AND deleted_at IS NULL
         RETURNING
             id,

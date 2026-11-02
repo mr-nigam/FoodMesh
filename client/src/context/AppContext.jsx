@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-import { authService, restaurantService } from "../config/constants";
+import { apiBaseUrl } from "../config/constants";
+
 import { AppContext } from "./context";
 import getAuthHeader from "../config/getAuthHeader.js";
 
@@ -55,7 +56,7 @@ const AppProvider = ({
             try{
 
                 const { data } = await axios.get(
-                    `${authService}/me`,
+                    `${apiBaseUrl}/auth/me`,
                     getAuthHeader()
                 );
 
@@ -257,7 +258,7 @@ const AppProvider = ({
         try {
 
             const { data } = await axios.get(
-                `${restaurantService}/cart/my`,
+                `${apiBaseUrl}/restaurant/cart/my`,
                 getAuthHeader()
             );
 
@@ -348,7 +349,7 @@ const AppProvider = ({
         try{
 
             const { data } = await axios.put(
-                `${restaurantService}/cart/update`,
+                `${apiBaseUrl}/restaurant/cart/update`,
                 {
                     itemId,
                     action

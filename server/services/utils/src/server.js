@@ -23,7 +23,7 @@ cloudinary.config({
     api_secret: CLOUDINARY_API_SECRET
 });
 
-const PORT = process.env.PORT || 4002;
+const PORT = process.env.PORT || 4012;
 
 app.listen(PORT,()=>{
     console.log(`🚀 Utils Server running on port: ${PORT}`);
