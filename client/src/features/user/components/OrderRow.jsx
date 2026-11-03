@@ -23,8 +23,9 @@ const statusBadgeStyles = {
 };
 
 const formatDate = (dateString) => {
-    if (!dateString) return "";
-    try {
+    if(!dateString) return "";
+    
+    try{
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {
             month: "short",
@@ -32,7 +33,7 @@ const formatDate = (dateString) => {
             hour: "2-digit",
             minute: "2-digit"
         });
-    } catch {
+    }catch{
         return dateString;
     }
 };

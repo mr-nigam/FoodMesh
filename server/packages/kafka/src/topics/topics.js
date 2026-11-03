@@ -32,6 +32,12 @@ const KAFKA_TOPICS = Object.freeze({
     RIDER:
         "foodmesh.rider",
 
+    RIDER_LOCATION:
+        process.env.KAFKA_LOCATION_TOPIC || "foodmesh.rider.location",
+
+    TRACKING:
+        "foodmesh.tracking",
+
     REVIEW:
         "foodmesh.review",
 

@@ -1,7 +1,11 @@
 import {
     setCache,
     deleteGeoCache,
-    deleteOrderRelatedCache
+    deleteOrderRelatedCache,
+    setOrderTracking,
+    getOrderTracking,
+    removeOrderTracking,
+    publish
 } from '@foodmesh/redis';
 
 import {
@@ -72,6 +76,39 @@ const acceptOfferService = async ({
         value: riderId,
         ttl: 3600
     });
+
+    // Initialize real-time location tracking state in Redis
+    try {
+        const cityId = String(
+            delivery.delivery_address?.city ||
+            delivery.restaurant_address?.city ||
+            delivery.city ||
+            "default"
+        ).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+
+        await setOrderTracking({
+            orderId: delivery.order_id,
+            riderId,
+            customerId: delivery.user_id,
+            deliveryId: resolvedDeliveryId,
+            cityId,
+            status: 'accepted'
+        });
+
+        publish({
+            channel: 'tracking:lifecycle',
+            data: {
+                event: 'tracking:started',
+                orderId: delivery.order_id,
+                riderId,
+                deliveryId: resolvedDeliveryId,
+                status: 'accepted',
+                timestamp: Date.now()
+            }
+        }).catch(() => {});
+    } catch (trackErr) {
+        console.warn('[Tracking] Failed to initialize order tracking in Redis:', trackErr.message);
+    }
 
     // Publish Kafka Event
     const deliveryEvent = createDeliveryEvent({
@@ -269,6 +306,55 @@ const updateDeliveryStatusService = async ({
             deliveryId
         }
     }).catch(() => {});
+
+    // Update or clean up real-time tracking based on lifecycle
+    try {
+        if (normalizedStatus === 'delivered' || normalizedStatus === 'cancelled') {
+            const cityId = String(
+                updated.delivery_address?.city ||
+                updated.restaurant_address?.city ||
+                updated.city ||
+                "default"
+            ).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+
+            await removeOrderTracking({
+                orderId: updated.order_id,
+                riderId,
+                cityId
+            }).catch(() => {});
+
+            publish({
+                channel: 'tracking:lifecycle',
+                data: {
+                    event: 'tracking:ended',
+                    orderId: updated.order_id,
+                    riderId,
+                    deliveryId,
+                    status: normalizedStatus,
+                    timestamp: Date.now()
+                }
+            }).catch(() => {});
+        } else {
+            const cached = await getOrderTracking({ orderId: updated.order_id });
+            const cityId = cached?.cityId || String(
+                updated.delivery_address?.city ||
+                updated.restaurant_address?.city ||
+                updated.city ||
+                "default"
+            ).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+
+            await setOrderTracking({
+                orderId: updated.order_id,
+                riderId,
+                customerId: updated.user_id,
+                deliveryId,
+                cityId,
+                status: normalizedStatus
+            }).catch(() => {});
+        }
+    } catch (trackErr) {
+        console.warn('[Tracking] Failed to update tracking lifecycle in Redis:', trackErr.message);
+    }
 
     await deleteOrderRelatedCache({
         orderId: updated.order_id,

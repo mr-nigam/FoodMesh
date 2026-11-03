@@ -72,6 +72,9 @@ router.use("/order", createServiceProxy(services.order));
 // Rider -> http://localhost:4004
 router.use("/rider", createServiceProxy(services.rider));
 
+// Tracking -> http://localhost:4008 (Delivery Service)
+router.use("/tracking", createServiceProxy(services.delivery));
+
 // Payment -> http://localhost:4007
 router.use("/payment", createServiceProxy(services.payment));
 
@@ -89,5 +92,6 @@ router.use("/realtime", createServiceProxy(services.realtime));
 
 // Admin -> http://localhost:4011
 router.use("/admin", createServiceProxy(services.admin));
+
 
 export default router;

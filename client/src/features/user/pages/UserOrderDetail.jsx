@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -13,6 +13,10 @@ import {
     BiReceipt,
     BiPackage
 } from "react-icons/bi";
+import {
+    MdDirectionsBike,
+    MdDeliveryDining
+} from "react-icons/md";
 
 import useSocket from "../../../context/useSocket";
 import formatCurrency from "../../../utils/formatCurrency";
@@ -40,6 +44,16 @@ const CANCELLABLE_STATUSES = [
     "placed",
     "pending",
     "accepted"
+];
+
+const TRACKABLE_STATUSES = [
+    "rider_assigned",
+    "assigned",
+    "accepted",
+    "arrived_restaurant",
+    "picked_up",
+    "on_the_way",
+    "arrived_customer"
 ];
 
 const statusColors = {
@@ -244,6 +258,10 @@ const UserOrderDetail = () => {
         ? order.restaurants
         : [];
 
+    const activeTrackableRestaurant = restaurantsList.find((r) =>
+        TRACKABLE_STATUSES.includes((r.status || currentStatus).toLowerCase())
+    );
+
     return (
         <div className="mx-auto max-w-4xl px-4 py-8 space-y-8 pb-16">
 
@@ -403,7 +421,43 @@ const UserOrderDetail = () => {
                 )}
             </div>
 
-            {/* Restaurant-wise Items Breakdown */}
+            {/* Live Delivery Quick Banner if any restaurant has a rider on the way */}
+            {activeTrackableRestaurant && (
+                <div className="bg-linear-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-200 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/20 shrink-0">
+                            <MdDeliveryDining />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-bold text-gray-900 text-sm sm:text-base">
+                                    Your food is on the way!
+                                </h3>
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-0.5">
+                                Rider is actively delivering for {activeTrackableRestaurant.name || "your order"}. Follow live GPS on the map.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() =>
+                            navigate(
+                                `/orders/${order.order_id || orderId}/track/${activeTrackableRestaurant.restaurant_order_id || activeTrackableRestaurant.id}`
+                            )
+                        }
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-2xl shadow-md shadow-emerald-600/20 transition cursor-pointer shrink-0"
+                    >
+                        <MdDirectionsBike className="text-base" />
+                        <span>Track Live Delivery</span>
+                    </button>
+                </div>
+            )}
+
+            
             <div className="space-y-4">
 
                 <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
@@ -433,6 +487,10 @@ const UserOrderDetail = () => {
                         const restStatus = (
                             rest.status || currentStatus
                         ).toLowerCase();
+
+                        const isTrackable = TRACKABLE_STATUSES.includes(restStatus);
+                        const isDelivered = restStatus === "delivered";
+                        const isCancelled = ["cancelled", "rejected", "failed"].includes(restStatus);
 
                         return (
                             <div
@@ -469,8 +527,7 @@ const UserOrderDetail = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
-
+                                    <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-end">
                                         <span
                                             className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
                                                 statusColors[restStatus] ||
@@ -479,6 +536,44 @@ const UserOrderDetail = () => {
                                         >
                                             {restStatus.replace(/_/g, " ")}
                                         </span>
+
+                                        {/* Rider Movement Tracking Button */}
+                                        {isTrackable ? (
+                                            <button
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/orders/${order.order_id || orderId}/track/${rest.restaurant_order_id || rest.id}`
+                                                    )
+                                                }
+                                                className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer transform hover:-translate-y-0.5 active:scale-95"
+                                                title="Track live rider movement on map"
+                                            >
+                                                <span className="relative flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                                </span>
+                                                <MdDeliveryDining className="text-base" />
+                                                <span>Track Rider</span>
+                                            </button>
+                                        ) : isDelivered ? (
+                                            <button
+                                                disabled
+                                                className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-400 font-medium text-xs px-3 py-1.5 rounded-xl border border-gray-200 cursor-not-allowed select-none opacity-80"
+                                                title="Order delivered - tracking completed"
+                                            >
+                                                <BiCheckCircle className="text-sm text-emerald-600" />
+                                                <span>Delivered</span>
+                                            </button>
+                                        ) : isCancelled ? null : (
+                                            <button
+                                                disabled
+                                                className="inline-flex items-center gap-1.5 bg-gray-50 text-gray-400 font-medium text-xs px-3 py-1.5 rounded-xl border border-gray-200/80 cursor-not-allowed select-none opacity-60"
+                                                title="Rider will be trackable once assigned to delivery"
+                                            >
+                                                <MdDirectionsBike className="text-sm text-gray-400" />
+                                                <span>Waiting for Rider</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 

@@ -28,6 +28,7 @@ import AddressPage from '../features/user/pages/AddressPage';
 import AddAddressPage from '../features/user/pages/AddAddressPage';
 import Orders from '../features/user/pages/Orders';
 import UserOrderDetail from '../features/user/pages/UserOrderDetail';
+import RiderTrackingPage from '../features/user/pages/RiderTrackingPage';
 
 import RiderDashboard from '../features/rider/pages/RiderDashboard';
 import RiderOnboarding from '../features/rider/pages/RiderOnboarding';
@@ -117,6 +118,10 @@ const App = () => {
                     <Route path="/orders" element={<Orders />}/>
                     
                     <Route path="/orders/:orderId" element={<UserOrderDetail />}/>
+
+                    <Route path="/orders/:orderId/track" element={<RiderTrackingPage />}/>
+
+                    <Route path="/orders/:orderId/track/:restaurantOrderId" element={<RiderTrackingPage />}/>
 
                     <Route path="/checkout/:orderId" element={<Checkout />} />
                     

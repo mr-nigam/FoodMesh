@@ -5,7 +5,7 @@ import {
     connectProducer
 } from "@foodmesh/kafka";
 
-import{
+import {
     bootstrapDB
 } from '@foodmesh/utils';
 
@@ -18,8 +18,12 @@ import {
     startDeliveryConsumer
 } from './consumers/delivery.js';
 
+import {
+    startLocationHistoryConsumer
+} from './consumers/locationHistoryConsumer.js';
 
-const startServer = async()=>{
+
+const startServer = async () => {
     
     await bootstrapDB({
         connectDB,
@@ -30,9 +34,18 @@ const startServer = async()=>{
 
     await startDeliveryConsumer();
 
+    try {
+        await startLocationHistoryConsumer();
+    } catch (kErr) {
+        console.warn(
+            "⚠️ Failed to start location history Kafka consumer:", 
+            kErr.message
+        );
+    }
+
     const PORT = process.env.PORT || 4008;
 
-    app.listen(PORT,()=>{
+    app.listen(PORT, () => {
         console.log(`🚀 Delivery Server running on port: ${PORT}`);
     });
 };

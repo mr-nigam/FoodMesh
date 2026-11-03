@@ -49,3 +49,7 @@ export {
 export {
     createRestaurantEvent
 } from '../src/events/restaurantEvents.js';
+
+export {
+    createLocationEvent
+} from './events/trackingEvents.js';

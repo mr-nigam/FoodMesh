@@ -11,6 +11,7 @@ import {
 
 
 import deliveryRouter from './routes/delivery.js';
+import trackingRouter from './routes/tracking.js';
 
 
 const app = express();
@@ -37,6 +38,8 @@ app.use(cookieParser());
 
 
 // API Routes
+app.use("/api/v1/tracking", trackingRouter);
+app.use("/api/v1/delivery/tracking", trackingRouter);
 app.use("/api/v1/delivery", deliveryRouter);
 
 
