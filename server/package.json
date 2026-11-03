@@ -8,7 +8,13 @@
     "scripts": {
         "kafka:topics": "npm run setup --workspace=@foodmesh/kafka"
     },
+    "overrides": {
+        "image-size": "^2.0.4"
+    },
     "dependencies": {
+        "glob": "^14.0.3",
+        "global": "^4.4.0",
+        "minimatch": "^11.0.4",
         "multer": "^2.4.0",
         "pg": "^8.23.0"
     }
