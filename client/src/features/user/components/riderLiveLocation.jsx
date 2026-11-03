@@ -1,4 +1,9 @@
-import { useEffect, useState, useMemo} from "react";
+import { 
+    useEffect,
+    useState,
+    useMemo
+} from "react";
+
 import {
     MapContainer,
     TileLayer,
@@ -7,7 +12,7 @@ import {
     Polyline,
     useMap
 } from "react-leaflet";
-import L from "leaflet";
+
 import {
     BiArrowBack,
     BiStore,
@@ -15,8 +20,16 @@ import {
     BiCheckCircle,
     BiPhoneCall
 } from "react-icons/bi";
-import { MdDirectionsBike} from "react-icons/md";
-import useSocket from "../../../context/useSocket";
+
+import { 
+    MdDirectionsBike
+} from "react-icons/md";
+
+import L from "leaflet";
+
+import useSocket from 
+"../../../context/useSocket";
+
 
 // Custom HTML Markers using Tailwind classes for crisp Leaflet rendering
 const createCustomIcon = (emoji, bgColor = "bg-orange-500", ringColor = "ring-orange-200") => {
@@ -63,18 +76,30 @@ const MapBoundsAdjuster = ({ coordinates }) => {
 };
 
 const parseCoords = (obj) => {
-    if (!obj) return null;
+
+    if(!obj) return null;
     const lat = Number(obj.latitude ?? obj.lat ?? obj.drop_latitude ?? obj.pickup_latitude ?? obj.y);
     const lng = Number(obj.longitude ?? obj.lng ?? obj.drop_longitude ?? obj.pickup_longitude ?? obj.x);
-    if (Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0)) {
-        return { latitude: lat, longitude: lng };
+    
+    if(
+        Number.isFinite(lat) && 
+        Number.isFinite(lng) && 
+        (lat !== 0 || lng !== 0)
+    ){
+        return { 
+            latitude: lat,
+            longitude: lng
+        };
     }
+
     return null;
 };
 
 const formatAddress = (addr) => {
-    if (!addr) return "";
-    if (typeof addr === "string") return addr;
+
+    if(!addr) return "";
+    if(typeof addr === "string") return addr;
+
     const parts = [
         addr.addressLine1 || addr.address_line1 || addr.street,
         addr.addressLine2 || addr.address_line2,
@@ -82,6 +107,7 @@ const formatAddress = (addr) => {
         addr.state,
         addr.postalCode || addr.pincode
     ].filter(Boolean);
+
     return parts.length > 0 ? parts.join(", ") : addr.formattedAddress || "";
 };
 
@@ -99,16 +125,17 @@ const RiderLiveLocation = ({
     selectedRestaurant,
     onBack
 }) => {
+
     const socket = useSocket();
 
     const [riderLocation, setRiderLocation] = useState(null);
     const [liveStatus, setLiveStatus] = useState(
         (selectedRestaurant?.status || order?.status || "rider_assigned").toLowerCase()
     );
+
     const [lastPingTime, setLastPingTime] = useState(null);
     const [secondsSinceLastPing, setSecondsSinceLastPing] = useState(0);
     const [isDelivered, setIsDelivered] = useState(liveStatus === "delivered");
-    const [subscribed, setSubscribed] = useState(false);
 
     // Extract restaurant coordinates
     const restaurantCoords = useMemo(() => {
@@ -122,29 +149,37 @@ const RiderLiveLocation = ({
 
     // Track elapsed time since last location ping
     useEffect(() => {
-        if (!lastPingTime) return;
+    
+        if(!lastPingTime) return;
+        
         const interval = setInterval(() => {
             setSecondsSinceLastPing(Math.floor((Date.now() - lastPingTime) / 1000));
         }, 1000);
+        
         return () => clearInterval(interval);
+    
     }, [lastPingTime]);
 
     // Socket subscription to live tracking
     useEffect(() => {
-        if (!socket || !orderId) return;
+        if(!socket || !orderId) return;
 
         const targetId = orderId;
 
         // 1. Subscribe to order tracking room
         socket.emit("tracking:subscribe", { orderId: targetId });
-        setSubscribed(true);
 
         // Also subscribe with restaurantOrderId if distinct
         if(
             restaurantOrderId && 
             restaurantOrderId !== orderId
         ){
-            socket.emit("tracking:subscribe", { orderId: restaurantOrderId });
+            socket.emit(
+                "tracking:subscribe",
+                { 
+                    orderId: restaurantOrderId
+                }
+            );
         }
 
         // 2. Listen for live coordinate broadcasts
@@ -210,12 +245,18 @@ const RiderLiveLocation = ({
 
     // Default map coordinates: rider -> restaurant -> customer -> default
     const defaultCenter = [31.326, 75.5762];
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const riderPos = riderLocation
         ? [riderLocation.latitude, riderLocation.longitude]
         : null;
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const restPos = restaurantCoords
         ? [restaurantCoords.latitude, restaurantCoords.longitude]
         : null;
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const custPos = customerCoords
         ? [customerCoords.latitude, customerCoords.longitude]
         : null;

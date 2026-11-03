@@ -13,11 +13,11 @@ export const getApiErrorMessage = (error, fallbackMessage = "An unexpected error
         );
     }
 
-    if (error instanceof Error) {
+    if(error instanceof Error){
         return error.message || fallbackMessage;
     }
 
-    if (typeof error === "string") {
+    if(typeof error === "string"){
         return error;
     }
 

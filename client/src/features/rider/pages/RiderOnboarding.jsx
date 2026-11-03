@@ -12,7 +12,10 @@ import useAppData from "../../../context/useAppData.js";
 import { registerRider } from "../services/riderService.js";
 
 
-const RiderOnboarding = ({ onCompleted }) => {
+const RiderOnboarding = ({
+    onCompleted
+}) => {
+    
     const { user } = useAppData();
     const navigate = useNavigate();
 

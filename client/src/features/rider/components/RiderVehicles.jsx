@@ -10,10 +10,19 @@ import {
     BiStar,
     BiLinkExternal
 } from "react-icons/bi";
-import { addRiderVehicle, setPrimaryVehicle } from "../services/riderService.js";
+
+import {
+    addRiderVehicle,
+    setPrimaryVehicle
+} from "../services/riderService.js";
 
 
-const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
+const RiderVehicles = ({
+    vehicles = [],
+    onRefresh,
+    rider
+}) => {
+
     const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [vehicleType, setVehicleType] = useState("motorcycle");
@@ -28,7 +37,10 @@ const RiderVehicles = ({ vehicles = [], onRefresh, rider }) => {
     const handleAddVehicle = async (e) => {
         e.preventDefault();
 
-        if (!registrationNumber.trim() && vehicleType !== "bicycle") {
+        if(
+            !registrationNumber.trim() && 
+            vehicleType !== "bicycle"
+        ){
             return toast.error("Please enter the registration number");
         }
 

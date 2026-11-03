@@ -545,7 +545,7 @@ const UserOrderDetail = () => {
                                                         `/orders/${order.order_id || orderId}/track/${rest.restaurant_order_id || rest.id}`
                                                     )
                                                 }
-                                                className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer transform hover:-translate-y-0.5 active:scale-95"
+                                                className="inline-flex items-center gap-2 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer transform hover:-translate-y-0.5 active:scale-95"
                                                 title="Track live rider movement on map"
                                             >
                                                 <span className="relative flex h-2 w-2">

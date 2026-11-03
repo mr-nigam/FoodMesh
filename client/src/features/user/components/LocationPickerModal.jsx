@@ -268,7 +268,7 @@ const LocationPickerModal = ({ isOpen, onClose, onSelectLocation, initialLat, in
                     </MapContainer>
 
                     {geocoding && (
-                        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] rounded-full bg-white/90 px-4 py-1.5 shadow-md text-xs font-semibold text-gray-700 backdrop-blur-xs flex items-center gap-2">
+                        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-1000 rounded-full bg-white/90 px-4 py-1.5 shadow-md text-xs font-semibold text-gray-700 backdrop-blur-xs flex items-center gap-2">
                             <span className="animate-spin">⏳</span> Resolving address...
                         </div>
                     )}

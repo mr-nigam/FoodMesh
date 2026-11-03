@@ -34,13 +34,12 @@ const RiderTrackingPage = () => {
 
     useEffect(() => {
 
-        // const loadOrderDetails = async()=>{
-        //     await fetchOrderDetail();
-        // }
-        // loadOrderDetails();
+        const loadOrderDetails = async()=>{
+            await fetchOrderDetail();
+        }
+        
+        loadOrderDetails();
 
-
-        fetchOrderDetail();
     }, [fetchOrderDetail]);
 
     const selectedRestaurant = useMemo(() => {
