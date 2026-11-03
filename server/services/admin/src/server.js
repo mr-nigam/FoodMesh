@@ -11,7 +11,7 @@ import {
 } from './config/postgre.js';
 
 
-const startServer = async()=>{
+const startServer = async() => {
 
     await bootstrapDB({
         connectDB,

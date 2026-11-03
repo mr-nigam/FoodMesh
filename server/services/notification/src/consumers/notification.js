@@ -16,13 +16,26 @@ const consumer = createConsumer({
     clientId: "notification-service"
 });
 
-const startOrderConsumer = async() => {
+const startNotificationConsumer = async() => {
     await consumer.connect();
     
     await subscribeConsumer({
         consumer,
         topics: [
-            KAFKA_TOPICS.ORDER
+            KAFKA_TOPICS.ADMIN,
+            KAFKA_TOPICS.ANALYTICS,
+            KAFKA_TOPICS.AUTH,
+            KAFKA_TOPICS.CART,
+            KAFKA_TOPICS.DELIVERY,
+            KAFKA_TOPICS.ORDER,
+            KAFKA_TOPICS.PAYMENT,
+            KAFKA_TOPICS.REALTIME,
+            KAFKA_TOPICS.RESTAURANT,
+            KAFKA_TOPICS.RIDER,
+            KAFKA_TOPICS.RIDER_LOCATION,
+            KAFKA_TOPICS.TRACKING,
+            KAFKA_TOPICS.REVIEW,
+            KAFKA_TOPICS.USER
         ]
     });
 
@@ -49,5 +62,5 @@ const startOrderConsumer = async() => {
 
 
 export{
-    startOrderConsumer
+    startNotificationConsumer
 };

@@ -14,6 +14,7 @@ import{
     deliveryUpdate
 } from './handlers/deliveryHandler.js';
 
+
 const consumer = createConsumer({
     groupId: "order-service",
     clientId: "order-service"

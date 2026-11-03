@@ -35,7 +35,7 @@ app.use(cookieParser());
 // API Routes
 
 app.use((req,res,next)=>{
-    next(new ApiError(404, "Route to nhi mila"));
+    next(new ApiError(404, "Route not found in notification service"));
 });
 
 app.use(errorHandler);
